@@ -1,8 +1,8 @@
-// integracao.js — ATUALIZADO PARA VERSÃO 10
+// integracao.js — ATUALIZADO PARA NOVA IMPLANTAÇÃO
 // BACKEND: Google Apps Script com suporte a GitHub para imagens
 
-// ATUALIZE ESTA LINHA COM A URL DA VERSÃO 10
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxfKvLCzw__nCnmQcxYqqvJ1a36BM3z14XtLp624fTtF1UmmLyTFRWSIFqueC9wxhUZog/exec";
+// ATUALIZE ESTA LINHA COM A URL DA NOVA IMPLANTAÇÃO
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycby9CDjPKc0fEqEtm2YkpahHuOe5JbrRoIE44yZ66Cwd/dev";
 
 // ========== FUNÇÃO BASE COM POLLING E TIMEOUT ==========
 async function callBackend(acao, dados = {}, timeoutSegundos = 45) {
@@ -10,7 +10,6 @@ async function callBackend(acao, dados = {}, timeoutSegundos = 45) {
   const timeoutId = setTimeout(() => controller.abort(), timeoutSegundos * 1000);
   
   try {
-    // Preparar os dados no formato que o GAS gosta (x-www-form-urlencoded)
     const formData = new URLSearchParams();
     formData.append('data', JSON.stringify({ acao, dados }));
 
@@ -130,7 +129,7 @@ async function atualizarProfissional(dados) {
   return resultado?.ok === true;
 }
 
-// ========== SERVIÇOS (locais, vindos de dados.js) ==========
+// ========== SERVIÇOS ==========
 function obterServicos() {
   if (typeof PROFISSOES_DATA === "undefined") {
     console.warn("PROFISSOES_DATA não definido");
@@ -147,7 +146,7 @@ function obterServicoPorId(id) {
   return obterServicos().find(s => s.id === id);
 }
 
-// ========== SESSÃO (localStorage) ==========
+// ========== SESSÃO ==========
 function salvarSessao(email, tipo, id) {
   const sess = {
     email: email.toLowerCase(),
@@ -208,7 +207,7 @@ async function autenticarUsuarioComSenha(email, senha) {
   }
 }
 
-// ========== TOKEN ALMA (saldo) ==========
+// ========== TOKEN ALMA ==========
 async function getTokenBalance(userId, tipo = "cliente") {
   try {
     const resultado = await callBackend("obter_saldo", { usuarioId: userId, tipo }, 30);
@@ -355,7 +354,7 @@ async function obterAvaliacoes() {
 
 async function obterAvaliacoesProfissional(profissionalId) {
   try {
-    return await callBackend("listar_avaliacoes_profissional", { professionalId: profissionalId });
+    return await callBackend("listar_avaliacoes_profissional", { profissionalId: profissionalId });
   } catch (err) {
     console.error("Erro ao listar avaliações do profissional:", err);
     return [];
@@ -378,7 +377,7 @@ async function alterarSenhaProfissional(profissionalId, novaSenha) {
   return resultado?.ok === true;
 }
 
-// ========== CRÉDITO/DÉBITO MANUAL ==========
+// ========== CRÉDITO/DÉBITO ==========
 async function creditarSaldo(usuarioId, tipo, valor) {
   const resultado = await callBackend("creditar_saldo", { usuarioId, tipo, valor });
   return resultado?.ok === true;
@@ -389,7 +388,7 @@ async function debitarSaldo(usuarioId, tipo, valor) {
   return resultado?.ok === true;
 }
 
-// ========== FUNÇÃO PARA TESTAR CONEXÃO COM O BACKEND ==========
+// ========== TESTES ==========
 async function testarConexaoBackend() {
   try {
     console.log("🔌 Testando conexão com o backend...");
@@ -402,7 +401,6 @@ async function testarConexaoBackend() {
   }
 }
 
-// ========== FUNÇÃO PARA INICIALIZAR O SISTEMA ==========
 async function inicializarSistemaBackend() {
   try {
     console.log("🚀 Inicializando sistema no backend...");
@@ -415,5 +413,5 @@ async function inicializarSistemaBackend() {
   }
 }
 
-console.log("✅ integracao.js — backend versão 10 com GitHub para imagens");
+console.log("✅ integracao.js — backend com GitHub para imagens");
 console.log("📍 Backend URL:", BACKEND_URL);
