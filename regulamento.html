@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regulamento e Política de Privacidade · Marido de Aluguel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6fa;
+      color: #1a2634;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      background: white;
+      border-radius: 28px;
+      padding: 16px 28px;
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .logo {
+      font-size: 1.6rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #1e3c72, #2b4c7c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.3px;
+    }
+
+    .back-link {
+      background: #eef2ff;
+      color: #1e3c72;
+      text-decoration: none;
+      padding: 8px 22px;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.85rem;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-link:hover {
+      background: #e2e8f0;
+      transform: translateY(-1px);
+    }
+
+    .regulamento-card {
+      background: white;
+      border-radius: 32px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #1e3c72, #2b4c7c);
+      padding: 36px 40px;
+      color: white;
+    }
+
+    .hero h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .hero p {
+      opacity: 0.85;
+      font-size: 0.95rem;
+    }
+
+    .regulamento-body {
+      padding: 40px;
+    }
+
+    .versao {
+      display: inline-block;
+      background: #eef2ff;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #1e3c72;
+      margin-bottom: 28px;
+    }
+
+    .secao {
+      margin-bottom: 32px;
+      scroll-margin-top: 24px;
+    }
+
+    .secao h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e3c72;
+      border-left: 5px solid #2b4c7c;
+      padding-left: 18px;
+      margin-bottom: 20px;
+      margin-top: 8px;
+    }
+
+    .secao h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2b4c7c;
+      margin: 20px 0 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .secao p {
+      line-height: 1.6;
+      color: #2d3a4a;
+      margin-bottom: 12px;
+    }
+
+    .secao ul, .secao ol {
+      margin: 12px 0 16px 28px;
+      line-height: 1.6;
+      color: #2d3a4a;
+    }
+
+    .secao li {
+      margin-bottom: 6px;
+    }
+
+    .tabela-taxas {
+      background: #f8fafc;
+      border-radius: 24px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      border: 1px solid #e2e8f0;
+    }
+
+    .tabela-taxas table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .tabela-taxas th, .tabela-taxas td {
+      padding: 12px 8px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .tabela-taxas th {
+      font-weight: 700;
+      color: #1e3c72;
+      background: #eef2ff;
+    }
+
+    .tabela-taxas tr:last-child td {
+      border-bottom: none;
+    }
+
+    .destaque {
+      background: #eef2ff;
+      padding: 16px 20px;
+      border-radius: 20px;
+      margin: 20px 0;
+      border-left: 4px solid #2b4c7c;
+      font-weight: 500;
+    }
+
+    .footer-regulamento {
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid #e2e8f0;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #5a6e8a;
+    }
+
+    hr {
+      margin: 24px 0;
+      border: none;
+      border-top: 1px solid #eef2ff;
+    }
+
+    @media (max-width: 700px) {
+      .regulamento-body { padding: 24px; }
+      .hero { padding: 28px 24px; }
+      .hero h1 { font-size: 1.6rem; }
+      .secao h2 { font-size: 1.3rem; }
+      .tabela-taxas { overflow-x: auto; }
+      .tabela-taxas table { min-width: 400px; }
+    }
+
+    .print-btn {
+      background: white;
+      border: 1px solid #cbd5e1;
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .print-btn:hover {
+      background: #eef2ff;
+      border-color: #2b4c7c;
+    }
+
+    .badge-experimental {
+      background: #ffc10730;
+      color: #856404;
+      border-radius: 40px;
+      padding: 2px 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-left: 12px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="top-bar">
+    <div class="logo">🛠️ Marido de Aluguel <span class="badge-experimental">Fase Experimental · MVP</span></div>
+    <div style="display: flex; gap: 12px;">
+      <button class="print-btn" id="printButton"><i class="fas fa-print"></i> Imprimir / PDF</button>
+      <a href="marido_aluguel.html" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para a plataforma</a>
+    </div>
+  </div>
+
+  <div class="regulamento-card">
+    <div class="hero">
+      <h1>Regulamento & Política de Privacidade</h1>
+      <p>Termos juridicamente blindados para MVP · Intermediação transparente · Conformidade CDC e LGPD</p>
+    </div>
+    <div class="regulamento-body">
+      <div class="versao">
+        <i class="fas fa-file-alt"></i> Versão 2.1 (MVP · Pessoa Física) · Em vigor a partir de 05/04/2026
+      </div>
+
+      <!-- ============================ 1. DISPOSIÇÕES GERAIS ============================ -->
+      <div class="secao" id="geral">
+        <h2>1. Disposições Gerais e Aceitação</h2>
+        <p>Este Regulamento e a Política de Privacidade regem o uso da plataforma <strong>Marido de Aluguel</strong> ("Plataforma"), operada por <strong>Marcelo Jubilado Catharino (pessoa física)</strong>, em fase experimental (MVP).</p>
+        <p>A Plataforma atua exclusivamente como <strong>intermediadora tecnológica</strong>, nos termos da Lei 12.965/2014 (Marco Civil da Internet), conectando Clientes e Profissionais autônomos. Ao se cadastrar, o Usuário declara ter lido, compreendido e aceitado todas as cláusulas deste instrumento, ciente de que a aceitação é indispensável para a utilização de qualquer funcionalidade.</p>
+        <div class="destaque">
+          <i class="fas fa-info-circle"></i> <strong>Fase Experimental:</strong> A Plataforma está em desenvolvimento contínuo. Ao utilizá-la, o Usuário concorda que podem ocorrer instabilidades pontuais, e se compromete a reportar falhas para aprimoramento do serviço. Em caso de cancelamento ou interrupção da plataforma, todos os saldos ALMA serão devolvidos integralmente aos usuários via PIX.
+        </div>
+      </div>
+
+      <!-- ============================ 2. PAPEL DA PLATAFORMA (LIMITAÇÃO DE RESPONSABILIDADE) ============================ -->
+      <div class="secao" id="papel">
+        <h2>2. Do Papel da Plataforma e Limitação de Responsabilidade</h2>
+        <p>A Plataforma <strong>não é prestadora de serviços</strong>, não mantém vínculo empregatício com Profissionais e não responde pela execução material dos serviços contratados. Suas funções restringem-se a:</p>
+        <ul>
+          <li><strong>Para o Cliente:</strong> viabilizar busca, contato e pagamento seguro via sistema TOKEN-ALMA.</li>
+          <li><strong>Para o Profissional:</strong> disponibilizar vitrine digital, agenda e recebimento de valores.</li>
+        </ul>
+        <div class="destaque">
+          <i class="fas fa-balance-scale"></i> <strong>Nos termos do Código de Defesa do Consumidor (Art. 14, §3º e Art. 51):</strong> a Plataforma responde solidariamente <strong>apenas</strong> por vícios de informação ou falhas na própria intermediação (ex: falha no sistema de pagamento). <strong>Não responde por vícios ou danos decorrentes da execução do serviço prestado pelo Profissional</strong>, uma vez que não exerce controle sobre a execução material, não fiscaliza métodos de trabalho e não possui ingerência sobre o resultado final, sendo mera facilitadora de encontro de interesses.
+        </div>
+        <p>O Cliente declara estar ciente de que a escolha do Profissional é de sua exclusiva responsabilidade, baseada nas avaliações, portfólio e informações disponíveis no perfil público.</p>
+      </div>
+
+      <!-- ============================ 3. CADASTRO E PERFIS ============================ -->
+      <div class="secao" id="cadastro">
+        <h2>3. Cadastro, Verificação e Obrigações</h2>
+        <h3><i class="fas fa-user-check"></i> 3.1. Dados verdadeiros</h3>
+        <p>Clientes e Profissionais devem fornecer informações precisas, atualizadas e verídicas. A Plataforma poderá solicitar documentos complementares para validação de identidade, especialmente em casos de suspeita de fraude.</p>
+        <h3><i class="fas fa-id-card"></i> 3.2. Perfil do Profissional</h3>
+        <p>O Profissional deve manter seu perfil atualizado e informar <strong>expressamente</strong> qualquer valor adicional (deslocamento, urgência, equipamentos especiais) no campo “Sobre” ou “Observações”. A ausência dessa informação vincula o Profissional aos valores padrão calculados pela Plataforma com base na diária referencial de R$ 300/dia.</p>
+        <h3><i class="fas fa-gavel"></i> 3.3. Independência e ausência de vínculo trabalhista</h3>
+        <p>Os Profissionais atuam como prestadores de serviços autônomos, com liberdade de horários, métodos e precificação (desde que informada no perfil). A Plataforma não determina jornada, não exige exclusividade e não fornece equipamentos. Eventuais controvérsias trabalhistas serão dirimidas diretamente entre Profissional e contratante, isentando a Plataforma de qualquer responsabilidade.</p>
+      </div>
+
+      <!-- ============================ 4. SISTEMA TOKEN-ALMA (CRÉDITO INTERNO + RESGATE) ============================ -->
+      <div class="secao" id="token">
+        <h2>4. Do Sistema TOKEN-ALMA (Crédito de Uso Interno)</h2>
+        <p>A Plataforma opera com crédito interno denominado <strong>ALMA</strong>, exclusivo para utilização na contratação de serviços, <strong>não configurando moeda eletrônica, instituição de pagamento ou investimento financeiro</strong> nos termos da Lei 12.865/2013. O ALMA é um ativo digital de uso restrito, sem lastro em moeda estrangeira e sem possibilidade de negociação externa.</p>
+        <h3>4.1. Recargas e Resgate de Saldo</h3>
+        <ul>
+          <li>Recargas via PIX são convertidas em ALMA na proporção 1:1 (R$1,00 = 1 ALMA).</li>
+          <li><strong>O Cliente pode solicitar o resgate do saldo ALMA não utilizado a qualquer momento</strong>, mediante pedido via e-mail (almafluxo@almafluxo.uk). O resgate será processado em até 15 (quinze) dias úteis, transferido para a mesma conta bancária de origem do PIX, sem qualquer dedução (100% do valor).</li>
+          <li>Em caso de bloqueio ou exclusão de conta por justa causa, o saldo remanescente será devolvido ao Cliente após a análise interna, exceto se houver prejuízo comprovado à Plataforma ou a terceiros.</li>
+          <li><strong>Cancelamento da plataforma (encerramento das atividades):</strong> Todos os saldos ALMA serão integralmente devolvidos aos usuários via PIX em até 30 dias.</li>
+        </ul>
+        <h3>4.2. Fluxo financeiro dos serviços</h3>
+        <ul>
+          <li><strong>Pré-pagamento (50% + taxa integral):</strong> O Cliente paga 50% do valor combinado + 100% da taxa administrativa. O serviço entra em status “pago_parcial”.</li>
+          <li><strong>Início do serviço:</strong> Profissional gera senha única (válida por 24h) que o Cliente confirma no chat.</li>
+          <li><strong>Conclusão e contestação:</strong> O Cliente gera senha de fim para liberar os 50% restantes. <strong>O Cliente dispõe de até 48 (quarenta e oito) horas após a geração da senha para contestar o serviço fundamentadamente</strong> (via e-mail ou formulário de disputa). Findo esse prazo sem contestação, o pagamento será automaticamente liberado ao Profissional.</li>
+        </ul>
+        <div class="destaque">
+          <i class="fas fa-clock"></i> <strong>Mecanismo de disputa:</strong> Se o Cliente não gerar a senha de fim no prazo de 7 (sete) dias corridos após o serviço ser concluído, a Plataforma poderá, a seu critério, solicitar evidências (fotos, conversas) e decidir pela liberação ou retenção do valor. Em caso de controvérsia, as partes submeter-se-ão à mediação obrigatória descrita na cláusula 13.
+        </div>
+      </div>
+
+      <!-- ============================ 5. TAXAS ADMINISTRATIVAS E CANCELAMENTO ============================ -->
+      <div class="secao" id="taxas">
+        <h2>5. Das Taxas Administrativas e Cancelamento</h2>
+        <p>A taxa administrativa é devida pelo Cliente no ato do pré-pagamento, conforme tabela progressiva:</p>
+        <div class="tabela-taxas">
+          <table>
+            <thead><tr><th>Valor do Serviço (R$)</th><th>Taxa Administrativa (R$)</th></tr></thead>
+            <tbody>
+              <tr><td>Até R$ 99,00</td><td>R$ 10,00</td></tr>
+              <tr><td>De R$ 100,00 a R$ 599,00</td><td>R$ 20,00</td></tr>
+              <tr><td>De R$ 600,00 a R$ 999,00</td><td>R$ 40,00</td></tr>
+              <tr><td>De R$ 1.000,00 a R$ 1.299,00</td><td>R$ 50,00</td></tr>
+              <tr><td>De R$ 1.300,00 a R$ 1.599,00</td><td>R$ 70,00</td></tr>
+              <tr><td>De R$ 1.600,00 a R$ 1.999,00</td><td>R$ 90,00</td></tr>
+              <tr><td>Acima de R$ 2.000,00</td><td>R$ 100,00</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>5.1. Cancelamento e Reembolso (Política Clara)</h3>
+        <ul>
+          <li><strong>Cancelamento antes do início do serviço (até 1 hora antes do agendado):</strong> Cliente tem direito ao reembolso integral dos 50% pagos (serviço) + devolução integral da taxa administrativa. <strong>100% de devolução via PIX</strong> em até 7 dias úteis. <span class="badge-experimental" style="background:#28a74520;">Proteção contra direito de arrependimento (CDC Art. 49)</span></li>
+          <li><strong>Cancelamento após início do serviço (sem justa causa):</strong> O valor já executado será retido em favor do Profissional, limitado ao percentual de trabalho comprovado via chat. A taxa administrativa não será reembolsada.</li>
+          <li><strong>Cancelamento por não comparecimento ou abandono do Profissional:</strong> Cliente receberá reembolso integral (100%) do valor pago, incluindo taxa administrativa, mediante comprovação.</li>
+          <li><strong>Direito de Arrependimento (Art. 49 do CDC):</strong> O Cliente pessoa física pode desistir da contratação no prazo de 7 (sete) dias corridos, contados da data do pré-pagamento, desde que o serviço ainda não tenha sido iniciado. Neste caso, a devolução será de 100% do valor pago (serviço + taxa), sem qualquer retenção.</li>
+        </ul>
+      </div>
+
+      <!-- ============================ 6. DIÁRIA BASE (APENAS REFERENCIAL) ============================ -->
+      <div class="secao" id="diaria">
+        <h2>6. Da Diária Base (Valor Referencial, Não Obrigatório)</h2>
+        <p>A Plataforma utiliza o valor de <strong>R$ 300,00 por dia</strong> apenas como <strong>referência de mercado</strong> para cálculo de preço por unidade. Esse valor não constitui piso salarial, tabelamento ou obrigação. O Profissional detém total autonomia para cobrar valor superior ou inferior, desde que explicitamente informado em seu perfil ou no chat de negociação. A decisão final sobre o valor é do Cliente, que pode aceitar ou recusar a proposta.</p>
+      </div>
+
+      <!-- ============================ 7. RESPONSABILIDADE LIMITADA ============================ -->
+      <div class="secao" id="responsabilidades">
+        <h2>7. Responsabilidade Limitada da Plataforma</h2>
+        <h3><i class="fas fa-shield-alt"></i> 7.1. Isenção sobre execução do serviço</h3>
+        <p>Nos termos do Art. 14, §3º do CDC, a Plataforma <strong>não responde</strong> por danos materiais, acidentes, perdas ou qualidade insatisfatória dos serviços prestados pelos Profissionais, porquanto não exerce controle sobre a execução material, não fornece equipamentos e não supervisiona a realização das atividades.</p>
+        <h3><i class="fas fa-hand-holding-usd"></i> 7.2. Liberação de pagamento e responsabilidade do Cliente</h3>
+        <p>Ao gerar a senha de conclusão, o Cliente atesta que o serviço foi executado conforme acordado. A Plataforma não se responsabiliza por eventuais vícios ocultos ou discordâncias supervenientes, cabendo ao Cliente acionar diretamente o Profissional, com base no Código Civil.</p>
+        <h3><i class="fas fa-user-check"></i> 7.3. Disputas entre as partes</h3>
+        <p>A Plataforma disponibiliza um canal de mediação extrajudicial (almafluxo@almafluxo.uk) para auxiliar na resolução de conflitos, mas não se substitui ao Poder Judiciário. As partes concordam que qualquer litígio relativo à execução do serviço deverá ser resolvido primeiramente por mediação na Plataforma, antes de qualquer ação judicial.</p>
+        <div class="destaque">
+          <i class="fas fa-exclamation-triangle"></i> <strong>ATENÇÃO:</strong> O Cliente e o Profissional isentam a Plataforma de qualquer responsabilidade por danos diretos, indiretos ou lucros cessantes decorrentes de problemas na prestação dos serviços, assumindo integral responsabilidade sobre suas escolhas e atos.
+        </div>
+      </div>
+
+      <!-- ============================ 8. AVALIAÇÕES E REPUTAÇÃO ============================ -->
+      <div class="secao" id="avaliacoes">
+        <h2>8. Das Avaliações</h2>
+        <p>Clientes e Profissionais podem avaliar mutuamente ao final de cada serviço. As avaliações devem ser objetivas e baseadas em fatos reais. A Plataforma não edita o conteúdo das avaliações, mas poderá removê-las se comprovadamente falsas, difamatórias ou em desacordo com a lei (Art. 21 do Marco Civil). O Profissional que se sentir prejudicado por avaliação injusta poderá solicitar mediação e apresentar contestações, que serão anexadas ao seu perfil.</p>
+      </div>
+
+      <!-- ============================ 9. CHAT COMO MEIO DE PROVA ============================ -->
+      <div class="secao" id="chat">
+        <h2>9. Do Chat e Negociação (Força Probatória)</h2>
+        <p>Toda negociação de valor, prazo, escopo e quaisquer acordos complementares <strong>deverão obrigatoriamente ser registrados no chat da Plataforma</strong>, sob pena de não serem considerados em eventuais disputas. As mensagens trocadas no chat constituem prova documental eletrônica, nos termos do Art. 10 do Marco Civil da Internet e da Lei 12.682/2012 (validade jurídica de documentos eletrônicos).</p>
+      </div>
+
+      <!-- ============================ 10. BLOQUEIO E RESGATE ============================ -->
+      <div class="secao" id="rescisao">
+        <h2>10. Da Rescisão, Bloqueio e Devolução de Saldo</h2>
+        <p>A Plataforma poderá bloquear ou cancelar a conta de qualquer usuário que violar este Regulamento, praticar fraudes, assédio ou atividades ilegais. <strong>O bloqueio não implicará perda do saldo ALMA existente</strong>: o usuário bloqueado terá direito de solicitar o resgate do saldo remanescente (após dedução de eventuais prejuízos comprovados), mediante envio de solicitação via e-mail, processado em até 30 (trinta) dias úteis. O usuário será previamente notificado, sempre que possível, com prazo mínimo de 48h para manifestação prévia ao bloqueio definitivo.</p>
+      </div>
+
+      <!-- ============================ 11. ALTERAÇÕES ============================ -->
+      <div class="secao" id="alteracoes">
+        <h2>11. Das Alterações no Regulamento</h2>
+        <p>A Plataforma poderá alterar este Regulamento a qualquer momento, <strong>notificando os usuários com antecedência mínima de 15 (quinze) dias por e-mail e/ou aviso na própria plataforma</strong>. Caso o usuário discorde das alterações, poderá solicitar o cancelamento de sua conta e o resgate do saldo ALMA existente. O uso continuado após o prazo de notificação implica aceitação automática apenas das alterações que não prejudiquem direitos adquiridos, nos termos da Súmula 479 do STJ.</p>
+      </div>
+
+      <!-- ============================ 12. POLÍTICA DE PRIVACIDADE (LGPD) ============================ -->
+      <div class="secao" id="privacidade">
+        <h2>12. Política de Privacidade e Proteção de Dados (LGPD)</h2>
+        <p>Em conformidade com a Lei Geral de Proteção de Dados (Lei 13.709/2018), a Plataforma coleta e trata os seguintes dados pessoais: nome, e-mail, telefone, endereço, documentos de identificação (quando necessário), fotos de perfil, histórico de serviços e mensagens do chat. A base legal para o tratamento é a execução do contrato de intermediação (Art. 7º, V) e o legítimo interesse (Art. 7º, IX).</p>
+        <h3>12.1. Direitos do Titular</h3>
+        <p>O usuário pode, a qualquer momento, solicitar: confirmação de tratamento, acesso aos dados, correção de dados incompletos, anonimização, bloqueio ou eliminação de dados desnecessários, portabilidade e revogação do consentimento (quando aplicável). Os pedidos devem ser enviados ao Encarregado de Dados (DPO) pelo e-mail: <strong>tchelojc@gmail.com</strong>.</p>
+        <h3>12.2. Compartilhamento e Armazenamento</h3>
+        <p>Os dados são compartilhados exclusivamente entre Cliente e Profissional para viabilizar o serviço. A Plataforma não vende nem aluga dados pessoais. O armazenamento é feito em servidores seguros, por prazo mínimo de 6 meses após o término da conta, para fins de prova e cumprimento de obrigações legais (Art. 34 da LGPD). O usuário pode solicitar a exclusão antecipada, salvo hipóteses de guarda obrigatória.</p>
+        <div class="destaque">
+          <i class="fas fa-database"></i> A Plataforma adota medidas de segurança técnicas e administrativas para proteger os dados contra acessos não autorizados, nos termos do Art. 46 da LGPD. Em caso de violação, os titulares serão comunicados dentro do prazo legal.
+        </div>
+      </div>
+
+      <!-- ============================ 13. FORO E MEDIAÇÃO ============================ -->
+      <div class="secao" id="foro">
+        <h2>13. Da Mediação e Foro de Eleição</h2>
+        <p>Antes de qualquer ação judicial, as partes comprometem-se a submeter a controvérsia a uma sessão de mediação conduzida pela própria Plataforma ou por câmara de mediação indicada, com duração máxima de 20 (vinte) dias. Esgotada a mediação sem acordo, fica eleito o foro da comarca de <strong>Rio de Janeiro - RJ</strong> para dirimir litígios envolvendo a Plataforma, ressalvada a competência do Juizado Especial Cível do domicílio do consumidor pessoa física, nos termos do Art. 101 do CDC.</p>
+        <p>Para litígios exclusivamente entre Cliente e Profissional, o foro será o do domicílio do Réu, conforme regras do Código de Processo Civil.</p>
+      </div>
+
+      <hr>
+
+      <div class="footer-regulamento">
+        <p><i class="fas fa-handshake"></i> Marido de Aluguel – Facilitamos o encontro. Você avalia a qualidade.</p>
+        <p><strong>Fase Experimental (MVP)</strong> · Operado por Marcelo Jubilado Catharino (pessoa física) · Em breve CNPJ</p>
+        <p>Encarregado (DPO): tchelojc@gmail.com · Suporte: almafluxo@almafluxo.uk</p>
+        <p style="margin-top: 12px;">© 2026 Marido de Aluguel · Todos os direitos reservados · Documento revisado conforme CDC, LGPD e Marco Civil da Internet.</p>
+        <p class="destaque" style="margin-top: 16px; font-size: 0.7rem;"><i class="fas fa-gavel"></i> Este documento é juridicamente vinculante. Ao utilizar a plataforma, o usuário aceita integralmente todos os termos acima.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('printButton').addEventListener('click', () => {
+    window.print();
+  });
+
+  const style = document.createElement('style');
+  style.textContent = `@media print { .print-btn, .back-link, .top-bar .print-btn, .top-bar .back-link { display: none !important; } body { background: white; padding: 0; } .container { max-width: 100%; } .regulamento-card { box-shadow: none; } .hero { background: #1e3c72; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .tabela-taxas { background: #f8fafc; -webkit-print-color-adjust: exact; } .destaque { background: #eef2ff; -webkit-print-color-adjust: exact; } .badge-experimental { background: #ffc10730 !important; -webkit-print-color-adjust: exact; } }`;
+  document.head.appendChild(style);
+</script>
+</body>
+</html>

@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#0a0a1a">
+  <title>Marido de Aluguel · Profissionais de serviços</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Arquivos de dados e integração -->
+  <script src="dados.js"></script>
+  <script src="profissionais.js"></script>
+  <script src="integracao.js"></script>
+  <style>
+    /* ========== ESTILOS ========== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6fa;
+      color: #1a2634;
+      line-height: 1.5;
+    }
+    .top-bar {
+      background: white;
+      border-bottom: 1px solid #e0e5ec;
+      padding: 12px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px 24px;
+    }
+    .logo-area {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #1e3c72, #2b4c7c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.5px;
+    }
+    .tagline {
+      font-size: 0.75rem;
+      color: #5a6e8a;
+      font-weight: 400;
+    }
+    .btn-outline-light {
+      background: transparent;
+      border: 1px solid #cbd5e1;
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.85rem;
+    }
+    .btn-outline-light:hover { background: #f1f5f9; border-color: #2b4c7c; }
+    .btn-primary {
+      background: #2b4c7c;
+      border: none;
+      color: white;
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-primary:hover { background: #1e3c72; transform: translateY(-1px); }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 28px;
+      margin-top: 20px;
+    }
+    .filters-card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      border: 1px solid #e9eef3;
+      position: sticky;
+      top: 90px;
+    }
+    .filter-group { margin-bottom: 24px; }
+    .filter-group h4 { font-size: 0.9rem; margin-bottom: 12px; font-weight: 600; }
+    .filter-option { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; }
+    .filter-option input { width: 16px; height: 16px; cursor: pointer; }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 24px;
+      padding-bottom: 8px;
+    }
+    .tab {
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      transition: 0.2s;
+      color: #4a5b7a;
+    }
+    .tab.active {
+      background: #2b4c7c;
+      color: white;
+    }
+    .search-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .search-box {
+      flex: 1;
+      max-width: 400px;
+      position: relative;
+    }
+    .search-box i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #8ba0bc;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 12px 12px 12px 42px;
+      border-radius: 50px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .search-box input:focus { border-color: #2b4c7c; }
+    .sort-select {
+      padding: 10px 16px;
+      border-radius: 40px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .service-card {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid #e9eef3;
+      overflow: hidden;
+      transition: all 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+    .service-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-color: #cbddee; }
+    .card-content { padding: 18px; }
+    .card-badge {
+      display: inline-block;
+      background: #eef2ff;
+      color: #1e3c72;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 30px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .price {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #1e3c72;
+    }
+    .unit { font-size: 0.8rem; font-weight: normal; color: #5a6e8a; }
+    .prod-info {
+      display: flex;
+      justify-content: space-between;
+      margin: 12px 0;
+      font-size: 0.75rem;
+      background: #f8fafc;
+      padding: 8px 12px;
+      border-radius: 16px;
+    }
+    .difficulty {
+      font-size: 0.7rem;
+      background: #eef2ff;
+      padding: 3px 8px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+    .card-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .btn-sm {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #f1f5f9;
+      border: none;
+      transition: 0.2s;
+    }
+    .btn-sm-primary { background: #2b4c7c; color: white; }
+    .btn-sm-primary:hover { background: #1e3c72; }
+    .btn-sm-outline { border: 1px solid #cbd5e1; background: white; }
+    .btn-sm-outline:hover { background: #eef2ff; }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      max-width: 500px;
+      width: 90%;
+      border-radius: 32px;
+      padding: 28px;
+      position: relative;
+    }
+    .close-modal {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      font-size: 1.6rem;
+      cursor: pointer;
+    }
+    /* FOOTER MELHORADO COM LINKS */
+    .footer {
+      text-align: center;
+      margin-top: 50px;
+      padding: 24px 20px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 0.75rem;
+      color: #5a6e8a;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .footer-links a {
+      color: #2b4c7c;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-links a:hover {
+      color: #1e3c72;
+      text-decoration: underline;
+    }
+    .footer-copyright {
+      font-size: 0.7rem;
+      opacity: 0.7;
+    }
+    .small-text { font-size: 0.75rem; color: #5a6e8a; }
+    .regulamento-link-modal {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 0.7rem;
+    }
+    .regulamento-link-modal a {
+      color: #2b4c7c;
+      text-decoration: none;
+    }
+    .regulamento-link-modal a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="container" style="padding: 0; display: flex; justify-content: space-between; align-items: center;">
+    <div class="logo-area">
+      <div class="logo">🛠️ Marido de Aluguel</div>
+      <div class="tagline">Profissionais verificados · Preço justo</div>
+    </div>
+    <div>
+      <button id="loginBtnHeader" class="btn-outline-light"><i class="fas fa-user-circle"></i> Entrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="main-grid">
+    <!-- SIDEBAR FILTROS -->
+    <aside class="filters-card">
+      <h3 style="margin-bottom: 20px;"><i class="fas fa-sliders-h"></i> Filtros</h3>
+      <div class="filter-group">
+        <h4>Categoria</h4>
+        <div id="categoriaFilterList"></div>
+      </div>
+      <div class="filter-group">
+        <h4>Dificuldade</h4>
+        <div id="dificuldadeFilterList">
+          <label class="filter-option"><input type="checkbox" value="baixo"> Baixo</label>
+          <label class="filter-option"><input type="checkbox" value="médio"> Médio</label>
+          <label class="filter-option"><input type="checkbox" value="alto"> Alto</label>
+        </div>
+      </div>
+      <div class="filter-group">
+        <h4>Equipamento próprio</h4>
+        <label class="filter-option"><input type="checkbox" id="equipamentoFilter"> Apenas com equipamento</label>
+      </div>
+      <button id="limparFiltros" class="btn-sm" style="width:100%; margin-top: 8px;"><i class="fas fa-eraser"></i> Limpar filtros</button>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div>
+      <div class="tabs">
+        <div class="tab active" data-tab="todos">📋 Todos os serviços</div>
+        <div class="tab" data-tab="rapidos">⚡ Mais rápidos (produtividade)</div>
+        <div class="tab" data-tab="lucro">💰 Maior lucro/hora</div>
+      </div>
+
+      <div class="search-header">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Buscar serviço, palavra-chave...">
+        </div>
+        <select id="sortSelect" class="sort-select">
+          <option value="relevancia">Relevância</option>
+          <option value="preco_asc">Menor preço</option>
+          <option value="preco_desc">Maior preço</option>
+          <option value="prod_asc">Menor produtividade</option>
+          <option value="prod_desc">Maior produtividade</option>
+        </select>
+      </div>
+
+      <div id="servicesContainer" class="services-grid">Carregando serviços...</div>
+    </div>
+  </div>
+  
+  <!-- FOOTER COM LINK PARA REGULAMENTO (ABRINDO EM NOVA JANELA) -->
+  <div class="footer">
+    <div class="footer-links">
+      <a href="regulamento.html" target="_blank" rel="noopener noreferrer">
+        <i class="fas fa-file-alt"></i> Regulamento
+      </a>
+      <a href="#" id="openPrivacyPolicy" style="cursor: pointer;">
+        <i class="fas fa-lock"></i> Política de Privacidade
+      </a>
+      <a href="mailto:almafluxo@almafluxo.uk">
+        <i class="fas fa-envelope"></i> Contato
+      </a>
+    </div>
+    <div class="footer-copyright">
+      © 2026 Marido de Aluguel · Preços baseados em produtividade real (R$300/dia referencial)
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE ORÇAMENTO -->
+<div id="calcModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeCalcModal">&times;</span>
+    <h3 id="modalTitle">Calcular orçamento</h3>
+    <div style="margin: 20px 0;">
+      <label>Quantidade (unidades):</label>
+      <input type="number" id="calcQtd" value="1" step="0.5" min="0.1" style="width:100%; margin-top: 6px; padding: 10px; border-radius: 20px; border:1px solid #ccc;">
+      <div style="margin-top: 18px;">
+        <p><strong>💰 Valor total:</strong> R$ <span id="calcTotal">0,00</span></p>
+        <p><strong>⏱️ Tempo estimado:</strong> <span id="calcTempo">0</span> horas</p>
+        <p><strong>📅 Dias de trabalho:</strong> <span id="calcDias">0</span> dias</p>
+        <p class="small-text" id="calcObs"></p>
+      </div>
+      <button class="btn-primary" id="copyOrcamento" style="width:100%; margin-top: 16px;">📋 Copiar orçamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE AUTENTICAÇÃO (login simples COM LINK PARA REGULAMENTO) -->
+<div id="authModal" class="modal">
+  <div class="modal-content" style="max-width: 400px;">
+    <span class="close-modal" id="closeAuthModal">&times;</span>
+    <h3>Acesso restrito</h3>
+    <p style="margin-bottom: 16px;">Digite seu e-mail e senha cadastrados.</p>
+    <input type="email" id="authEmail" placeholder="Seu e-mail" style="width:100%; padding:12px; border-radius: 30px; border:1px solid #ccc; margin-bottom: 12px;">
+    <input type="password" id="authSenha" placeholder="Sua senha" style="width:100%; padding:12px; border-radius: 30px; border:1px solid #ccc; margin-bottom: 12px;">
+    <button id="btnAuth" class="btn-primary" style="width:100%">Entrar</button>
+    <div id="authMsg" style="margin-top: 12px; font-size:0.8rem; color:#e74c3c;"></div>
+    <div style="text-align: center; margin-top: 16px;">
+      <a href="cadastro.html" style="color: #2b4c7c; text-decoration: none;">Não tem conta? Cadastre-se</a>
+    </div>
+    <!-- LINK PARA REGULAMENTO DENTRO DO MODAL DE LOGIN -->
+    <div class="regulamento-link-modal">
+      <i class="fas fa-gavel"></i> Ao continuar, você concorda com nosso 
+      <a href="regulamento.html" target="_blank" rel="noopener noreferrer">Regulamento</a>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SIMPLES PARA POLÍTICA DE PRIVACIDADE (RESUMO) -->
+<div id="privacyModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closePrivacyModal">&times;</span>
+    <h3><i class="fas fa-lock"></i> Política de Privacidade (Resumo)</h3>
+    <div style="margin: 20px 0; font-size: 0.85rem; line-height: 1.6;">
+      <p><strong>Coleta de dados:</strong> Nome, e-mail, telefone, endereço, fotos e histórico de serviços.</p>
+      <p><strong>Uso:</strong> Exclusivamente para viabilizar a intermediação entre cliente e profissional.</p>
+      <p><strong>Compartilhamento:</strong> Seus dados são compartilhados apenas com o profissional que você contratar.</p>
+      <p><strong>Direitos (LGPD):</strong> Você pode solicitar correção, exclusão ou portabilidade dos seus dados pelo e-mail <strong>tchelojc@gmail.com</strong>.</p>
+      <p><strong>Armazenamento:</strong> Por até 6 meses após o término da conta para fins legais.</p>
+      <hr style="margin: 16px 0;">
+      <p class="small-text">Para a versão completa, consulte o <a href="regulamento.html" target="_blank">Regulamento completo</a> (Seção 12).</p>
+    </div>
+    <button class="btn-primary" id="closePrivacyBtn" style="width:100%;">Entendi</button>
+  </div>
+</div>
+
+<script>
+  // ========== AUTENTICAÇÃO COM SUPORTE A DUPLA CONTA ==========
+  const authModal = document.getElementById('authModal');
+  const authEmailInput = document.getElementById('authEmail');
+  const authSenhaInput = document.getElementById('authSenha');
+  const btnAuth = document.getElementById('btnAuth');
+  const authMsg = document.getElementById('authMsg');
+
+  function closeAuthModal() { authModal.style.display = 'none'; authMsg.innerText = ''; }
+  function openAuthModal() { authModal.style.display = 'flex'; authEmailInput.value = ''; authSenhaInput.value = ''; authMsg.innerText = ''; }
+
+  document.getElementById('loginBtnHeader').onclick = () => openAuthModal();
+  document.getElementById('closeAuthModal').onclick = () => closeAuthModal();
+  window.addEventListener('click', (e) => { if (e.target === authModal) closeAuthModal(); });
+
+  // Modal de Política de Privacidade
+  const privacyModal = document.getElementById('privacyModal');
+  function openPrivacyModal() { privacyModal.style.display = 'flex'; }
+  function closePrivacyModal() { privacyModal.style.display = 'none'; }
+  document.getElementById('openPrivacyPolicy').onclick = (e) => { e.preventDefault(); openPrivacyModal(); };
+  document.getElementById('closePrivacyModal').onclick = closePrivacyModal;
+  document.getElementById('closePrivacyBtn').onclick = closePrivacyModal;
+  window.addEventListener('click', (e) => { if (e.target === privacyModal) closePrivacyModal(); });
+
+  function mostrarModalEscolha(email, clienteData, profissionalData) {
+    const oldModal = document.getElementById('modalEscolhaPerfil');
+    if (oldModal) oldModal.remove();
+
+    const modalEscolha = document.createElement('div');
+    modalEscolha.id = 'modalEscolhaPerfil';
+    modalEscolha.className = 'modal';
+    modalEscolha.style.display = 'flex';
+    modalEscolha.innerHTML = `
+      <div class="modal-content" style="max-width: 350px; text-align: center;">
+        <h3>Escolha o perfil de acesso</h3>
+        <p style="margin: 16px 0;">Este e-mail está cadastrado como <strong>cliente</strong> e como <strong>profissional</strong>.<br>Selecione qual perfil deseja acessar agora:</p>
+        <button id="escolherCliente" class="btn-primary" style="width: 100%; margin-bottom: 12px;">👤 Acessar como Cliente</button>
+        <button id="escolherProfissional" class="btn-primary" style="width: 100%; background: #4a5b7a;">🔧 Acessar como Profissional</button>
+        <button id="fecharModalEscolha" class="btn-sm" style="margin-top: 16px;">Cancelar</button>
+      </div>
+    `;
+    document.body.appendChild(modalEscolha);
+
+    document.getElementById('escolherCliente').onclick = () => {
+      if (clienteData && clienteData.id) {
+        salvarSessao(email, 'cliente', clienteData.id);
+        window.location.href = 'cliente_dashboard.html';
+      } else {
+        alert('Erro: dados de cliente não disponíveis.');
+      }
+    };
+    document.getElementById('escolherProfissional').onclick = () => {
+      if (profissionalData && profissionalData.id) {
+        salvarSessao(email, 'profissional', profissionalData.id);
+        window.location.href = 'profissional_dashboard.html';
+      } else {
+        alert('Erro: dados de profissional não disponíveis.');
+      }
+    };
+    document.getElementById('fecharModalEscolha').onclick = () => {
+      modalEscolha.remove();
+      openAuthModal();
+    };
+  }
+
+  btnAuth.onclick = async () => {
+    const email = authEmailInput.value.trim().toLowerCase();
+    const senha = authSenhaInput.value;
+    if (!email || !senha) {
+      authMsg.innerText = 'Preencha e-mail e senha.';
+      return;
+    }
+    try {
+      const result = await autenticarUsuarioComSenha(email, senha);
+      if (!result.success) {
+        authMsg.innerText = result.error;
+        return;
+      }
+
+      closeAuthModal();
+
+      if (result.precisaEscolher === true && result.cliente && result.profissional) {
+        mostrarModalEscolha(email, result.cliente, result.profissional);
+        return;
+      }
+
+      if (result.tipo === 'profissional') {
+        window.location.href = 'profissional_dashboard.html';
+      } else {
+        window.location.href = 'cliente_dashboard.html';
+      }
+    } catch (err) {
+      console.error(err);
+      authMsg.innerText = 'Erro na autenticação. Tente novamente.';
+    }
+  };
+
+  // ========== APP DE SERVIÇOS (cards dinâmicos) ==========
+  let servicosData = [];
+  let categoriasSet = new Set();
+  let currentTab = 'todos';
+  let filtrosCategorias = new Set();
+  let filtrosDificuldade = new Set();
+  let equipamentoOnly = false;
+
+  function carregarServicos() {
+    try {
+      if (typeof PROFISSOES_DATA === 'undefined') {
+        document.getElementById('servicesContainer').innerHTML = '<div class="service-card"><div class="card-content">❌ Arquivo dados.js não encontrado.</div></div>';
+        return;
+      }
+      servicosData = PROFISSOES_DATA.filter(s => s.ativo !== false).map(s => ({
+        ...s,
+        preco_unitario: (s.diaria_base / s.producao_dia).toFixed(2),
+        ganho_mes_base: (s.diaria_base * 22).toFixed(2),
+        tempo_por_unidade_h: s.tempo_por_unidade_h || (8 / s.producao_dia),
+        lucro_hora: ((s.diaria_base / s.producao_dia) / (s.tempo_por_unidade_h || 1)).toFixed(2)
+      }));
+      servicosData.forEach(s => categoriasSet.add(s.categoria));
+      renderFiltrosCategorias();
+      aplicarFiltrosEOrdenacao();
+    } catch (err) {
+      console.error(err);
+      document.getElementById('servicesContainer').innerHTML = '<div class="service-card"><div class="card-content">❌ Erro ao processar os dados.</div></div>';
+    }
+  }
+
+  function renderFiltrosCategorias() {
+    const container = document.getElementById('categoriaFilterList');
+    const cats = Array.from(categoriasSet).sort();
+    container.innerHTML = cats.map(cat => `
+      <label class="filter-option"><input type="checkbox" value="${cat}" class="cat-filter"> ${cat}</label>
+    `).join('');
+    document.querySelectorAll('.cat-filter').forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        if (e.target.checked) filtrosCategorias.add(e.target.value);
+        else filtrosCategorias.delete(e.target.value);
+        aplicarFiltrosEOrdenacao();
+      });
+    });
+  }
+
+  function aplicarFiltrosEOrdenacao() {
+    let filtered = [...servicosData];
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    if (searchTerm) {
+      filtered = filtered.filter(s => s.nome.toLowerCase().includes(searchTerm) || (s.tags && s.tags.some(t => t.toLowerCase().includes(searchTerm))));
+    }
+    if (filtrosCategorias.size > 0) {
+      filtered = filtered.filter(s => filtrosCategorias.has(s.categoria));
+    }
+    if (filtrosDificuldade.size > 0) {
+      filtered = filtered.filter(s => filtrosDificuldade.has(s.nivel_dificuldade?.toLowerCase()));
+    }
+    if (equipamentoOnly) {
+      filtered = filtered.filter(s => s.requer_equipamento === true);
+    }
+    if (currentTab === 'rapidos') {
+      filtered.sort((a,b) => b.producao_dia - a.producao_dia);
+    } else if (currentTab === 'lucro') {
+      filtered.sort((a,b) => parseFloat(b.lucro_hora) - parseFloat(a.lucro_hora));
+    } else {
+      const sortBy = document.getElementById('sortSelect').value;
+      if (sortBy === 'preco_asc') filtered.sort((a,b) => parseFloat(a.preco_unitario) - parseFloat(b.preco_unitario));
+      else if (sortBy === 'preco_desc') filtered.sort((a,b) => parseFloat(b.preco_unitario) - parseFloat(a.preco_unitario));
+      else if (sortBy === 'prod_asc') filtered.sort((a,b) => a.producao_dia - b.producao_dia);
+      else if (sortBy === 'prod_desc') filtered.sort((a,b) => b.producao_dia - a.producao_dia);
+    }
+    renderCards(filtered);
+  }
+
+  function renderCards(lista) {
+    const container = document.getElementById('servicesContainer');
+    if (!lista.length) { container.innerHTML = '<div class="service-card"><div class="card-content">Nenhum serviço encontrado.</div></div>'; return; }
+    container.innerHTML = lista.map(serv => `
+      <div class="service-card">
+        <div class="card-content">
+          <span class="card-badge">${serv.categoria}</span>
+          <div class="card-title">${serv.nome}</div>
+          <div><span class="price">R$ ${serv.preco_unitario}</span> <span class="unit">/ ${serv.unidade}</span></div>
+          <div class="prod-info">
+            <span><i class="fas fa-tachometer-alt"></i> ${serv.producao_dia} ${serv.unidade}/dia</span>
+            <span><i class="far fa-clock"></i> ${serv.tempo_por_unidade_h}h/unid</span>
+          </div>
+          <div><span class="difficulty">${serv.nivel_dificuldade || 'médio'}</span></div>
+          <div class="card-actions">
+            <button class="btn-sm btn-sm-primary btn-orcamento" data-serv-id="${serv.id}"><i class="fas fa-calculator"></i> Orçamento</button>
+            <button class="btn-sm btn-sm-outline btn-profissionais" data-serv-id="${serv.id}" data-serv-nome="${serv.nome}"><i class="fas fa-users"></i> Ver profissionais</button>
+            <button class="btn-sm btn-sm-outline btn-detalhes" data-serv-detalhe='${JSON.stringify(serv)}'><i class="fas fa-info-circle"></i> Detalhes</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.btn-orcamento').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.servId;
+        const serv = servicosData.find(s => s.id === id);
+        if (serv) abrirCalculadora(serv);
+      });
+    });
+    document.querySelectorAll('.btn-profissionais').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const servId = btn.dataset.servId;
+        window.location.href = `profissionais.html?id=${servId}`;
+      });
+    });
+    document.querySelectorAll('.btn-detalhes').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const serv = JSON.parse(btn.dataset.servDetalhe);
+        alert(`${serv.nome}\n💰 R$ ${serv.preco_unitario}/${serv.unidade}\n⏱️ ${serv.tempo_por_unidade_h}h por unidade\n🧰 Equipamentos: ${serv.equipamentos?.join(', ') || 'Não listado'}\n📝 Obs: ${serv.obs || '-'}`);
+      });
+    });
+  }
+
+  function abrirCalculadora(servico) {
+    const modal = document.getElementById('calcModal');
+    document.getElementById('modalTitle').innerText = `Orçamento: ${servico.nome}`;
+    const qtdInput = document.getElementById('calcQtd');
+    const totalSpan = document.getElementById('calcTotal');
+    const tempoSpan = document.getElementById('calcTempo');
+    const diasSpan = document.getElementById('calcDias');
+    const obsSpan = document.getElementById('calcObs');
+    function update() {
+      let qtd = parseFloat(qtdInput.value) || 0;
+      let total = qtd * parseFloat(servico.preco_unitario);
+      let tempo = qtd * servico.tempo_por_unidade_h;
+      let dias = qtd / servico.producao_dia;
+      totalSpan.innerText = total.toFixed(2);
+      tempoSpan.innerText = tempo.toFixed(1);
+      diasSpan.innerText = dias.toFixed(1);
+      obsSpan.innerText = servico.obs ? `📌 ${servico.obs.substring(0, 100)}` : '';
+    }
+    qtdInput.oninput = update;
+    update();
+    modal.style.display = 'flex';
+    document.getElementById('copyOrcamento').onclick = () => {
+      let texto = `${servico.nome} - ${qtdInput.value} ${servico.unidade}(s): Total R$ ${totalSpan.innerText}, Tempo ${tempoSpan.innerText}h, Dias ${diasSpan.innerText}`;
+      navigator.clipboard.writeText(texto);
+      alert('Orçamento copiado!');
+    };
+  }
+
+  document.querySelectorAll('#dificuldadeFilterList input').forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      if (e.target.checked) filtrosDificuldade.add(e.target.value);
+      else filtrosDificuldade.delete(e.target.value);
+      aplicarFiltrosEOrdenacao();
+    });
+  });
+  document.getElementById('equipamentoFilter').addEventListener('change', (e) => {
+    equipamentoOnly = e.target.checked;
+    aplicarFiltrosEOrdenacao();
+  });
+  document.getElementById('limparFiltros').addEventListener('click', () => {
+    filtrosCategorias.clear();
+    filtrosDificuldade.clear();
+    equipamentoOnly = false;
+    document.querySelectorAll('.cat-filter').forEach(cb => cb.checked = false);
+    document.querySelectorAll('#dificuldadeFilterList input').forEach(cb => cb.checked = false);
+    document.getElementById('equipamentoFilter').checked = false;
+    aplicarFiltrosEOrdenacao();
+  });
+  document.getElementById('searchInput').addEventListener('input', () => aplicarFiltrosEOrdenacao());
+  document.getElementById('sortSelect').addEventListener('change', () => aplicarFiltrosEOrdenacao());
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentTab = tab.dataset.tab;
+      aplicarFiltrosEOrdenacao();
+    });
+  });
+
+  document.getElementById('closeCalcModal')?.addEventListener('click', () => document.getElementById('calcModal').style.display = 'none');
+  window.addEventListener('click', (e) => { if (e.target === document.getElementById('calcModal')) document.getElementById('calcModal').style.display = 'none'; });
+
+  carregarServicos();
+</script>
+</body>
+</html>

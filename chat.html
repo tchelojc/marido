@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat · Marido de Aluguel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="integracao.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6fa;
+      color: #1a2634;
+      padding: 24px;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    .chat-header {
+      background: white;
+      border-radius: 24px 24px 0 0;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      border-bottom: 1px solid #eef2ff;
+    }
+    .chat-header h2 { font-size: 1.2rem; }
+    .status-badge {
+      background: #eef2ff;
+      padding: 4px 12px;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .messages-area {
+      background: white;
+      height: 400px;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .message {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+    .message.client {
+      background: #2b4c7c;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    .message.profissional {
+      background: #f1f5f9;
+      color: #1a2634;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .message.sistema {
+      background: #eef2ff;
+      color: #5a6e8a;
+      align-self: center;
+      font-style: italic;
+      font-size: 0.75rem;
+      max-width: 90%;
+    }
+    .message small {
+      display: block;
+      font-size: 0.65rem;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+    .chat-input {
+      background: white;
+      border-radius: 0 0 24px 24px;
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      border-top: 1px solid #eef2ff;
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 40px;
+      border: 1px solid #cbd5e1;
+      font-family: inherit;
+    }
+    .chat-input button {
+      background: #2b4c7c;
+      color: white;
+      border: none;
+      padding: 0 20px;
+      border-radius: 40px;
+      cursor: pointer;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+      padding: 0 20px 20px 20px;
+      background: white;
+      border-radius: 0 0 24px 24px;
+    }
+    .btn-action {
+      background: #eef2ff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .btn-primary { background: #2b4c7c; color: white; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-warning { background: #ffc107; color: #1a2634; }
+    .btn-secondary { background: #6c757d; color: white; }
+    .btn-danger { background: #dc3545; color: white; }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 16px;
+      color: #2b4c7c;
+      text-decoration: none;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 24px;
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+    }
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 40px;
+      border: 1px solid #ccc;
+      margin: 12px 0;
+    }
+    .modal-content button {
+      margin-top: 8px;
+    }
+    #toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+      background: #155724; color: white; padding: 14px 22px; border-radius: 40px;
+      font-size: 0.9rem; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      display: flex; align-items: center; gap: 10px;
+      opacity: 0; transform: translateY(16px); transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.toast-error { background: #721c24; }
+    .no-actions {
+      text-align: center;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 20px;
+      color: #5a6e8a;
+      font-size: 0.8rem;
+    }
+    .valor-detalhe {
+      font-size: 0.75rem;
+      color: #5a6e8a;
+      margin-top: 4px;
+    }
+    hr { margin: 12px 0; }
+  </style>
+</head>
+<body>
+<div id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+<div class="container">
+  <a href="javascript:history.back()" class="back-link"><i class="fas fa-arrow-left"></i> Voltar</a>
+  <div id="chatContainer"></div>
+</div>
+
+<!-- Modal para inserir senha -->
+<div id="senhaModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Digite a senha</h3>
+    <input type="text" id="senhaInput" placeholder="Senha recebida...">
+    <button id="confirmarSenhaBtn" class="btn-action btn-primary">Confirmar</button>
+    <button id="cancelarSenhaBtn" class="btn-action btn-secondary">Cancelar</button>
+  </div>
+</div>
+
+<script>
+  // ========== TOAST ==========
+  function toast(msg, tipo = 'success') {
+    const el = document.getElementById('toast');
+    if (!el) { alert(msg); return; }
+    const txt = document.getElementById('toastMsg');
+    txt.textContent = msg;
+    el.className = `show${tipo === 'error' ? ' toast-error' : ''}`;
+    el.querySelector('i').className = tipo === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.className = ''; }, 3200);
+  }
+
+  // ========== CÁLCULO DA TAXA ADMINISTRATIVA (conforme regulamento) ==========
+  function calcularTaxaAdministrativa(valorServico) {
+    if (valorServico <= 99) return 10;
+    if (valorServico <= 599) return 20;
+    if (valorServico <= 999) return 40;
+    if (valorServico <= 1299) return 50;
+    if (valorServico <= 1599) return 70;
+    if (valorServico <= 1999) return 90;
+    return 100;
+  }
+
+  // ========== SESSÃO E SEGURANÇA ==========
+  const sess = obterSessao();
+  if (!sess) {
+    alert('Faça login para acessar o chat.');
+    window.location.href = 'marido_aluguel.html';
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const chatId = urlParams.get('chat');
+  if (!chatId) {
+    document.getElementById('chatContainer').innerHTML = '<div class="chat-header" style="border-radius:24px;padding:40px;text-align:center;">❌ Chat não identificado.</div>';
+    throw new Error('Chat ID não informado');
+  }
+
+  // ========== CARREGAMENTO ASSÍNCRONO DOS CHATS ==========
+  let chat = null;
+  let chatIndex = -1;
+  const usuarioId = sess.usuarioId;
+  const tipoUsuario = sess.tipo;
+  const isCliente = tipoUsuario === 'cliente';
+  const isProfissional = tipoUsuario === 'profissional';
+
+  async function carregarChat() {
+    const chats = await obterChats();
+    chatIndex = chats.findIndex(c => c.id === chatId);
+    if (chatIndex === -1) {
+      document.getElementById('chatContainer').innerHTML = '<div class="chat-header" style="border-radius:24px;padding:40px;text-align:center;">❌ Conversa não encontrada.</div>';
+      throw new Error('Chat não encontrado');
+    }
+    chat = chats[chatIndex];
+
+    if ((isCliente && chat.clienteId !== usuarioId) || (isProfissional && chat.profissionalId !== usuarioId)) {
+      document.getElementById('chatContainer').innerHTML = '<div class="chat-header" style="border-radius:24px;padding:40px;text-align:center;">⛔ Você não tem permissão para acessar este chat.</div>';
+      throw new Error('Acesso negado');
+    }
+
+    inicializarInterface();
+    atualizarChatPeriodicamente();
+  }
+
+  async function persistChat() {
+    await salvarChat(chat);
+  }
+
+  // ========== GERAR SENHAS ==========
+  async function gerarEExibirSenha(tipo) {
+    try {
+      let tokenData;
+      if (tipo === 'inicio') {
+        tokenData = await gerarTokenInicio(chat.id, chat.clienteId, chat.profissionalId);
+      } else if (tipo === 'fim') {
+        tokenData = await gerarTokenFim(chat.id, chat.clienteId);
+      } else return;
+      const senha = tokenData.token;
+      const mensagem = `🔐 ${tipo === 'inicio' ? 'Senha para iniciar o serviço' : 'Senha para finalizar o serviço'}: <strong>${senha}</strong> (válida por 24 horas)`;
+      chat.mensagens.push({ autor: 'sistema', texto: mensagem, data: new Date().toLocaleString('pt-BR') });
+      await persistChat();
+      atualizarMensagens();
+      toast(`Senha ${tipo === 'inicio' ? 'de início' : 'de conclusão'} gerada com sucesso!`);
+    } catch (err) {
+      toast('Erro ao gerar senha: ' + err.message, 'error');
+    }
+  }
+
+  let acaoCallback = null;
+  function abrirModal(titulo, callback) {
+    const modal = document.getElementById('senhaModal');
+    document.getElementById('modalTitle').innerText = titulo;
+    document.getElementById('senhaInput').value = '';
+    acaoCallback = callback;
+    modal.style.display = 'flex';
+  }
+  function fecharModal() {
+    document.getElementById('senhaModal').style.display = 'none';
+    acaoCallback = null;
+  }
+  document.getElementById('confirmarSenhaBtn').onclick = async () => {
+    const senha = document.getElementById('senhaInput').value.trim();
+    if (acaoCallback) await acaoCallback(senha);
+    fecharModal();
+  };
+  document.getElementById('cancelarSenhaBtn').onclick = fecharModal;
+
+  async function iniciarServicoComSenha(senha) {
+    try {
+      await validarTokenInicio(senha, chat.id, chat.profissionalId);
+      if (chat.statusServico !== 'pago_parcial') {
+        toast('Status inválido para iniciar serviço.', 'error');
+        return;
+      }
+      chat.statusServico = 'em_andamento';
+      chat.mensagens.push({ autor: 'sistema', texto: `🔧 Serviço iniciado pelo profissional.`, data: new Date().toLocaleString('pt-BR') });
+      await persistChat();
+      atualizarMensagens();
+      atualizarBotoes();
+      atualizarStatusHeader();
+      toast('Serviço iniciado com sucesso!');
+    } catch (err) {
+      toast('Senha inválida ou erro: ' + err.message, 'error');
+    }
+  }
+
+  async function concluirServicoComSenha(senha) {
+    try {
+      await validarTokenFim(senha, chat.id, chat.profissionalId);
+      if (chat.statusServico !== 'em_andamento') {
+        toast('Status inválido para concluir serviço.', 'error');
+        return;
+      }
+      chat.statusServico = 'aguardando_pagamento_final';
+      chat.mensagens.push({ autor: 'sistema', texto: `✅ Cliente confirmou conclusão do serviço. Aguardando pagamento final de 50% (R$ ${(chat.valorCombinado * 0.5).toFixed(2)}).`, data: new Date().toLocaleString('pt-BR') });
+      await persistChat();
+      atualizarMensagens();
+      atualizarBotoes();
+      atualizarStatusHeader();
+      toast('Serviço concluído! Aguardando pagamento final.');
+    } catch (err) {
+      toast('Senha inválida ou erro: ' + err.message, 'error');
+    }
+  }
+
+  // ========== PAGAMENTO PARCIAL (50% + TAXA ADMINISTRATIVA) ==========
+  async function pagarParcial() {
+    const valorServico = chat.valorCombinado;
+    const valorParcial = valorServico * 0.5;
+    const taxaAdm = calcularTaxaAdministrativa(valorServico);
+    const totalDebitar = valorParcial + taxaAdm;
+    
+    try {
+      const saldoCliente = await getTokenBalance(chat.clienteId, "cliente");
+      if (saldoCliente >= totalDebitar) {
+        // Chama o backend para debitar o valor total (50% + taxa)
+        await callBackend("pagar_parcial_com_taxa", {
+          clienteId: chat.clienteId,
+          profissionalId: chat.profissionalId,
+          valorServico: valorServico,
+          valorParcial: valorParcial,
+          taxaAdm: taxaAdm,
+          chatId: chat.id
+        });
+        
+        chat.statusServico = "pago_parcial";
+        chat.taxaAdministrativa = taxaAdm;
+        chat.valorParcialPago = valorParcial;
+        
+        chat.mensagens.push({
+          autor: "sistema",
+          texto: `💸 Pagamento de 50% (R$ ${valorParcial.toFixed(2)}) + Taxa administrativa (R$ ${taxaAdm.toFixed(2)}) = TOTAL DEBITADO: R$ ${totalDebitar.toFixed(2)}. O serviço pode ser iniciado pelo profissional.`,
+          data: new Date().toLocaleString('pt-BR')
+        });
+        await persistChat();
+        atualizarMensagens();
+        atualizarBotoes();
+        atualizarStatusHeader();
+        toast(`Pagamento parcial realizado! Total debitado: R$ ${totalDebitar.toFixed(2)}`);
+      } else {
+        const precisa = totalDebitar - saldoCliente;
+        if (confirm(`⚠️ Saldo insuficiente.\n\nNecessário: R$ ${totalDebitar.toFixed(2)}\nSaldo atual: R$ ${saldoCliente.toFixed(2)}\nFaltam: R$ ${precisa.toFixed(2)}\n\nDeseja recarregar TOKEN-ALMA?`)) {
+          window.location.href = `pagamento.html?cliente=${chat.clienteId}&nome=${encodeURIComponent(chat.clienteNome)}&email=${encodeURIComponent(sess.email)}&valor=${Math.ceil(precisa)}`;
+        }
+      }
+    } catch (err) {
+      toast("Erro no pagamento: " + err.message, "error");
+    }
+  }
+
+  // ========== PAGAMENTO FINAL (50% restante, sem taxa) ==========
+  async function pagarFinal() {
+    const valorFinal = chat.valorCombinado * 0.5;
+    try {
+      const saldoCliente = await getTokenBalance(chat.clienteId, "cliente");
+      if (saldoCliente >= valorFinal) {
+        await callBackend("pagar_final", {
+          clienteId: chat.clienteId,
+          profissionalId: chat.profissionalId,
+          valor: valorFinal,
+          chatId: chat.id
+        });
+        
+        chat.statusServico = "concluido";
+        chat.dataConclusao = new Date().toISOString();
+        chat.mensagens.push({
+          autor: "sistema",
+          texto: `💸 Pagamento final de R$ ${valorFinal.toFixed(2)} realizado! Serviço concluído com sucesso. Obrigado por utilizar a plataforma Marido de Aluguel.`,
+          data: new Date().toLocaleString('pt-BR')
+        });
+        await persistChat();
+        atualizarMensagens();
+        atualizarBotoes();
+        atualizarStatusHeader();
+        toast("Pagamento final realizado! Serviço concluído.");
+        
+        // Redireciona após 3 segundos
+        setTimeout(() => {
+          if (isCliente) window.location.href = 'cliente_dashboard.html';
+          else window.location.href = 'profissional_dashboard.html';
+        }, 3000);
+      } else {
+        const precisa = valorFinal - saldoCliente;
+        if (confirm(`⚠️ Saldo insuficiente para o pagamento final.\n\nNecessário: R$ ${valorFinal.toFixed(2)}\nSaldo atual: R$ ${saldoCliente.toFixed(2)}\nFaltam: R$ ${precisa.toFixed(2)}\n\nDeseja recarregar TOKEN-ALMA?`)) {
+          window.location.href = `pagamento.html?cliente=${chat.clienteId}&nome=${encodeURIComponent(chat.clienteNome)}&email=${encodeURIComponent(sess.email)}&valor=${Math.ceil(precisa)}`;
+        }
+      }
+    } catch (err) {
+      toast("Erro no pagamento final: " + err.message, "error");
+    }
+  }
+
+  // ========== PROFISSIONAL ACEITA PROPOSTA ==========
+  function aceitarProposta() {
+    let novoValor = prompt('Digite o valor total acordado para o serviço (R$):', chat.valorCombinado?.toFixed(2) || '');
+    if (novoValor && !isNaN(parseFloat(novoValor))) {
+      const valor = parseFloat(novoValor);
+      const taxa = calcularTaxaAdministrativa(valor);
+      chat.valorCombinado = valor;
+      chat.statusServico = 'aguardando_pagamento_parcial';
+      chat.mensagens.push({ 
+        autor: 'sistema', 
+        texto: `✅ Profissional aceitou a proposta. Valor total combinado: R$ ${chat.valorCombinado.toFixed(2)}.\n📊 Taxa administrativa: R$ ${taxa.toFixed(2)}\n💰 Valor a pagar agora (50% + taxa): R$ ${(valor * 0.5 + taxa).toFixed(2)}\n💵 Saldo restante (50%): R$ ${(valor * 0.5).toFixed(2)}`, 
+        data: new Date().toLocaleString('pt-BR') 
+      });
+      persistChat().then(() => {
+        atualizarMensagens();
+        atualizarBotoes();
+        atualizarStatusHeader();
+      });
+    } else toast('Valor inválido.', 'error');
+  }
+
+  // ========== RENDERIZAÇÃO ==========
+  function atualizarMensagens() {
+    const msgArea = document.getElementById('messagesArea');
+    if (!msgArea) return;
+    msgArea.innerHTML = chat.mensagens.map(msg => {
+      let classe = 'sistema';
+      if (msg.autor !== 'sistema') {
+        const isAutorCliente = (msg.autor === chat.clienteNome);
+        if ((isCliente && isAutorCliente) || (!isCliente && !isAutorCliente)) {
+          classe = 'client';
+        } else {
+          classe = 'profissional';
+        }
+      }
+      return `
+        <div class="message ${classe}">
+          <div>${escapeHtml(msg.texto)}</div>
+          <small>${escapeHtml(msg.data)}</small>
+        </div>
+      `;
+    }).join('');
+    msgArea.scrollTop = msgArea.scrollHeight;
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  function atualizarBotoes() {
+    const container = document.getElementById('actionButtons');
+    if (!container) return;
+    let html = '';
+    const taxa = chat.valorCombinado ? calcularTaxaAdministrativa(chat.valorCombinado) : 0;
+    const valorParcialComTaxa = chat.valorCombinado ? (chat.valorCombinado * 0.5 + taxa) : 0;
+
+    if (isProfissional && chat.statusServico === 'negociacao') {
+      html += `<button class="btn-action btn-primary" id="aceitarPropostaBtn">✅ Aceitar proposta e definir valor</button>`;
+    }
+    if (isCliente && chat.statusServico === 'aguardando_pagamento_parcial') {
+      html += `<div style="width:100%; margin-bottom:8px;" class="valor-detalhe">
+        📊 Detalhes do pagamento:<br>
+        • Valor do serviço: R$ ${chat.valorCombinado.toFixed(2)}<br>
+        • Taxa administrativa: R$ ${taxa.toFixed(2)}<br>
+        • 50% do serviço: R$ ${(chat.valorCombinado * 0.5).toFixed(2)}<br>
+        • <strong>Total a debitar agora: R$ ${valorParcialComTaxa.toFixed(2)}</strong>
+      </div>`;
+      html += `<button class="btn-action btn-success" id="pagarParcialBtn">💰 Pagar 50% + Taxa (R$ ${valorParcialComTaxa.toFixed(2)})</button>`;
+    }
+    if (isProfissional && chat.statusServico === 'pago_parcial') {
+      html += `<button class="btn-action btn-primary" id="mostrarSenhaInicioBtn">🔑 Gerar senha de início</button>`;
+      html += `<button class="btn-action btn-secondary" id="validarInicioBtn">🔐 Inserir senha para iniciar</button>`;
+    }
+    if (isCliente && chat.statusServico === 'em_andamento') {
+      html += `<button class="btn-action btn-warning" id="mostrarSenhaFimBtn">🔑 Gerar senha de conclusão</button>`;
+      html += `<button class="btn-action btn-secondary" id="validarFimBtn">🔐 Inserir senha para concluir</button>`;
+    }
+    if (isCliente && chat.statusServico === 'aguardando_pagamento_final') {
+      html += `<div style="width:100%; margin-bottom:8px;" class="valor-detalhe">
+        📊 Pagamento final (50% restante): <strong>R$ ${(chat.valorCombinado * 0.5).toFixed(2)}</strong>
+      </div>`;
+      html += `<button class="btn-action btn-success" id="pagarFinalBtn">💰 Pagar 50% restante (R$ ${(chat.valorCombinado * 0.5).toFixed(2)})</button>`;
+    }
+    if (chat.statusServico === 'concluido') {
+      html += `<button class="btn-action" disabled>✅ Serviço finalizado com sucesso</button>`;
+    }
+
+    if (html === '') {
+      html = `<div class="no-actions">ℹ️ Nenhuma ação disponível no momento. Aguarde a resposta do ${isCliente ? 'profissional' : 'cliente'}.</div>`;
+    }
+    container.innerHTML = html;
+
+    document.getElementById('aceitarPropostaBtn')?.addEventListener('click', aceitarProposta);
+    document.getElementById('pagarParcialBtn')?.addEventListener('click', pagarParcial);
+    document.getElementById('mostrarSenhaInicioBtn')?.addEventListener('click', () => gerarEExibirSenha('inicio'));
+    document.getElementById('validarInicioBtn')?.addEventListener('click', () => abrirModal('Digite a senha de início fornecida pelo cliente', iniciarServicoComSenha));
+    document.getElementById('mostrarSenhaFimBtn')?.addEventListener('click', () => gerarEExibirSenha('fim'));
+    document.getElementById('validarFimBtn')?.addEventListener('click', () => abrirModal('Digite a senha de conclusão fornecida pelo profissional', concluirServicoComSenha));
+    document.getElementById('pagarFinalBtn')?.addEventListener('click', pagarFinal);
+  }
+
+  function atualizarStatusHeader() {
+    const statusMap = {
+      negociacao: 'Negociação',
+      aguardando_pagamento_parcial: 'Aguardando pagamento (50% + taxa)',
+      pago_parcial: 'Pagamento parcial realizado - Aguardando início',
+      em_andamento: 'Serviço em andamento',
+      aguardando_pagamento_final: 'Aguardando pagamento final (50%)',
+      concluido: 'Concluído'
+    };
+    const statusLabel = statusMap[chat.statusServico] || chat.statusServico;
+    const badge = document.getElementById('statusBadge');
+    if (badge) badge.innerText = statusLabel;
+    const valorSpan = document.querySelector('#chatContainer .chat-header .small-text');
+    if (valorSpan) {
+      const taxa = chat.valorCombinado ? calcularTaxaAdministrativa(chat.valorCombinado) : 0;
+      valorSpan.innerHTML = `Serviço: ${escapeHtml(chat.servicoNome)} | Valor: R$ ${chat.valorCombinado?.toFixed(2) || 'a definir'} | Taxa: R$ ${taxa.toFixed(2)}`;
+    }
+  }
+
+  function inicializarInterface() {
+    const container = document.getElementById('chatContainer');
+    const statusMap = {
+      negociacao: 'Negociação',
+      aguardando_pagamento_parcial: 'Aguardando pagamento (50% + taxa)',
+      pago_parcial: 'Pagamento parcial realizado - Aguardando início',
+      em_andamento: 'Serviço em andamento',
+      aguardando_pagamento_final: 'Aguardando pagamento final (50%)',
+      concluido: 'Concluído'
+    };
+    const statusLabel = statusMap[chat.statusServico] || chat.statusServico;
+    container.innerHTML = `
+      <div class="chat-header">
+        <div>
+          <h2><i class="fas fa-comments"></i> Conversa com ${escapeHtml(isCliente ? chat.profissionalNome : chat.clienteNome)}</h2>
+          <div><span class="status-badge" id="statusBadge">${escapeHtml(statusLabel)}</span></div>
+          <div class="small-text" id="servicoInfo">Serviço: ${escapeHtml(chat.servicoNome)} | Valor: R$ ${chat.valorCombinado?.toFixed(2) || 'a definir'}</div>
+        </div>
+      </div>
+      <div class="messages-area" id="messagesArea"></div>
+      <div class="chat-input">
+        <input type="text" id="msgInput" placeholder="Digite sua mensagem..." autocomplete="off">
+        <button id="sendBtn"><i class="fas fa-paper-plane"></i> Enviar</button>
+      </div>
+      <div class="action-buttons" id="actionButtons"></div>
+    `;
+    atualizarMensagens();
+    atualizarBotoes();
+
+    const sendBtn = document.getElementById('sendBtn');
+    const msgInput = document.getElementById('msgInput');
+    if (sendBtn && msgInput) {
+      sendBtn.onclick = async () => {
+        const texto = msgInput.value.trim();
+        if (!texto) return;
+        const autor = isCliente ? chat.clienteNome : chat.profissionalNome;
+        chat.mensagens.push({ autor, texto, data: new Date().toLocaleString('pt-BR') });
+        await persistChat();
+        atualizarMensagens();
+        msgInput.value = '';
+        msgInput.focus();
+      };
+      msgInput.onkeypress = (e) => { if (e.key === 'Enter') sendBtn.click(); };
+    }
+  }
+
+  let atualizacaoInterval = null;
+  function atualizarChatPeriodicamente() {
+    if (atualizacaoInterval) clearInterval(atualizacaoInterval);
+    atualizacaoInterval = setInterval(async () => {
+      const novoChats = await obterChats();
+      const novoChat = novoChats.find(c => c.id === chatId);
+      if (novoChat) {
+        const oldStatus = chat?.statusServico;
+        chat = novoChat;
+        chatIndex = novoChats.findIndex(c => c.id === chatId);
+        atualizarMensagens();
+        atualizarBotoes();
+        atualizarStatusHeader();
+        if (oldStatus !== chat.statusServico && chat.statusServico === 'concluido') {
+          toast('✅ Serviço concluído! Redirecionando...');
+          setTimeout(() => {
+            if (isCliente) window.location.href = 'cliente_dashboard.html';
+            else window.location.href = 'profissional_dashboard.html';
+          }, 2000);
+        }
+      }
+    }, 3000);
+  }
+
+  (async () => {
+    await carregarChat();
+  })();
+</script>
+</body>
+</html>

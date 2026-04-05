@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profissionais · Marido de Aluguel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="dados.js"></script>
+  <script src="profissionais.js"></script>
+  <script src="integracao.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6fa;
+      color: #1a2634;
+      padding: 24px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      background: white;
+      border-radius: 24px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #1e3c72, #2b4c7c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .back-btn {
+      background: #eef2ff;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 40px;
+      cursor: pointer;
+      font-weight: 500;
+      text-decoration: none;
+      color: #1e3c72;
+    }
+    .service-title {
+      background: white;
+      border-radius: 20px;
+      padding: 16px 24px;
+      margin-bottom: 24px;
+      border-left: 5px solid #2b4c7c;
+    }
+    .profissionais-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .card-profissional {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      transition: 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .card-profissional:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .card-content {
+      padding: 20px;
+    }
+    .avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 16px;
+    }
+    .flex-row {
+      display: flex;
+      align-items: center;
+    }
+    .nome {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .avaliacao {
+      color: #f5b042;
+      margin-top: 4px;
+    }
+    .descricao {
+      margin: 12px 0;
+      font-size: 0.85rem;
+      color: #4a5b7a;
+    }
+    .contato {
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 0.8rem;
+    }
+    .btn-contatar {
+      background: #2b4c7c;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 10px;
+      border-radius: 40px;
+      margin-top: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .btn-contatar:hover {
+      background: #1e3c72;
+    }
+    .no-results {
+      text-align: center;
+      padding: 50px;
+      background: white;
+      border-radius: 24px;
+    }
+    .small-text {
+      font-size: 0.75rem;
+      color: #5a6e8a;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 1.1rem;
+      color: #2b4c7c;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">🛠️ Marido de Aluguel</div>
+    <a href="marido_aluguel.html" class="back-btn"><i class="fas fa-arrow-left"></i> Voltar para serviços</a>
+  </div>
+
+  <div id="serviceInfo" class="service-title">
+    <h2 id="servicoNome">Carregando...</h2>
+    <p id="servicoCategoria" class="small-text"></p>
+  </div>
+
+  <div id="profissionaisContainer" class="profissionais-grid">
+    <div class="loading"><i class="fas fa-spinner fa-pulse"></i> Carregando profissionais...</div>
+  </div>
+</div>
+
+<script>
+  // ========== FUNÇÃO AUXILIAR ESCAPE HTML ==========
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+      return c;
+    });
+  }
+
+  // ========== OBTÉM PARÂMETRO DA URL ==========
+  const urlParams = new URLSearchParams(window.location.search);
+  const servicoId = urlParams.get('id');
+
+  // ========== FUNÇÃO PRINCIPAL ASSÍNCRONA ==========
+  (async () => {
+    const container = document.getElementById('profissionaisContainer');
+    const nomeServicoEl = document.getElementById('servicoNome');
+    const categoriaServicoEl = document.getElementById('servicoCategoria');
+
+    // 1. Carrega informações do serviço (síncrono, dados locais)
+    const servicoEncontrado = obterServicoPorId(servicoId);
+    if (servicoEncontrado) {
+      nomeServicoEl.innerText = servicoEncontrado.nome;
+      const precoUnitario = servicoEncontrado.preco_unitario?.toFixed(2) || (servicoEncontrado.diaria_base / servicoEncontrado.producao_dia).toFixed(2);
+      categoriaServicoEl.innerHTML = `<i class="fas fa-tag"></i> Categoria: ${escapeHtml(servicoEncontrado.categoria)} · Preço médio: R$ ${precoUnitario} / ${escapeHtml(servicoEncontrado.unidade)}`;
+    } else {
+      nomeServicoEl.innerText = 'Serviço não encontrado';
+      categoriaServicoEl.innerHTML = '';
+    }
+
+    // 2. Carrega profissionais (assíncrono, via integracao.js)
+    try {
+      const todosProfissionais = await obterTodosProfissionais();
+      // Filtra profissionais que oferecem este serviço
+      const profissionaisFiltrados = todosProfissionais.filter(prof =>
+        prof.servicos_ids && Array.isArray(prof.servicos_ids) && prof.servicos_ids.includes(servicoId)
+      );
+
+      if (profissionaisFiltrados.length === 0) {
+        container.innerHTML = `<div class="no-results">
+          <i class="fas fa-user-slash" style="font-size: 3rem; color:#aaa;"></i>
+          <p style="margin-top: 16px;">Nenhum profissional cadastrado para este serviço ainda.<br>Volte em breve ou cadastre-se.</p>
+        </div>`;
+        return;
+      }
+
+      // Renderiza cards
+      container.innerHTML = profissionaisFiltrados.map(prof => {
+        const avatar = prof.avatar || `https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(prof.nome)}`;
+        const avaliacao = prof.avaliacao || 0;
+        const totalAvaliacoes = prof.total_avaliacoes || 0;
+        const estrelas = '★'.repeat(Math.floor(avaliacao)) + (avaliacao % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.floor(avaliacao) - (avaliacao % 1 >= 0.5 ? 1 : 0));
+        return `
+          <div class="card-profissional">
+            <div class="card-content">
+              <div class="flex-row">
+                <img src="${escapeHtml(avatar)}" alt="${escapeHtml(prof.nome)}" class="avatar" onerror="this.src='https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(prof.nome)}'">
+                <div>
+                  <div class="nome">${escapeHtml(prof.nome)}</div>
+                  <div class="avaliacao">${estrelas} (${totalAvaliacoes})</div>
+                </div>
+              </div>
+              <div class="descricao">${escapeHtml(prof.descricao || 'Profissional sem descrição.')}</div>
+              <div class="contato">
+                <i class="fas fa-phone-alt"></i> ${escapeHtml(prof.telefone || 'Não informado')}<br>
+                <i class="fas fa-envelope"></i> ${escapeHtml(prof.email)}
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <button class="btn-contatar" onclick="alert('Contato: ${escapeHtml(prof.telefone || '')} / ${escapeHtml(prof.email)}')"><i class="fas fa-comment"></i> Falar com profissional</button>
+                <a href="perfil_publico.html?id=${encodeURIComponent(prof.id)}" class="btn-contatar" style="background: #4a5b7a; text-align: center; text-decoration: none;"><i class="fas fa-user-circle"></i> Ver perfil completo</a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error('Erro ao carregar profissionais:', err);
+      container.innerHTML = `<div class="no-results">
+        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color:#e74c3c;"></i>
+        <p style="margin-top: 16px;">Erro ao carregar profissionais. Tente novamente mais tarde.</p>
+        <small>${escapeHtml(err.message)}</small>
+      </div>`;
+    }
+  })();
+</script>
+</body>
+</html>

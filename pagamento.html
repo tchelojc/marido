@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marido de Aluguel · Recarga TOKEN-ALMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="integracao.js"></script>
+  <style>
+    :root { --primary: #2b4c7c; --secondary: #28a745; --bg: #f4f6fa; --card-bg: white; --text: #1a2634; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 28px;
+      padding: 32px;
+      max-width: 580px;
+      width: 100%;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .step {
+      width: 40px;
+      height: 4px;
+      background: #e2e8f0;
+      border-radius: 2px;
+    }
+    .step.active {
+      background: var(--primary);
+    }
+    .resumo {
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .resumo-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+    .resumo-label {
+      color: #5a6e8a;
+    }
+    .resumo-value {
+      font-weight: 500;
+      text-align: right;
+    }
+    .valor-container {
+      text-align: center;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .valor-label {
+      font-size: 0.8rem;
+      color: #5a6e8a;
+    }
+    .valor-total {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 4px;
+    }
+    .pix-box {
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .pix-title {
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--primary);
+    }
+    .qr-placeholder {
+      margin-bottom: 16px;
+    }
+    .chave-container {
+      background: white;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      border: 1px solid #e2e8f0;
+      transition: 0.2s;
+    }
+    .chave-container:hover {
+      background: #eef2ff;
+    }
+    .pix-chave {
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: var(--primary);
+      word-break: break-all;
+    }
+    .btn-copy {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+    .form-title {
+      font-weight: 600;
+      margin-bottom: 16px;
+      font-size: 1rem;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: #5a6e8a;
+      margin-bottom: 6px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid #cbd5e1;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(43,76,124,0.1);
+    }
+    button[type="submit"] {
+      background: var(--secondary);
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 14px;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-top: 8px;
+    }
+    button[type="submit"]:hover {
+      background: #218838;
+      transform: translateY(-1px);
+    }
+    button[type="submit"]:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .msg {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 16px;
+      font-size: 0.85rem;
+      display: none;
+      text-align: center;
+    }
+    .msg.success {
+      display: block;
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .msg.error {
+      display: block;
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    /* TERMOS E REGULAMENTO */
+    .termos-container {
+      margin: 20px 0 16px 0;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+    }
+    .checkbox-termo {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+    .checkbox-termo input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .checkbox-termo span {
+      cursor: pointer;
+    }
+    .checkbox-termo a {
+      color: #2b4c7c;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .checkbox-termo a:hover {
+      text-decoration: underline;
+    }
+    .termos-error {
+      color: #e74c3c;
+      font-size: 0.7rem;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    /* FOOTER */
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 0.7rem;
+      color: #5a6e8a;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 20px;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .footer-links a {
+      color: #2b4c7c;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+    .footer strong {
+      color: var(--primary);
+    }
+    
+    /* MODAL DE POLÍTICA DE PRIVACIDADE */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      max-width: 500px;
+      width: 90%;
+      border-radius: 32px;
+      padding: 28px;
+      position: relative;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .close-modal {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      font-size: 1.6rem;
+      cursor: pointer;
+      color: #5a6e8a;
+    }
+    .close-modal:hover { color: #1a2634; }
+    .btn-modal {
+      background: #2b4c7c;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 40px;
+      width: 100%;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>🪙 Recarga TOKEN-ALMA</h1>
+  <div class="step-indicator"><div class="step"></div><div class="step active"></div><div class="step"></div></div>
+
+  <div class="resumo">
+    <div class="resumo-item"><span class="resumo-label">Cliente:</span><span class="resumo-value" id="nome">...</span></div>
+    <div class="resumo-item"><span class="resumo-label">E-mail:</span><span class="resumo-value" id="email">...</span></div>
+    <div class="resumo-item"><span class="resumo-label">Recarga:</span><span class="resumo-value">TOKEN-ALMA (1 ALMA = R$ 1,00)</span></div>
+    <div class="resumo-item"><span class="resumo-label">Quantidade:</span><span class="resumo-value" id="detalhes">...</span></div>
+    <div class="valor-container"><div class="valor-label">Total a Pagar</div><div class="valor-total" id="valor">R$ 0,00</div></div>
+  </div>
+
+  <div class="pix-box">
+    <div class="pix-title">⚡ PAGAMENTO VIA PIX (Transferência)</div>
+    <div class="qr-placeholder" id="qrCode"></div>
+    <div class="chave-container" onclick="copyPix()">
+      <div><span style="display:block; font-size:0.65rem;">Clique para copiar a chave</span><span class="pix-chave" id="chavePix">f1461640-6c03-4298-8c28-f1119c968612</span></div>
+      <button class="btn-copy" id="btnCopy">Copiar</button>
+    </div>
+    <p class="small-text" style="margin-top: 12px; font-size:0.7rem;">⚠️ Após o PIX, preencha o comprovante abaixo para creditarmos os ALMA na sua carteira.</p>
+  </div>
+
+  <div class="form-title">🛡️ Confirmação de Pagamento</div>
+  <form id="comprovanteForm">
+    <div class="form-group">
+      <label>ID da Transação (encontrado no comprovante do seu banco)</label>
+      <input type="text" name="transaction_id" placeholder="Ex: E12345678901234567890" required>
+    </div>
+    <div class="form-group">
+      <label>Valor Pago (R$)</label>
+      <input type="number" step="0.01" name="valor_pago" id="inputValorPago" required>
+    </div>
+    
+    <!-- TERMOS E REGULAMENTO (OBRIGATÓRIO) -->
+    <div class="termos-container">
+      <label class="checkbox-termo">
+        <input type="checkbox" id="aceitoTermos">
+        <span>Li e concordo com o <a href="regulamento.html" target="_blank" rel="noopener noreferrer">Regulamento da Plataforma</a> e com a <a href="#" id="openPrivacyLink">Política de Privacidade</a>.</span>
+      </label>
+      <div id="termosError" class="termos-error" style="display: none;">
+        <i class="fas fa-exclamation-circle"></i> Você precisa aceitar os termos para realizar a recarga.
+      </div>
+    </div>
+    
+    <button type="submit" id="btnSubmit">ENVIAR COMPROVANTE</button>
+  </form>
+  <div id="msg" class="msg"></div>
+  
+  <!-- FOOTER COM LINKS -->
+  <div class="footer">
+    <div class="footer-links">
+      <a href="regulamento.html" target="_blank" rel="noopener noreferrer">
+        <i class="fas fa-file-alt"></i> Regulamento
+      </a>
+      <a href="#" id="openPrivacyFooter">
+        <i class="fas fa-lock"></i> Política de Privacidade
+      </a>
+      <a href="mailto:almafluxo@almafluxo.uk">
+        <i class="fas fa-envelope"></i> Contato
+      </a>
+    </div>
+    <div>
+      A recarga é manual e será creditada após confirmação.<br>
+      <strong>Tempo médio:</strong> 15 a 60 minutos.<br>
+      💡 <strong>1 ALMA = R$ 1,00</strong> – Use para pagar serviços.
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE POLÍTICA DE PRIVACIDADE (RESUMO) -->
+<div id="privacyModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closePrivacyModal">&times;</span>
+    <h3><i class="fas fa-lock"></i> Política de Privacidade (Resumo)</h3>
+    <div style="margin: 20px 0; font-size: 0.85rem; line-height: 1.6;">
+      <p><strong>Coleta de dados:</strong> Nome, e-mail, telefone, endereço, fotos, histórico de serviços e dados de pagamento.</p>
+      <p><strong>Uso:</strong> Exclusivamente para viabilizar a intermediação entre cliente e profissional e processar recargas.</p>
+      <p><strong>Compartilhamento:</strong> Seus dados são compartilhados apenas com o profissional que você contratar e com sistemas de pagamento (PIX).</p>
+      <p><strong>Direitos (LGPD):</strong> Você pode solicitar correção, exclusão ou portabilidade dos seus dados pelo e-mail <strong>tchelojc@gmail.com</strong>.</p>
+      <p><strong>Armazenamento:</strong> Por até 6 meses após o término da conta para fins legais.</p>
+      <hr style="margin: 16px 0;">
+      <p class="small-text">Para a versão completa, consulte o <a href="regulamento.html" target="_blank">Regulamento completo</a> (Seção 12).</p>
+    </div>
+    <button class="btn-modal" id="closePrivacyBtn">Entendi</button>
+  </div>
+</div>
+
+<script>
+  // ========== CONFIGURAÇÕES ==========
+  const CHAVE_PIX = 'f1461640-6c03-4298-8c28-f1119c968612';
+  
+  // ========== MODAL DE PRIVACIDADE ==========
+  const privacyModal = document.getElementById('privacyModal');
+  function openPrivacyModal() { privacyModal.style.display = 'flex'; }
+  function closePrivacyModal() { privacyModal.style.display = 'none'; }
+  
+  document.getElementById('closePrivacyModal').onclick = closePrivacyModal;
+  document.getElementById('closePrivacyBtn').onclick = closePrivacyModal;
+  window.addEventListener('click', (e) => { if (e.target === privacyModal) closePrivacyModal(); });
+  
+  const openPrivacyLink = document.getElementById('openPrivacyLink');
+  const openPrivacyFooter = document.getElementById('openPrivacyFooter');
+  if (openPrivacyLink) openPrivacyLink.onclick = (e) => { e.preventDefault(); openPrivacyModal(); };
+  if (openPrivacyFooter) openPrivacyFooter.onclick = (e) => { e.preventDefault(); openPrivacyModal(); };
+
+  // ========== PARÂMETROS DA URL E SESSÃO ==========
+  const params = new URLSearchParams(window.location.search);
+  let clienteId = params.get('cliente') || '';
+  let nome = decodeURIComponent(params.get('nome') || '');
+  let email = decodeURIComponent(params.get('email') || '');
+  let valorRecarga = params.get('valor') || '0';
+
+  // Opções de recarga pré-definidas
+  const opcoesRecarga = [10, 20, 50, 100, 200, 500];
+  
+  // Fallback: tenta obter da sessão atual
+  async function preencherDadosCliente() {
+    const sess = obterSessao();
+    if (sess && sess.tipo === 'cliente') {
+      const cliente = await buscarClientePorEmail(sess.email);
+      if (cliente) {
+        nome = cliente.nome;
+        email = cliente.email;
+        clienteId = cliente.id;
+        if (valorRecarga === '0') valorRecarga = '50';
+      }
+    }
+    
+    // Exibe na tela
+    if (nome && email) {
+      document.getElementById('nome').textContent = nome;
+      document.getElementById('email').textContent = email;
+    } else {
+      document.getElementById('nome').textContent = 'Não identificado';
+      document.getElementById('email').textContent = 'Faça login novamente';
+      // Redireciona para login se não tiver dados
+      setTimeout(() => {
+        if (!nome || !email) window.location.href = 'marido_aluguel.html';
+      }, 3000);
+    }
+    
+    const valorNum = parseFloat(valorRecarga);
+    const valorFormatado = isNaN(valorNum) ? 50 : valorNum;
+    document.getElementById('detalhes').textContent = `${valorFormatado} ALMA`;
+    document.getElementById('valor').textContent = `R$ ${valorFormatado.toFixed(2).replace('.',',')}`;
+    document.getElementById('inputValorPago').value = valorFormatado;
+
+    // QR Code (apenas para referência)
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=pix:${encodeURIComponent(CHAVE_PIX)}?amount=${valorFormatado}`;
+    document.getElementById('qrCode').innerHTML = `<img src="${qrUrl}" alt="QR PIX" style="width:120px;height:120px;">`;
+    document.getElementById('chavePix').textContent = CHAVE_PIX;
+  }
+
+  // Copiar chave
+  window.copyPix = function() {
+    navigator.clipboard.writeText(CHAVE_PIX).then(() => {
+      const btn = document.getElementById('btnCopy');
+      btn.textContent = 'Copiado!';
+      btn.style.background = '#28a745';
+      setTimeout(() => {
+        btn.textContent = 'Copiar';
+        btn.style.background = '#2b4c7c';
+      }, 2000);
+    });
+  };
+
+  // ========== REGISTRAR SOLICITAÇÃO DE RECARGA ==========
+  async function registrarSolicitacaoRecarga(transacaoId, valorPago, valorSolicitado) {
+    const solicitacao = {
+      id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8),
+      clienteId: clienteId,
+      nome: nome,
+      email: email.toLowerCase(),
+      valorSolicitado: valorSolicitado,
+      valorPago: parseFloat(valorPago),
+      transacaoId: transacaoId,
+      deviceId: localStorage.getItem('alma_device_id') || navigator.userAgent.substring(0, 50),
+      status: 'pendente',
+      timestamp: new Date().toISOString()
+    };
+    
+    try {
+      // Salva usando a função do integracao.js
+      await salvarSolicitacaoRecarga(solicitacao);
+      return solicitacao.id;
+    } catch (err) {
+      console.error('Erro ao salvar solicitação:', err);
+      // Fallback: salvar no localStorage
+      let solicitacoes = JSON.parse(localStorage.getItem('solicitacoes_recarga') || '[]');
+      solicitacoes.push(solicitacao);
+      localStorage.setItem('solicitacoes_recarga', JSON.stringify(solicitacoes));
+      return solicitacao.id;
+    }
+  }
+
+  // ========== REGISTRAR TRANSAÇÃO FINANCEIRA ==========
+  async function registrarTransacaoFinanceira(tipo, valor, descricao) {
+    try {
+      const transacao = {
+        id: 'trans_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+        usuarioId: clienteId,
+        tipoUsuario: 'cliente',
+        tipo: tipo, // 'recarga_solicitada' ou 'recarga_aprovada'
+        valor: valor,
+        descricao: descricao,
+        status: 'pendente',
+        data: new Date().toISOString()
+      };
+      await salvarTransacao(transacao);
+    } catch (err) {
+      console.warn('Erro ao registrar transação:', err);
+    }
+  }
+
+  // ========== ENVIO DO COMPROVANTE ==========
+  document.getElementById('comprovanteForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const aceitoTermos = document.getElementById('aceitoTermos').checked;
+    if (!aceitoTermos) {
+      document.getElementById('termosError').style.display = 'flex';
+      return;
+    }
+    document.getElementById('termosError').style.display = 'none';
+    
+    const btn = document.getElementById('btnSubmit');
+    const msgDiv = document.getElementById('msg');
+    btn.disabled = true;
+    btn.textContent = 'PROCESSANDO...';
+    msgDiv.style.display = 'none';
+    msgDiv.className = 'msg';
+
+    const fd = new FormData(e.target);
+    const transacaoId = fd.get('transaction_id').trim();
+    const valorPago = parseFloat(fd.get('valor_pago'));
+    const valorSolicitado = parseFloat(valorRecarga);
+
+    if (!transacaoId) {
+      msgDiv.innerHTML = '❌ Informe o ID da transação do comprovante.';
+      msgDiv.classList.add('error');
+      msgDiv.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'ENVIAR COMPROVANTE';
+      return;
+    }
+    
+    if (isNaN(valorPago) || valorPago <= 0) {
+      msgDiv.innerHTML = '❌ Valor inválido. Informe o valor pago.';
+      msgDiv.classList.add('error');
+      msgDiv.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'ENVIAR COMPROVANTE';
+      return;
+    }
+    
+    // Verifica se o valor pago corresponde ao valor solicitado
+    if (Math.abs(valorPago - valorSolicitado) > 0.01) {
+      if (!confirm(`⚠️ Atenção: Você informou um valor pago de R$ ${valorPago.toFixed(2)}, mas o valor solicitado é R$ ${valorSolicitado.toFixed(2)}. Deseja continuar mesmo assim? O crédito será proporcional ao valor enviado.`)) {
+        btn.disabled = false;
+        btn.textContent = 'ENVIAR COMPROVANTE';
+        return;
+      }
+    }
+
+    let solicitacaoId = null;
+    try {
+      // Registra a solicitação
+      solicitacaoId = await registrarSolicitacaoRecarga(transacaoId, valorPago, valorSolicitado);
+      
+      // Registra a transação pendente
+      await registrarTransacaoFinanceira(
+        'recarga_solicitada',
+        valorPago,
+        `Solicitação de recarga de ${valorSolicitado} ALMA via PIX (ID: ${transacaoId})`
+      );
+      
+    } catch (err) {
+      console.warn(err);
+      solicitacaoId = 'NÃO_REGISTRADO_LOCALMENTE';
+    }
+
+    // ========== ENVIA E-MAIL DE NOTIFICAÇÃO ==========
+    const corpoEmail = `🪙 NOVA SOLICITAÇÃO DE RECARGA TOKEN-ALMA
+────────────────────────────────────────
+CLIENTE: ${nome}
+EMAIL: ${email}
+CLIENTE ID: ${clienteId}
+
+📊 DETALHES DA RECARGA:
+• Valor solicitado: ${valorSolicitado} ALMA (R$ ${valorSolicitado.toFixed(2)})
+• Valor pago: R$ ${valorPago.toFixed(2)}
+• ID da transação: ${transacaoId}
+• Data/Hora: ${new Date().toLocaleString('pt-BR')}
+• Solicitação ID: ${solicitacaoId}
+
+🔐 Chave PIX utilizada: ${CHAVE_PIX}
+────────────────────────────────────────
+Status: AGUARDANDO CONFIRMAÇÃO MANUAL
+
+⏱️ Prazo estimado para crédito: 15 a 60 minutos.
+Após aprovação, o cliente receberá os ALMA na carteira.`;
+
+    const formData = new FormData();
+    formData.append('access_key', 'eb4edc0c-b94c-4287-83bf-6f2e05f65774');
+    formData.append('subject', '🪙 RECARGA TOKEN-ALMA - Aguardando aprovação');
+    formData.append('message', corpoEmail);
+    formData.append('from_name', 'Marido de Aluguel');
+    formData.append('email', email);
+    formData.append('reply_to', 'almafluxo@almafluxo.uk');
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: formData });
+      const result = await response.json();
+      
+      if (result.success) {
+        msgDiv.innerHTML = `
+          ✅ <strong>Comprovante enviado com sucesso!</strong><br>
+          Solicitação #${solicitacaoId} registrada.<br><br>
+          📌 O saldo será creditado em sua carteira APÓS a confirmação manual (até 60 minutos).<br>
+          🔔 Você será notificado por e-mail quando o crédito for aprovado.<br><br>
+          <strong>Acompanhe no seu painel do cliente.</strong>
+        `;
+        msgDiv.classList.add('success');
+        msgDiv.style.display = 'block';
+        
+        // Limpa o formulário mantendo o valor
+        document.querySelector('input[name="transaction_id"]').value = '';
+        document.getElementById('inputValorPago').value = valorSolicitado;
+        document.getElementById('aceitoTermos').checked = false;
+        
+        // Redireciona após 5 segundos
+        setTimeout(() => { 
+          window.location.href = 'cliente_dashboard.html'; 
+        }, 5000);
+      } else {
+        throw new Error('Erro no envio do e-mail');
+      }
+    } catch (err) {
+      console.error('Erro no envio:', err);
+      msgDiv.innerHTML = `
+        ⚠️ <strong>Solicitação registrada localmente!</strong><br>
+        Houve um erro no envio do comprovante por e-mail, mas sua solicitação foi salva.<br>
+        Envie o comprovante manualmente para <strong>almafluxo@almafluxo.uk</strong> informando o ID: <strong>${solicitacaoId}</strong><br>
+        O saldo será creditado assim que confirmarmos.
+      `;
+      msgDiv.classList.add('error');
+      msgDiv.style.display = 'block';
+      
+      setTimeout(() => { 
+        window.location.href = 'cliente_dashboard.html'; 
+      }, 8000);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'ENVIAR COMPROVANTE';
+    }
+  });
+
+  // ========== INICIALIZAÇÃO ==========
+  (async () => {
+    await preencherDadosCliente();
+    
+    // Validação de segurança: se não tiver clienteId, redireciona
+    if (!clienteId) {
+      setTimeout(() => {
+        if (!clienteId) window.location.href = 'marido_aluguel.html';
+      }, 2000);
+    }
+  })();
+</script>
+</body>
+</html>

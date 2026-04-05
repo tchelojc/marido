@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil do Profissional · Marido de Aluguel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="dados.js"></script>
+  <script src="profissionais.js"></script>
+  <script src="integracao.js"></script>
+  <style>
+    /* ========== ESTILOS (mantidos originais) ========== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6fa;
+      color: #1a2634;
+      padding: 24px;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .header {
+      background: white;
+      border-radius: 24px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #1e3c72, #2b4c7c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .back-btn {
+      background: #eef2ff;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 40px;
+      cursor: pointer;
+      text-decoration: none;
+      color: #1e3c72;
+      font-weight: 500;
+    }
+    .profile-card {
+      background: white;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      margin-bottom: 28px;
+    }
+    .cover-banner {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: #eef2ff;
+    }
+    .profile-header {
+      background: linear-gradient(135deg, #1e3c72, #2b4c7c);
+      padding: 30px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid white;
+      background: white;
+    }
+    .profile-name { font-size: 1.8rem; font-weight: 700; }
+    .profile-email { font-size: 0.9rem; opacity: 0.85; }
+    .profile-rating { margin-top: 6px; color: #ffd966; }
+    .profile-body { padding: 28px; }
+    .info-section { margin-bottom: 28px; }
+    .info-section h3 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #eef2ff;
+      padding-bottom: 8px;
+    }
+    .servicos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .servico-card {
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 14px;
+      transition: 0.2s;
+    }
+    .servico-card:hover { background: #eef2ff; }
+    .servico-nome { font-weight: 700; margin-bottom: 6px; }
+    .servico-preco { color: #1e3c72; font-weight: 600; }
+    .btn-orcamento {
+      background: #2b4c7c;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .contact-info {
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 16px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .contact-item { display: flex; align-items: center; gap: 8px; }
+    .footer { text-align: center; margin-top: 30px; font-size: 0.75rem; color: #5a6e8a; }
+
+    /* avaliações */
+    .avaliacoes-lista { margin-top: 16px; }
+    .avaliacao-item {
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .avaliacao-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .avaliacao-estrelas { color: #ffc107; font-size: 0.85rem; }
+    .avaliacao-nome { font-weight: 600; }
+    .avaliacao-data { font-size: 0.7rem; color: #5a6e8a; }
+    .avaliacao-comentario { font-size: 0.9rem; margin-top: 6px; }
+    .form-avaliar {
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    .estrelas-input {
+      display: flex;
+      gap: 8px;
+      font-size: 1.6rem;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+    .estrelas-input i { transition: 0.1s; }
+    .estrelas-input i:hover { transform: scale(1.1); }
+    .btn-avaliar {
+      background: #2b4c7c;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 40px;
+      cursor: pointer;
+      font-weight: 500;
+      margin-top: 8px;
+    }
+    .section-divider { border: none; border-top: 1px solid #eef2ff; margin: 24px 0; }
+    .section-label { font-size: 1rem; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; color: #1e3c72; }
+    .skills-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+    .skill-chip { background: #eef2ff; color: #1e3c72; padding: 4px 14px; border-radius: 30px; font-size: 0.78rem; font-weight: 500; }
+    .exp-item, .form-item, .idioma-item { background: #f8fafc; border-radius: 16px; padding: 12px 16px; margin-bottom: 10px; }
+    .fotos-pub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; }
+    .foto-pub-item { border-radius: 16px; overflow: hidden; aspect-ratio: 1; background: #f0f4fa; position: relative; cursor: pointer; }
+    .foto-pub-item img { width: 100%; height: 100%; object-fit: cover; }
+    .foto-pub-item .foto-pub-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: white; font-size: 0.65rem; padding: 4px 8px; }
+    #lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
+    #lightbox.open { display: flex; }
+    #lightbox img { max-width: 90vw; max-height: 80vh; border-radius: 12px; }
+    #lightbox .lb-caption { color: white; font-size: 0.85rem; }
+    #lightbox .lb-close { position: absolute; top: 20px; right: 24px; font-size: 2rem; color: white; cursor: pointer; background: none; border: none; }
+
+    /* Disponibilidade */
+    .dias-disponiveis {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .dia-badge {
+      background: #eef2ff;
+      padding: 6px 14px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #1e3c72;
+    }
+    .dia-badge.ativo {
+      background: #2b4c7c;
+      color: white;
+    }
+    .sem-disponibilidade {
+      color: #5a6e8a;
+      font-style: italic;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 700px) { .profile-header { flex-direction: column; text-align: center; } }
+    .error-message { background: #fee2e2; color: #b91c1c; padding: 20px; border-radius: 20px; text-align: center; }
+    .loading { text-align: center; padding: 50px; font-size: 1.2rem; color: #2b4c7c; }
+    .small-text { font-size: 0.75rem; color: #5a6e8a; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">🛠️ Marido de Aluguel</div>
+    <a href="profissionais.html" class="back-btn" id="backLink"><i class="fas fa-arrow-left"></i> Voltar</a>
+  </div>
+  <div id="perfilContainer"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Carregando perfil...</div></div>
+  <div id="lightbox"><button class="lb-close" id="lbClose">&times;</button><img id="lbImg" src=""><div class="lb-caption" id="lbCaption"></div></div>
+  <div class="footer">© 2025 Marido de Aluguel · Profissionais verificados</div>
+</div>
+
+<script>
+  (async () => {
+    // ========== OBTEM PARÂMETRO DA URL ==========
+    const urlParams = new URLSearchParams(window.location.search);
+    const profissionalId = urlParams.get('id');
+    const container = document.getElementById('perfilContainer');
+
+    if (!profissionalId) {
+      container.innerHTML = '<div class="error-message">❌ ID do profissional não informado.</div>';
+      return;
+    }
+
+    try {
+      // ========== CARREGA DADOS DO PROFISSIONAL (ASSÍNCRONO) ==========
+      const profissional = await buscarProfissionalPorId(profissionalId);
+      if (!profissional) {
+        container.innerHTML = '<div class="error-message">❌ Profissional não encontrado.</div>';
+        return;
+      }
+
+      // ========== DADOS AUXILIARES (perfil extra, fotos, avaliações) ==========
+      // ========== DADOS AUXILIARES VIA BACKEND ==========
+      const servicosData = obterServicos(); // síncrono
+      const perfilExtra = await obterPerfilExtra(profissional.id) || {};
+      const fotosServicos = await listarFotosServico(profissional.id);
+      let avaliacoes = await obterAvaliacoesProfissional(profissional.id);
+
+      // ========== DISPONIBILIDADE ==========
+      const disponibilidade = JSON.parse(localStorage.getItem('disp_' + profissional.id) || '[]');
+      const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+
+      function getDisponibilidadeHTML() {
+        const diasAtivos = disponibilidade.filter(d => diasSemana.includes(d));
+        if (diasAtivos.length === 0) {
+          return '<p class="sem-disponibilidade">Disponibilidade a definir. Entre em contato para agendar.</p>';
+        }
+        return `<div class="dias-disponiveis">
+          ${diasSemana.map(dia => `<span class="dia-badge ${disponibilidade.includes(dia) ? 'ativo' : ''}">${dia}</span>`).join('')}
+        </div>`;
+      }
+
+      function campo(field, defaultValue = '') {
+        let val = perfilExtra[field] !== undefined ? perfilExtra[field] : profissional[field];
+        return (val !== undefined && val !== '') ? val : defaultValue;
+      }
+
+      const nome = campo('nome', profissional.nome);
+      const email = campo('email', profissional.email);
+      const telefone = campo('telefone', profissional.telefone || '');
+      const descricao = campo('descricao', profissional.descricao || '');
+      const titulo = campo('titulo', '');
+      const localizacao = campo('localizacao', profissional.endereco || '');
+      const setor = campo('setor', '');
+      const avatar = campo('avatar', profissional.avatar);
+      const coverPhoto = campo('coverPhoto', '');
+      const experiencias = campo('experiencias', []);
+      const formacoes = campo('formacoes', []);
+      const habilidades = campo('habilidades', []);
+      const idiomas = campo('idiomas', []);
+      const links = campo('links', []);
+      const servicos_ids = profissional.servicos_ids || [];
+      const servicosOferecidos = servicosData.filter(s => servicos_ids.includes(s.id));
+
+      // ========== MÉDIA DAS AVALIAÇÕES ==========
+      function calcularMedia() {
+        if (!avaliacoes.length) return 0;
+        const soma = avaliacoes.reduce((acc, a) => acc + a.nota, 0);
+        return soma / avaliacoes.length;
+      }
+      let mediaAtual = calcularMedia();
+
+      function estrelas(v) {
+        const cheias = Math.floor(v);
+        const meia = v % 1 >= 0.5 ? '½' : '';
+        return '★'.repeat(cheias) + meia + '☆'.repeat(5 - cheias - (meia ? 1 : 0));
+      }
+
+      // ========== SEÇÕES DINÂMICAS ==========
+      function secaoExperiencias() {
+        if (!experiencias.length) return '';
+        return `<hr class="section-divider"><div class="section-label"><i class="fas fa-briefcase"></i> Experiência profissional</div>
+          ${experiencias.map(e => `<div class="exp-item"><strong>${escapeHtml(e.cargo || '')}</strong> — ${escapeHtml(e.empresa || '')}<div class="sub">${escapeHtml(e.periodo || '')} ${e.descricao ? '· ' + escapeHtml(e.descricao) : ''}</div></div>`).join('')}`;
+      }
+      function secaoFormacoes() {
+        if (!formacoes.length) return '';
+        return `<hr class="section-divider"><div class="section-label"><i class="fas fa-graduation-cap"></i> Formação acadêmica</div>
+          ${formacoes.map(f => `<div class="form-item"><strong>${escapeHtml(f.curso || '')}</strong> — ${escapeHtml(f.instituicao || '')}<div class="sub">${escapeHtml(f.anoConclusao || '')} ${f.descricao ? '· ' + escapeHtml(f.descricao) : ''}</div></div>`).join('')}`;
+      }
+      function secaoHabilidades() {
+        if (!habilidades.length) return '';
+        return `<hr class="section-divider"><div class="section-label"><i class="fas fa-star"></i> Habilidades</div><div class="skills-wrap">${habilidades.map(h => `<span class="skill-chip">${escapeHtml(h)}</span>`).join('')}</div>`;
+      }
+      function secaoIdiomas() {
+        if (!idiomas.length) return '';
+        return `<hr class="section-divider"><div class="section-label"><i class="fas fa-language"></i> Idiomas</div>
+          ${idiomas.map(i => `<div class="idioma-item"><strong>${escapeHtml(i.idioma)}</strong><div class="sub">Nível: ${escapeHtml(i.nivel)}</div></div>`).join('')}`;
+      }
+      function secaoLinks() {
+        if (!links.length) return '';
+        return `<hr class="section-divider"><div class="section-label"><i class="fas fa-link"></i> Links</div><div class="links-list">
+          ${links.map(l => `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i> ${escapeHtml(l.nome || l.url)}</a>`).join('')}</div>`;
+      }
+      function secaoFotos() {
+        if (!fotosServicos.length) return '';
+        return `<hr class="section-divider"><div class="section-label"><i class="fas fa-images"></i> Portfólio de trabalhos</div>
+          <div class="fotos-pub-grid">${fotosServicos.map((f, idx) => `<div class="foto-pub-item"><img src="${escapeHtml(f.src)}" alt="${escapeHtml(f.legenda || 'Foto do serviço')}" onclick="abrirLightbox(${idx})" title="${escapeHtml(f.legenda || '')}">${f.legenda ? `<div class="foto-pub-label">${escapeHtml(f.legenda)}</div>` : ''}</div>`).join('')}</div>`;
+      }
+
+      // ========== AVALIAÇÕES (LISTAGEM + FORMULÁRIO) ==========
+      async function secaoAvaliacoes() {
+        const sess = obterSessao();
+        let clienteLogado = null;
+        if (sess && sess.tipo === 'cliente') {
+          const cliente = await buscarClientePorEmail(sess.email);
+          clienteLogado = cliente ? cliente.email : null;
+        }
+        const jaAvaliou = clienteLogado ? avaliacoes.some(a => a.clienteEmail === clienteLogado) : false;
+
+        let html = `<hr class="section-divider"><div class="section-label"><i class="fas fa-star-half-alt"></i> Avaliações (${avaliacoes.length})</div>`;
+        if (avaliacoes.length === 0) {
+          html += `<p class="small-text">Nenhuma avaliação ainda. Seja o primeiro a avaliar!</p>`;
+        } else {
+          html += `<div class="avaliacoes-lista">`;
+          avaliacoes.slice().reverse().forEach(a => {
+            html += `<div class="avaliacao-item">
+              <div class="avaliacao-header">
+                <div class="avaliacao-nome">${escapeHtml(a.clienteNome || 'Cliente')}</div>
+                <div class="avaliacao-estrelas">${estrelas(a.nota)}</div>
+                <div class="avaliacao-data">${escapeHtml(a.data)}</div>
+              </div>
+              <div class="avaliacao-comentario">${escapeHtml(a.comentario || '')}</div>
+            </div>`;
+          });
+          html += `</div>`;
+        }
+
+        if (clienteLogado && !jaAvaliou) {
+          html += `<div class="form-avaliar" id="formAvaliar">
+            <div style="font-weight:600; margin-bottom:8px;">Deixe sua avaliação</div>
+            <div class="estrelas-input" id="estrelasInput">
+              <i class="far fa-star" data-nota="1"></i>
+              <i class="far fa-star" data-nota="2"></i>
+              <i class="far fa-star" data-nota="3"></i>
+              <i class="far fa-star" data-nota="4"></i>
+              <i class="far fa-star" data-nota="5"></i>
+            </div>
+            <textarea id="comentarioAvaliacao" rows="2" placeholder="Escreva seu comentário (opcional)" style="width:100%; border-radius:16px; border:1px solid #e2e8f0; padding:8px; margin-bottom:8px;"></textarea>
+            <button class="btn-avaliar" id="btnEnviarAvaliacao">Enviar avaliação</button>
+          </div>`;
+        } else if (clienteLogado && jaAvaliou) {
+          html += `<p class="small-text" style="margin-top:12px;">✅ Você já avaliou este profissional. Obrigado!</p>`;
+        } else {
+          html += `<p class="small-text" style="margin-top:12px;">📝 <a href="marido_aluguel.html" style="color:#2b4c7c;">Faça login</a> para avaliar este profissional.</p>`;
+        }
+        return html;
+      }
+
+      // ========== MONTA HTML PRINCIPAL ==========
+      const htmlPerfil = `
+        <div class="profile-card">
+          ${coverPhoto ? `<img class="cover-banner" src="${escapeHtml(coverPhoto)}" alt="Foto de capa">` : `<div class="cover-banner" style="background:linear-gradient(135deg,#1e3c72,#2b4c7c);"></div>`}
+          <div class="profile-header">
+            <img src="${escapeHtml(avatar)}" alt="${escapeHtml(nome)}" class="profile-avatar" onerror="this.src='https://ui-avatars.com/api/?background=ffffff&color=1e3c72&name=${encodeURIComponent(nome)}'">
+            <div>
+              <div class="profile-name">${escapeHtml(nome)}</div>
+              ${titulo ? `<div class="headline-tag">${escapeHtml(titulo)}</div>` : ''}
+              ${(localizacao || setor) ? `<div class="loc-setor">${escapeHtml([localizacao, setor].filter(Boolean).join(' · '))}</div>` : ''}
+              <div class="profile-rating">${estrelas(mediaAtual)} <span style="opacity:0.8;font-size:0.8rem;">(${avaliacoes.length} avaliações)</span></div>
+            </div>
+          </div>
+          <div class="profile-body">
+            <div class="info-section"><h3><i class="fas fa-user-circle"></i> Sobre</h3><p>${escapeHtml(descricao || 'Profissional ainda não adicionou uma descrição.')}</p></div>
+            <div class="info-section">
+              <h3><i class="fas fa-calendar-week"></i> Disponibilidade</h3>
+              ${getDisponibilidadeHTML()}
+            </div>
+            <div class="info-section">
+              <h3><i class="fas fa-tools"></i> Serviços oferecidos</h3>
+              <div class="servicos-grid">${servicosOferecidos.map(serv => `
+                <div class="servico-card">
+                  <div class="servico-nome">${escapeHtml(serv.nome)}</div>
+                  <div class="servico-preco">R$ ${serv.preco_unitario?.toFixed(2) || (serv.diaria_base/serv.producao_dia).toFixed(2)} / ${escapeHtml(serv.unidade)}</div>
+                  <div class="small-text">⏱️ ${serv.tempo_por_unidade_h}h/unidade · 📦 ${serv.producao_dia} ${escapeHtml(serv.unidade)}/dia</div>
+                  <button class="btn-orcamento" data-serv-id="${serv.id}" data-serv-nome="${escapeHtml(serv.nome)}" data-preco="${serv.preco_unitario || (serv.diaria_base/serv.producao_dia).toFixed(2)}" data-unidade="${escapeHtml(serv.unidade)}" data-tempo="${serv.tempo_por_unidade_h}"><i class="fas fa-calculator"></i> Solicitar orçamento</button>
+                </div>`).join('')}</div>
+              ${servicosOferecidos.length === 0 ? '<p class="small-text">Este profissional ainda não cadastrou serviços.</p>' : ''}
+            </div>
+            ${secaoFotos()}${secaoExperiencias()}${secaoFormacoes()}${secaoHabilidades()}${secaoIdiomas()}${secaoLinks()}
+            <hr class="section-divider"><div class="info-section"><h3><i class="fas fa-address-card"></i> Contato</h3>
+            <div class="contact-info">${telefone ? `<div class="contact-item"><i class="fas fa-phone-alt"></i> ${escapeHtml(telefone)}</div>` : ''}<div class="contact-item"><i class="fas fa-envelope"></i> ${escapeHtml(email)}</div></div></div>
+            <div id="avaliacoesSection"></div>
+          </div>
+        </div>
+      `;
+      container.innerHTML = htmlPerfil;
+
+      // ========== INSERE SEÇÃO DE AVALIAÇÕES ==========
+      const avaliacoesHTML = await secaoAvaliacoes();
+      document.getElementById('avaliacoesSection').innerHTML = avaliacoesHTML;
+
+      // ========== FUNÇÃO PARA CRIAR CHAT (AGORA ASSÍNCRONA, USANDO INTEGRACAO.JS) ==========
+      async function criarChatViaIntegracao(servicoId, servicoNome, quantidade, unidade, valorEstimado, tempoEstimado, diasEstimados) {
+        const sess = obterSessao();
+        if (!sess || sess.tipo !== 'cliente') {
+          alert('Você precisa estar logado como cliente para solicitar orçamento.');
+          return null;
+        }
+        const clienteId = sess.usuarioId;
+        const clienteNome = sess.email.split('@')[0]; // fallback
+        const chat = await criarChat({
+          clienteId: clienteId,
+          clienteNome: clienteNome,
+          profissionalId: profissional.id,
+          profissionalNome: profissional.nome,
+          servicoId: servicoId,
+          servicoNome: servicoNome,
+          quantidade: quantidade,
+          unidade: unidade,
+          valorEstimado: parseFloat(valorEstimado),
+          tempoEstimado: parseFloat(tempoEstimado),
+          diasEstimados: parseFloat(diasEstimados)
+        });
+        return chat.id;
+      }
+
+      // ========== BOTÕES DE ORÇAMENTO ==========
+      document.querySelectorAll('.btn-orcamento').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const servNome = btn.dataset.servNome;
+          const preco = parseFloat(btn.dataset.preco);
+          const unidade = btn.dataset.unidade;
+          const tempo = parseFloat(btn.dataset.tempo);
+          const servId = btn.dataset.servId;
+          const qtdStr = prompt(`Quantos ${unidade} de "${servNome}" você precisa?`, '1');
+          if (!qtdStr || isNaN(parseFloat(qtdStr))) { alert('Quantidade inválida.'); return; }
+          const qtd = parseFloat(qtdStr);
+          const total = (qtd * preco).toFixed(2);
+          const horas = (qtd * tempo).toFixed(1);
+          const dias = (qtd / (8 / tempo)).toFixed(1);
+          
+          const sess = obterSessao();
+          if (sess && sess.tipo === 'cliente') {
+            try {
+              const chatId = await criarChatViaIntegracao(servId, servNome, qtd, unidade, total, horas, dias);
+              if (chatId) {
+                alert(`✅ Solicitação enviada! Vocês podem negociar diretamente no chat.`);
+                window.location.href = `chat.html?chat=${chatId}`;
+              } else {
+                alert('Erro ao criar chat. Tente novamente.');
+              }
+            } catch (err) {
+              console.error(err);
+              alert('Erro ao criar chat: ' + err.message);
+            }
+          } else {
+            const ok = confirm(`Orçamento para ${servNome}:\nQuantidade: ${qtd} ${unidade}\nValor total: R$ ${total}\nTempo estimado: ${horas}h (${dias} dias)\n\nFaça login para enviar a solicitação ao profissional.`);
+            if (ok) window.location.href = 'marido_aluguel.html';
+          }
+        });
+      });
+
+      // ========== LIGHTBOX DAS FOTOS ==========
+      window.abrirLightbox = (idx) => {
+        const f = fotosServicos[idx];
+        document.getElementById('lbImg').src = f.src;
+        document.getElementById('lbCaption').textContent = f.legenda || '';
+        document.getElementById('lightbox').classList.add('open');
+      };
+      document.getElementById('lbClose').onclick = () => document.getElementById('lightbox').classList.remove('open');
+      document.getElementById('lightbox').addEventListener('click', (e) => { if (e.target === document.getElementById('lightbox')) document.getElementById('lightbox').classList.remove('open'); });
+
+      // ========== AVALIAÇÃO (ESTRELAS E ENVIO) ==========
+      if (document.getElementById('estrelasInput')) {
+        let notaSelecionada = 0;
+        const estrelasEl = document.querySelectorAll('#estrelasInput i');
+        estrelasEl.forEach(star => {
+          star.addEventListener('mouseenter', () => {
+            const nota = parseInt(star.dataset.nota);
+            estrelasEl.forEach((s, idx) => {
+              if (idx < nota) s.className = 'fas fa-star';
+              else s.className = 'far fa-star';
+            });
+          });
+          star.addEventListener('mouseleave', () => {
+            estrelasEl.forEach((s, idx) => {
+              if (idx < notaSelecionada) s.className = 'fas fa-star';
+              else s.className = 'far fa-star';
+            });
+          });
+          star.addEventListener('click', () => {
+            notaSelecionada = parseInt(star.dataset.nota);
+            estrelasEl.forEach((s, idx) => {
+              if (idx < notaSelecionada) s.className = 'fas fa-star';
+              else s.className = 'far fa-star';
+            });
+          });
+        });
+        document.getElementById('btnEnviarAvaliacao').addEventListener('click', async () => {
+          if (notaSelecionada === 0) { alert('Selecione uma nota de 1 a 5 estrelas.'); return; }
+          const comentario = document.getElementById('comentarioAvaliacao').value.trim();
+          const sess = obterSessao();
+          if (!sess || sess.tipo !== 'cliente') { alert('Você precisa estar logado como cliente para avaliar.'); return; }
+          const cliente = await buscarClientePorEmail(sess.email);
+          const clienteNome = cliente ? cliente.nome : sess.email.split('@')[0];
+          try {
+            await salvarAvaliacao(profissional.id, sess.email, clienteNome, notaSelecionada, comentario);
+            alert('✅ Avaliação enviada com sucesso! Obrigado pelo feedback.');
+            // Recarrega a seção de avaliações
+            const novaSecao = await secaoAvaliacoes();
+            document.getElementById('avaliacoesSection').innerHTML = novaSecao;
+          } catch (err) {
+            alert('Erro ao enviar avaliação: ' + err.message);
+          }
+        });
+      }
+
+      // ========== AJUSTA LINK VOLTAR ==========
+      const backLink = document.getElementById('backLink');
+      backLink.href = document.referrer?.includes('profissionais.html') ? document.referrer : 'profissionais.html';
+
+    } catch (error) {
+      console.error('Erro ao carregar perfil:', error);
+      container.innerHTML = `<div class="error-message">
+        <i class="fas fa-exclamation-triangle"></i> Erro ao carregar perfil.<br>
+        Verifique sua conexão ou tente novamente mais tarde.<br>
+        <small>${escapeHtml(error.message || 'Erro desconhecido')}</small>
+      </div>`;
+    }
+  })();
+
+  // ========== FUNÇÃO AUXILIAR ESCAPE HTML ==========
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+      return c;
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Profissional · Marido de Aluguel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="dados.js"></script>
+  <script src="integracao.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6fa;
+      color: #1a2634;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .dashboard-header {
+      background: white;
+      border-radius: 24px;
+      padding: 20px 28px;
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    .profile-info { display: flex; align-items: center; gap: 20px; }
+    .avatar-large { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; }
+    .prof-name { font-size: 1.4rem; font-weight: 700; }
+    .prof-email { color: #5a6e8a; font-size: 0.8rem; }
+    .btn-logout { background: #eef2ff; border: none; padding: 8px 20px; border-radius: 40px; cursor: pointer; color: #2b4c7c; font-weight: 500; }
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .card { background: white; border-radius: 24px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .card h3 { margin-bottom: 16px; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #eef2ff; padding-bottom: 8px; }
+    .servicos-lista { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .servico-tag { background: #eef2ff; padding: 6px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: 500; color: #1e3c72; }
+    .agenda-dias { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+    .dia-btn { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 14px; border-radius: 30px; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
+    .dia-btn.ativo { background: #2b4c7c; color: white; border-color: #2b4c7c; }
+    .chat-item { background: #f8fafc; border-radius: 16px; padding: 12px; margin-bottom: 12px; }
+    .btn-sm { background: #2b4c7c; color: white; border: none; padding: 6px 12px; border-radius: 30px; cursor: pointer; font-size: 0.7rem; text-decoration: none; display: inline-block; }
+    .btn-salvar { background: #2b4c7c; color: white; border: none; padding: 12px; border-radius: 40px; width: 100%; cursor: pointer; font-weight: 600; margin-top: 8px; }
+    .btn-secondary { background: #6c757d; color: white; border: none; padding: 12px; border-radius: 40px; width: 100%; cursor: pointer; font-weight: 600; margin-top: 8px; }
+    .full-width { grid-column: span 2; }
+    @media (max-width: 800px) { .dashboard-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
+    .small-text { font-size: 0.75rem; color: #5a6e8a; }
+    
+    /* ========== EDITOR DE PERFIL ========== */
+    .profile-editor { display: flex; flex-direction: column; gap: 24px; }
+    .cover-photo { position: relative; width: 100%; height: 160px; background: #eef2ff; border-radius: 20px; overflow: hidden; margin-bottom: 60px; }
+    .cover-img { width: 100%; height: 100%; object-fit: cover; }
+    .cover-upload-btn { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.6); color: white; border: none; padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; cursor: pointer; }
+    .profile-avatar-editor { position: relative; display: inline-block; margin-top: -50px; margin-left: 24px; margin-bottom: 16px; }
+    .avatar-edit-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid white; background: white; }
+    .avatar-upload-btn { position: absolute; bottom: 0; right: 0; background: #2b4c7c; color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 0.8rem; }
+    .form-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+    .form-group { flex: 1; min-width: 200px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.85rem; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border-radius: 16px; border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.9rem; }
+    .section-title { font-size: 1rem; font-weight: 700; margin: 16px 0 12px 0; color: #1e3c72; border-left: 3px solid #2b4c7c; padding-left: 10px; }
+    .item-list { margin-top: 8px; display: flex; flex-direction: column; gap: 12px; }
+    .item-card { background: #f8fafc; border-radius: 16px; padding: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+    .item-info { flex: 1; }
+    .item-actions button { background: none; border: none; cursor: pointer; margin-left: 8px; color: #dc3545; }
+    .btn-add { background: #eef2ff; border: none; padding: 8px 16px; border-radius: 30px; font-size: 0.8rem; cursor: pointer; margin-top: 8px; }
+    .skill-tag { background: #eef2ff; display: inline-block; padding: 4px 12px; border-radius: 30px; margin: 4px; font-size: 0.75rem; }
+    .skill-tag button { background: none; border: none; margin-left: 6px; cursor: pointer; color: #dc3545; }
+    hr { margin: 16px 0; }
+    .token-card {
+      background: linear-gradient(135deg, #1e3c72, #2b4c7c);
+      color: white;
+      border-radius: 20px;
+      padding: 16px;
+      margin-top: 12px;
+      text-align: center;
+    }
+    .token-amount { font-size: 1.8rem; font-weight: 800; }
+
+    /* ========== TOAST ========== */
+    #toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+      background: #1e3c72; color: white; padding: 14px 22px; border-radius: 40px;
+      font-size: 0.9rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      display: flex; align-items: center; gap: 10px;
+      opacity: 0; transform: translateY(16px); transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.toast-success { background: #155724; }
+    #toast.toast-error   { background: #721c24; }
+
+    /* ========== GALERIA DE FOTOS ========== */
+    .fotos-section { margin-top: 12px; }
+    .fotos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .foto-item {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      aspect-ratio: 1;
+      background: #f0f4fa;
+    }
+    .foto-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .foto-item .foto-remove {
+      position: absolute; top: 6px; right: 6px;
+      background: rgba(220,53,69,0.85); color: white; border: none;
+      border-radius: 50%; width: 24px; height: 24px; font-size: 0.7rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .foto-item .foto-label {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.5); color: white; font-size: 0.65rem;
+      padding: 3px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .btn-add-foto {
+      background: #eef2ff; border: 2px dashed #2b4c7c; border-radius: 16px;
+      aspect-ratio: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; cursor: pointer; font-size: 0.75rem; color: #2b4c7c; gap: 6px;
+      transition: 0.2s;
+    }
+    .btn-add-foto:hover { background: #dbeafe; }
+    .btn-add-foto i { font-size: 1.4rem; }
+
+    /* ========== MODAL ALTERAR SENHA ========== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      max-width: 450px;
+      width: 90%;
+      border-radius: 32px;
+      padding: 28px;
+      position: relative;
+    }
+    .close-modal {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      font-size: 1.6rem;
+      cursor: pointer;
+      color: #5a6e8a;
+    }
+    .close-modal:hover { color: #1a2634; }
+    .senha-info {
+      background: #eef2ff;
+      padding: 12px;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .senha-atual-display {
+      font-family: monospace;
+      font-size: 1.2rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      background: #2b4c7c;
+      color: white;
+      padding: 8px;
+      border-radius: 12px;
+      display: inline-block;
+      margin-top: 8px;
+    }
+    .error-message { color: #e74c3c; font-size: 0.8rem; margin-top: 8px; display: none; }
+  </style>
+</head>
+<body>
+<div id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+
+<div class="container">
+  <div class="dashboard-header">
+    <div class="profile-info">
+      <img id="profAvatar" class="avatar-large" src="" alt="Avatar">
+      <div>
+        <div class="prof-name" id="profNome">Carregando...</div>
+        <div class="prof-email" id="profEmail"></div>
+      </div>
+    </div>
+    <button class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sair</button>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Meus Serviços -->
+    <div class="card">
+      <h3><i class="fas fa-tools"></i> Meus Serviços</h3>
+      <div id="meusServicosContainer" class="servicos-lista">Carregando...</div>
+      <p class="small-text" style="margin-top: 12px;">✔️ Estes são os serviços que você oferece.</p>
+      <div class="fotos-section">
+        <div style="font-weight:600; font-size:0.85rem; margin-bottom:4px; margin-top:16px;">
+          <i class="fas fa-images"></i> Fotos dos serviços
+        </div>
+        <p class="small-text" style="margin-bottom:8px;">Adicione fotos do seu trabalho. Elas aparecem no seu perfil público.</p>
+        <div class="fotos-grid" id="fotosGrid"></div>
+      </div>
+    </div>
+
+    <!-- Saldo TOKEN-ALMA e pendências -->
+    <div class="card">
+      <h3><i class="fas fa-coins"></i> TOKEN-ALMA</h3>
+      <div class="token-card">
+        <div>Saldo disponível</div>
+        <div class="token-amount" id="tokenSaldo">0</div>
+        <div>ALMA</div>
+      </div>
+      <div class="token-card" style="background: #6c757d; margin-top: 8px;">
+        <div>Valor pendente (a receber)</div>
+        <div class="token-amount" id="tokenPendente">0</div>
+        <div>ALMA</div>
+      </div>
+      <p class="small-text" style="margin-top: 8px;">1 ALMA = R$ 1,00 · Valores são creditados conforme aprovação do cliente.</p>
+    </div>
+
+    <!-- Serviços em negociação (chats ativos) -->
+    <div class="card full-width">
+      <h3><i class="fas fa-comments"></i> Serviços em negociação</h3>
+      <div id="chatsAtivosContainer">Carregando...</div>
+    </div>
+
+    <!-- Serviços finalizados -->
+    <div class="card full-width">
+      <h3><i class="fas fa-check-circle"></i> Serviços finalizados</h3>
+      <div id="chatsFinalizadosContainer">Carregando...</div>
+    </div>
+
+    <!-- Agenda -->
+    <div class="card full-width">
+      <h3><i class="fas fa-calendar-alt"></i> Minha Agenda</h3>
+      <div class="agenda-dias" id="agendaDias"></div>
+      <button id="salvarDisponibilidade" class="btn-salvar" style="margin-top: 8px;">Salvar disponibilidade</button>
+    </div>
+
+    <!-- EDITOR DE PERFIL COMPLETO -->
+    <div class="card full-width">
+      <h3><i class="fas fa-user-edit"></i> Editar Perfil Público</h3>
+      <div class="profile-editor">
+        <div class="cover-photo">
+          <img id="coverImg" class="cover-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='200' viewBox='0 0 1200 200'%3E%3Crect width='1200' height='200' fill='%23eef2ff'/%3E%3Ctext x='50%25' y='50%25' font-size='20' fill='%236b7280' text-anchor='middle' dy='.3em'%3EFoto de capa%3C/text%3E%3C/svg%3E" alt="Capa">
+          <button class="cover-upload-btn" id="uploadCoverBtn"><i class="fas fa-camera"></i> Alterar capa</button>
+        </div>
+        <div class="profile-avatar-editor">
+          <img id="avatarPreview" class="avatar-edit-img" src="" alt="Avatar">
+          <button class="avatar-upload-btn" id="uploadAvatarBtn"><i class="fas fa-camera"></i></button>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Nome completo</label><input type="text" id="editNome" placeholder="Ex: João Silva"></div>
+          <div class="form-group"><label>Título profissional</label><input type="text" id="editTitulo" placeholder="Ex: Especialista em Pintura"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>E-mail (login)</label><input type="email" id="editEmail"></div>
+          <div class="form-group"><label>Telefone</label><input type="tel" id="editTelefone"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Localização</label><input type="text" id="editLocalizacao" placeholder="Cidade/Estado"></div>
+          <div class="form-group"><label>Setor</label><input type="text" id="editSetor" placeholder="Ex: Construção Civil"></div>
+        </div>
+        <div class="form-group"><label>Sobre você</label><textarea id="editDescricao" rows="4"></textarea></div>
+
+        <div class="section-title"><i class="fas fa-briefcase"></i> Experiência profissional</div>
+        <div id="experienciasContainer" class="item-list"></div>
+        <button type="button" class="btn-add" id="addExperienciaBtn"><i class="fas fa-plus"></i> Adicionar experiência</button>
+
+        <div class="section-title"><i class="fas fa-graduation-cap"></i> Formação acadêmica</div>
+        <div id="formacoesContainer" class="item-list"></div>
+        <button type="button" class="btn-add" id="addFormacaoBtn"><i class="fas fa-plus"></i> Adicionar formação</button>
+
+        <div class="section-title"><i class="fas fa-code"></i> Habilidades</div>
+        <div id="habilidadesContainer" style="margin-bottom: 8px;"></div>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="novaHabilidade" placeholder="Digite uma habilidade" style="flex:1; padding:8px; border-radius:30px; border:1px solid #ccc;">
+          <button class="btn-sm" id="addHabilidadeBtn">Adicionar</button>
+        </div>
+
+        <div class="section-title"><i class="fas fa-language"></i> Idiomas</div>
+        <div id="idiomasContainer" class="item-list"></div>
+        <button type="button" class="btn-add" id="addIdiomaBtn"><i class="fas fa-plus"></i> Adicionar idioma</button>
+
+        <div class="section-title"><i class="fas fa-link"></i> Links</div>
+        <div id="linksContainer" class="item-list"></div>
+        <button type="button" class="btn-add" id="addLinkBtn"><i class="fas fa-plus"></i> Adicionar link</button>
+        <hr>
+        <button id="salvarPerfil" class="btn-salvar"><i class="fas fa-save"></i> Salvar todas as alterações</button>
+        <button id="btnAlterarSenha" class="btn-secondary"><i class="fas fa-key"></i> Alterar senha</button>
+      </div>
+      <p class="small-text" style="margin-top: 12px;">As informações do seu perfil ficarão visíveis para os clientes.</p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ALTERAR SENHA -->
+<div id="senhaModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeSenhaModal">&times;</span>
+    <h3><i class="fas fa-key"></i> Alterar senha</h3>
+    <div class="senha-info">
+      <p>Sua senha atual é gerada pelo sistema.</p>
+      <div class="senha-atual-display" id="senhaAtualDisplay">******</div>
+    </div>
+    <div class="form-group">
+      <label>Nova senha *</label>
+      <input type="password" id="novaSenha" placeholder="Digite a nova senha" autocomplete="new-password">
+      <div class="small-text">Mínimo 4 caracteres</div>
+    </div>
+    <div class="form-group">
+      <label>Confirmar nova senha *</label>
+      <input type="password" id="confirmarSenha" placeholder="Confirme a nova senha">
+    </div>
+    <div id="senhaError" class="error-message"></div>
+    <button id="confirmarAlteracaoSenha" class="btn-salvar" style="margin-top:16px;">Confirmar alteração</button>
+  </div>
+</div>
+
+<script>
+  // ========== TOAST ==========
+  function toast(msg, tipo = 'success') {
+    const el = document.getElementById('toast');
+    if (!el) { alert(msg); return; }
+    const txt = document.getElementById('toastMsg');
+    txt.textContent = msg;
+    el.className = `show toast-${tipo}`;
+    const icon = el.querySelector('i');
+    if (icon) icon.className = tipo === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.className = ''; }, 3500);
+  }
+
+  // ========== ESCAPE HTML ==========
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  // ========== COMPRESSÃO DE IMAGEM ==========
+  function compressImage(base64, maxWidth = 800, quality = 0.7, callback) {
+    const img = new Image();
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      callback(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = base64;
+  }
+
+  // ========== SESSÃO E DADOS DO PROFISSIONAL ==========
+  let profissionalAtual = null;
+  let perfilCompleto = {};
+  let senhaOriginal = '';
+
+  async function carregarProfissionalLogado() {
+    const sess = obterSessao();
+    if (!sess || sess.tipo !== 'profissional') {
+      toast('Sessão expirada. Faça login novamente.', 'error');
+      setTimeout(() => window.location.href = 'marido_aluguel.html', 1500);
+      return null;
+    }
+    const profissional = await buscarProfissionalPorEmail(sess.email);
+    if (!profissional) {
+      toast('Profissional não encontrado. Faça login novamente.', 'error');
+      window.location.href = 'marido_aluguel.html';
+      return null;
+    }
+    return profissional;
+  }
+
+  // ========== CARREGAR CHATS COM TRATAMENTO DE ERRO ==========
+  async function carregarChats() {
+    if (!profissionalAtual) return;
+    try {
+      const chats = await obterChats();
+      const chatsArray = Array.isArray(chats) ? chats : [];
+      const meusChats = chatsArray.filter(chat => chat && chat.profissionalId === profissionalAtual.id);
+      const ativos = meusChats.filter(chat => chat.statusServico !== 'concluido');
+      const finalizados = meusChats.filter(chat => chat.statusServico === 'concluido');
+      
+      const ativosContainer = document.getElementById('chatsAtivosContainer');
+      const finalizadosContainer = document.getElementById('chatsFinalizadosContainer');
+      
+      if (ativosContainer) {
+        ativosContainer.innerHTML = ativos.length ? ativos.map(chat => `
+          <div class="chat-item">
+            <strong>${escapeHtml(chat.clienteNome || 'Cliente')}</strong> - ${escapeHtml(chat.servicoNome || 'Serviço')}<br>
+            Valor: R$ ${chat.valorCombinado?.toFixed(2) || 'a definir'}<br>
+            Status: ${escapeHtml(chat.statusServico || 'negociacao')}<br>
+            <a href="chat.html?chat=${chat.id}" class="btn-sm" style="display:inline-block; margin-top:8px;">Abrir conversa</a>
+          </div>
+        `).join('') : '<p class="small-text">Nenhum serviço em negociação.</p>';
+      }
+      
+      if (finalizadosContainer) {
+        finalizadosContainer.innerHTML = finalizados.length ? finalizados.map(chat => `
+          <div class="chat-item">
+            <strong>${escapeHtml(chat.clienteNome || 'Cliente')}</strong> - ${escapeHtml(chat.servicoNome || 'Serviço')}<br>
+            Valor: R$ ${chat.valorCombinado?.toFixed(2) || '0'}<br>
+            <a href="chat.html?chat=${chat.id}" class="btn-sm" style="display:inline-block; margin-top:8px;">Ver conversa</a>
+          </div>
+        `).join('') : '<p class="small-text">Nenhum serviço finalizado.</p>';
+      }
+    } catch (err) {
+      console.error('Erro ao carregar chats:', err);
+      document.getElementById('chatsAtivosContainer').innerHTML = '<p class="small-text">Erro ao carregar serviços.</p>';
+      document.getElementById('chatsFinalizadosContainer').innerHTML = '<p class="small-text">Erro ao carregar serviços.</p>';
+    }
+  }
+
+  // ========== TOKEN-ALMA ==========
+  async function atualizarTokenDisplay() {
+    if (!profissionalAtual) return;
+    try {
+      const saldo = await getTokenBalance(profissionalAtual.id, "profissional");
+      document.getElementById('tokenSaldo').innerText = saldo;
+      
+      const chats = await obterChats();
+      const chatsArray = Array.isArray(chats) ? chats : [];
+      let pendente = 0;
+      chatsArray.forEach(chat => {
+        if (chat && chat.profissionalId === profissionalAtual.id) {
+          if (chat.statusServico === 'pago_parcial' && chat.valorCombinado) pendente += chat.valorCombinado * 0.5;
+          else if (chat.statusServico === 'em_andamento' && chat.valorCombinado) pendente += chat.valorCombinado * 0.5;
+          else if (chat.statusServico === 'aguardando_pagamento_final' && chat.valorCombinado) pendente += chat.valorCombinado * 0.5;
+        }
+      });
+      document.getElementById('tokenPendente').innerText = pendente.toFixed(2);
+    } catch (err) {
+      console.error('Erro ao atualizar saldo:', err);
+    }
+  }
+
+  // ========== AGENDA ==========
+  let disponibilidade = [];
+  const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+  
+  function renderAgenda() {
+    const container = document.getElementById('agendaDias');
+    if (!container) return;
+    container.innerHTML = diasSemana.map(dia => `<button class="dia-btn ${disponibilidade.includes(dia) ? 'ativo' : ''}" data-dia="${dia}">${dia}</button>`).join('');
+    document.querySelectorAll('.dia-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const dia = btn.dataset.dia;
+        if (disponibilidade.includes(dia)) disponibilidade = disponibilidade.filter(d => d !== dia);
+        else disponibilidade.push(dia);
+        renderAgenda();
+      });
+    });
+  }
+
+  // ========== PERFIL COMPLETO ==========
+  let experiencias = [], formacoes = [], habilidades = [], idiomas = [], links = [];
+
+  function renderExperiencias() {
+    const container = document.getElementById('experienciasContainer');
+    if (!experiencias.length) { container.innerHTML = '<p class="small-text">Nenhuma experiência adicionada.</p>'; return; }
+    container.innerHTML = experiencias.map((exp, idx) => `
+      <div class="item-card">
+        <div class="item-info"><strong>${escapeHtml(exp.cargo || '')}</strong> na ${escapeHtml(exp.empresa || '')}<br><span class="small-text">${escapeHtml(exp.periodo || '')} · ${escapeHtml(exp.descricao || '')}</span></div>
+        <div class="item-actions"><button onclick="editarExperiencia(${idx})"><i class="fas fa-edit"></i></button><button onclick="removerExperiencia(${idx})"><i class="fas fa-trash-alt"></i></button></div>
+      </div>
+    `).join('');
+  }
+  
+  function renderFormacoes() {
+    const container = document.getElementById('formacoesContainer');
+    if (!formacoes.length) { container.innerHTML = '<p class="small-text">Nenhuma formação adicionada.</p>'; return; }
+    container.innerHTML = formacoes.map((f, idx) => `
+      <div class="item-card">
+        <div class="item-info"><strong>${escapeHtml(f.curso || '')}</strong> - ${escapeHtml(f.instituicao || '')}<br><span class="small-text">${escapeHtml(f.anoConclusao || '')} · ${escapeHtml(f.descricao || '')}</span></div>
+        <div class="item-actions"><button onclick="editarFormacao(${idx})"><i class="fas fa-edit"></i></button><button onclick="removerFormacao(${idx})"><i class="fas fa-trash-alt"></i></button></div>
+      </div>
+    `).join('');
+  }
+  
+  function renderHabilidades() {
+    const container = document.getElementById('habilidadesContainer');
+    if (!habilidades.length) { container.innerHTML = '<p class="small-text">Nenhuma habilidade adicionada.</p>'; return; }
+    container.innerHTML = habilidades.map((hab, idx) => `<span class="skill-tag">${escapeHtml(hab)} <button onclick="removerHabilidade(${idx})">×</button></span>`).join('');
+  }
+  
+  function renderIdiomas() {
+    const container = document.getElementById('idiomasContainer');
+    if (!idiomas.length) { container.innerHTML = '<p class="small-text">Nenhum idioma adicionado.</p>'; return; }
+    container.innerHTML = idiomas.map((idi, idx) => `
+      <div class="item-card">
+        <div class="item-info"><strong>${escapeHtml(idi.idioma)}</strong> - Nível: ${escapeHtml(idi.nivel)}</div>
+        <div class="item-actions"><button onclick="editarIdioma(${idx})"><i class="fas fa-edit"></i></button><button onclick="removerIdioma(${idx})"><i class="fas fa-trash-alt"></i></button></div>
+      </div>
+    `).join('');
+  }
+  
+  function renderLinks() {
+    const container = document.getElementById('linksContainer');
+    if (!links.length) { container.innerHTML = '<p class="small-text">Nenhum link adicionado.</p>'; return; }
+    container.innerHTML = links.map((link, idx) => `
+      <div class="item-card">
+        <div class="item-info"><strong>${escapeHtml(link.nome || 'Link')}</strong>: <a href="${escapeHtml(link.url)}" target="_blank">${escapeHtml(link.url)}</a></div>
+        <div class="item-actions"><button onclick="editarLink(${idx})"><i class="fas fa-edit"></i></button><button onclick="removerLink(${idx})"><i class="fas fa-trash-alt"></i></button></div>
+      </div>
+    `).join('');
+  }
+
+  window.removerExperiencia = (idx) => { experiencias.splice(idx,1); renderExperiencias(); };
+  window.editarExperiencia = (idx) => {
+    let exp = experiencias[idx];
+    let cargo = prompt('Cargo:', exp.cargo); let empresa = prompt('Empresa:', exp.empresa);
+    let periodo = prompt('Período:', exp.periodo); let desc = prompt('Descrição:', exp.descricao);
+    if (cargo !== null) exp.cargo = cargo; if (empresa !== null) exp.empresa = empresa;
+    if (periodo !== null) exp.periodo = periodo; if (desc !== null) exp.descricao = desc;
+    renderExperiencias();
+  };
+  window.removerFormacao = (idx) => { formacoes.splice(idx,1); renderFormacoes(); };
+  window.editarFormacao = (idx) => {
+    let f = formacoes[idx];
+    let curso = prompt('Curso:', f.curso); let instituicao = prompt('Instituição:', f.instituicao);
+    let ano = prompt('Ano conclusão:', f.anoConclusao); let desc = prompt('Descrição:', f.descricao);
+    if (curso !== null) f.curso = curso; if (instituicao !== null) f.instituicao = instituicao;
+    if (ano !== null) f.anoConclusao = ano; if (desc !== null) f.descricao = desc;
+    renderFormacoes();
+  };
+  window.removerHabilidade = (idx) => { habilidades.splice(idx,1); renderHabilidades(); };
+  window.removerIdioma = (idx) => { idiomas.splice(idx,1); renderIdiomas(); };
+  window.editarIdioma = (idx) => {
+    let idi = idiomas[idx];
+    let novoIdioma = prompt('Idioma:', idi.idioma); let nivel = prompt('Nível:', idi.nivel);
+    if (novoIdioma !== null) idi.idioma = novoIdioma; if (nivel !== null) idi.nivel = nivel;
+    renderIdiomas();
+  };
+  window.removerLink = (idx) => { links.splice(idx,1); renderLinks(); };
+  window.editarLink = (idx) => {
+    let l = links[idx];
+    let nome = prompt('Nome do link:', l.nome); let url = prompt('URL:', l.url);
+    if (nome !== null) l.nome = nome; if (url !== null) l.url = url;
+    renderLinks();
+  };
+
+  function carregarMeusServicos() {
+    const container = document.getElementById('meusServicosContainer');
+    const todosServicos = obterServicos();
+    const meusIds = profissionalAtual?.servicos_ids || [];
+    if (meusIds.length === 0) { container.innerHTML = '<span class="servico-tag">Nenhum serviço cadastrado.</span>'; return; }
+    const meusServicos = todosServicos.filter(s => meusIds.includes(s.id));
+    container.innerHTML = meusServicos.map(s => `<span class="servico-tag">${escapeHtml(s.nome)} <strong>R$ ${(s.diaria_base/s.producao_dia).toFixed(2)}/${escapeHtml(s.unidade)}</strong></span>`).join('');
+  }
+
+  // ========== FOTOS ==========
+  let fotosServicos = [];
+  
+  async function renderFotos() {
+    const grid = document.getElementById('fotosGrid');
+    if (!grid || !profissionalAtual) return;
+    try {
+      const fotos = await listarFotosServico(profissionalAtual.id);
+      fotosServicos = Array.isArray(fotos) ? fotos : [];
+      grid.innerHTML = fotosServicos.map((f, idx) => `
+        <div class="foto-item" data-id="${f.id}">
+          <img src="${escapeHtml(f.src)}" alt="${escapeHtml(f.legenda || '')}">
+          <button class="foto-remove" onclick="removerFoto('${f.id}')" title="Remover">×</button>
+          ${f.legenda ? `<div class="foto-label">${escapeHtml(f.legenda)}</div>` : ''}
+        </div>
+      `).join('');
+      grid.innerHTML += `<div class="btn-add-foto" id="btnAddFoto"><i class="fas fa-camera"></i><span>Adicionar foto</span></div>`;
+      document.getElementById('btnAddFoto')?.addEventListener('click', adicionarFoto);
+    } catch (err) {
+      console.error('Erro ao carregar fotos:', err);
+    }
+  }
+
+  async function adicionarFoto() {
+    const legenda = prompt('Legenda da foto (ex: Pintura de sala):', '') || '';
+    let input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { toast('Imagem muito grande. Máx 5MB.', 'error'); return; }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        compressImage(ev.target.result, 800, 0.7, async (compressed) => {
+          try {
+            await adicionarFotoServico(profissionalAtual.id, compressed, legenda);
+            toast('Foto adicionada!');
+            await renderFotos();
+          } catch (err) {
+            toast('Erro ao salvar foto: ' + err.message, 'error');
+          }
+        });
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
+
+  window.removerFoto = async (fotoId) => {
+    if (confirm('Remover esta foto?')) {
+      try {
+        await removerFotoServico(fotoId);
+        toast('Foto removida.');
+        await renderFotos();
+      } catch (err) {
+        toast('Erro ao remover foto: ' + err.message, 'error');
+      }
+    }
+  };
+
+  // ========== ALTERAR SENHA ==========
+  let senhaModal = null;
+  
+  async function abrirModalSenha() {
+    try {
+      const profissional = await buscarProfissionalPorEmail(profissionalAtual.email);
+      if (profissional && profissional.senhaOriginal) {
+        senhaOriginal = profissional.senhaOriginal;
+        document.getElementById('senhaAtualDisplay').innerText = senhaOriginal;
+      } else {
+        document.getElementById('senhaAtualDisplay').innerText = '******';
+      }
+    } catch (err) {
+      console.error('Erro ao buscar senha:', err);
+    }
+    senhaModal.style.display = 'flex';
+  }
+  
+  function fecharModalSenha() {
+    senhaModal.style.display = 'none';
+    document.getElementById('novaSenha').value = '';
+    document.getElementById('confirmarSenha').value = '';
+    document.getElementById('senhaError').style.display = 'none';
+    document.getElementById('senhaError').innerText = '';
+  }
+  
+  async function alterarSenha() {
+    const novaSenha = document.getElementById('novaSenha').value;
+    const confirmarSenha = document.getElementById('confirmarSenha').value;
+    const errorDiv = document.getElementById('senhaError');
+    
+    if (!novaSenha || novaSenha.length < 4) {
+      errorDiv.innerText = 'A nova senha deve ter pelo menos 4 caracteres.';
+      errorDiv.style.display = 'block';
+      return;
+    }
+    
+    if (novaSenha !== confirmarSenha) {
+      errorDiv.innerText = 'As senhas não coincidem.';
+      errorDiv.style.display = 'block';
+      return;
+    }
+    
+    try {
+      const resultado = await callBackend("alterar_senha_profissional", {
+        id: profissionalAtual.id,
+        novaSenha: novaSenha
+      });
+      
+      if (resultado && resultado.ok) {
+        toast('✅ Senha alterada com sucesso! Use a nova senha no próximo login.', 'success');
+        fecharModalSenha();
+        setTimeout(() => {
+          if (confirm('Senha alterada! Deseja fazer login novamente com a nova senha?')) {
+            limparSessao();
+            window.location.href = 'marido_aluguel.html';
+          }
+        }, 1000);
+      } else {
+        throw new Error('Erro ao alterar senha');
+      }
+    } catch (err) {
+      console.error(err);
+      errorDiv.innerText = 'Erro ao alterar senha. Tente novamente.';
+      errorDiv.style.display = 'block';
+    }
+  }
+
+  // ========== SALVAR PERFIL ==========
+  async function salvarPerfilCompleto() {
+    if (!profissionalAtual) return;
+    const PERFIL_COMPLETO_KEY = 'perfil_completo_' + profissionalAtual.id;
+    const novoPerfilExtra = {
+      nome: document.getElementById('editNome').value.trim(),
+      email: document.getElementById('editEmail').value.trim(),
+      telefone: document.getElementById('editTelefone').value.trim(),
+      descricao: document.getElementById('editDescricao').value.trim(),
+      titulo: document.getElementById('editTitulo').value.trim(),
+      localizacao: document.getElementById('editLocalizacao').value.trim(),
+      setor: document.getElementById('editSetor').value.trim(),
+      avatar: document.getElementById('avatarPreview').src,
+      coverPhoto: document.getElementById('coverImg').src,
+      experiencias, formacoes, habilidades, idiomas, links
+    };
+    localStorage.setItem(PERFIL_COMPLETO_KEY, JSON.stringify(novoPerfilExtra));
+    
+    const dadosBase = {
+      id: profissionalAtual.id,
+      nome: novoPerfilExtra.nome,
+      telefone: novoPerfilExtra.telefone,
+      descricao: novoPerfilExtra.descricao,
+      avatar: novoPerfilExtra.avatar,
+      coverPhoto: novoPerfilExtra.coverPhoto,
+      endereco: novoPerfilExtra.localizacao
+    };
+    await atualizarProfissional(dadosBase);
+    
+    document.getElementById('profNome').innerText = novoPerfilExtra.nome;
+    document.getElementById('profAvatar').src = novoPerfilExtra.avatar;
+    toast('✅ Perfil salvo com sucesso!', 'success');
+  }
+
+  // ========== UPLOAD DE IMAGEM ==========
+  function uploadImagemCompress(callback, maxWidth = 800) {
+    let input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      let file = e.target.files[0];
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          toast('Imagem muito grande. Máximo 5MB.', 'error');
+          return;
+        }
+        let reader = new FileReader();
+        reader.onload = (ev) => {
+          compressImage(ev.target.result, maxWidth, 0.7, callback);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  }
+
+  // ========== INICIALIZAÇÃO ==========
+  (async () => {
+    profissionalAtual = await carregarProfissionalLogado();
+    if (!profissionalAtual) return;
+    
+    const PERFIL_COMPLETO_KEY = 'perfil_completo_' + profissionalAtual.id;
+    const saved = localStorage.getItem(PERFIL_COMPLETO_KEY);
+    if (saved) {
+      perfilCompleto = JSON.parse(saved);
+    } else {
+      perfilCompleto = {
+        nome: profissionalAtual.nome,
+        email: profissionalAtual.email,
+        telefone: profissionalAtual.telefone,
+        descricao: profissionalAtual.descricao,
+        titulo: '',
+        localizacao: profissionalAtual.endereco || '',
+        setor: '',
+        avatar: profissionalAtual.avatar,
+        coverPhoto: '',
+        experiencias: [],
+        formacoes: [],
+        habilidades: [],
+        idiomas: [],
+        links: []
+      };
+    }
+
+    document.getElementById('profNome').innerText = perfilCompleto.nome || profissionalAtual.nome;
+    document.getElementById('profEmail').innerText = profissionalAtual.email;
+    const avatarUrl = perfilCompleto.avatar || profissionalAtual.avatar;
+    document.getElementById('profAvatar').src = avatarUrl;
+    document.getElementById('avatarPreview').src = avatarUrl;
+    if (perfilCompleto.coverPhoto) document.getElementById('coverImg').src = perfilCompleto.coverPhoto;
+    document.getElementById('editNome').value = perfilCompleto.nome || profissionalAtual.nome;
+    document.getElementById('editEmail').value = profissionalAtual.email;
+    document.getElementById('editTelefone').value = perfilCompleto.telefone || profissionalAtual.telefone;
+    document.getElementById('editDescricao').value = perfilCompleto.descricao || profissionalAtual.descricao;
+    document.getElementById('editTitulo').value = perfilCompleto.titulo || '';
+    document.getElementById('editLocalizacao').value = perfilCompleto.localizacao || '';
+    document.getElementById('editSetor').value = perfilCompleto.setor || '';
+
+    experiencias = perfilCompleto.experiencias || [];
+    formacoes = perfilCompleto.formacoes || [];
+    habilidades = perfilCompleto.habilidades || [];
+    idiomas = perfilCompleto.idiomas || [];
+    links = perfilCompleto.links || [];
+
+    renderExperiencias();
+    renderFormacoes();
+    renderHabilidades();
+    renderIdiomas();
+    renderLinks();
+    carregarMeusServicos();
+    
+    disponibilidade = JSON.parse(localStorage.getItem('disp_' + profissionalAtual.id) || '[]');
+    renderAgenda();
+    await atualizarTokenDisplay();
+    await carregarChats();
+    renderFotos();
+
+    // Modal senha
+    senhaModal = document.getElementById('senhaModal');
+    document.getElementById('closeSenhaModal').onclick = fecharModalSenha;
+    window.addEventListener('click', (e) => { if (e.target === senhaModal) fecharModalSenha(); });
+    document.getElementById('btnAlterarSenha').onclick = abrirModalSenha;
+    document.getElementById('confirmarAlteracaoSenha').onclick = alterarSenha;
+
+    document.getElementById('logoutBtn').onclick = () => { limparSessao(); window.location.href = 'marido_aluguel.html'; };
+    document.getElementById('salvarPerfil').onclick = salvarPerfilCompleto;
+    document.getElementById('uploadAvatarBtn').onclick = () => uploadImagemCompress((imgData) => {
+      document.getElementById('avatarPreview').src = imgData;
+      document.getElementById('profAvatar').src = imgData;
+      toast('Avatar atualizado. Salve o perfil para confirmar.');
+    }, 300);
+    document.getElementById('uploadCoverBtn').onclick = () => uploadImagemCompress((imgData) => {
+      document.getElementById('coverImg').src = imgData;
+      toast('Capa atualizada. Salve o perfil para confirmar.');
+    }, 1200);
+    document.getElementById('salvarDisponibilidade').onclick = () => {
+      localStorage.setItem('disp_' + profissionalAtual.id, JSON.stringify(disponibilidade));
+      toast('Disponibilidade salva com sucesso!');
+    };
+    
+    document.getElementById('addExperienciaBtn').onclick = () => {
+      let cargo = prompt('Cargo:'); let empresa = prompt('Empresa:'); let periodo = prompt('Período:'); let desc = prompt('Descrição:');
+      if (cargo && empresa) experiencias.push({ cargo, empresa, periodo: periodo || '', descricao: desc || '' });
+      renderExperiencias();
+    };
+    document.getElementById('addFormacaoBtn').onclick = () => {
+      let curso = prompt('Curso:'); let instituicao = prompt('Instituição:'); let ano = prompt('Ano conclusão:'); let desc = prompt('Descrição:');
+      if (curso && instituicao) formacoes.push({ curso, instituicao, anoConclusao: ano || '', descricao: desc || '' });
+      renderFormacoes();
+    };
+    document.getElementById('addHabilidadeBtn').onclick = () => {
+      let hab = document.getElementById('novaHabilidade').value.trim();
+      if (hab) { habilidades.push(hab); renderHabilidades(); document.getElementById('novaHabilidade').value = ''; }
+    };
+    document.getElementById('addIdiomaBtn').onclick = () => {
+      let idioma = prompt('Idioma:'); let nivel = prompt('Nível:');
+      if (idioma && nivel) idiomas.push({ idioma, nivel });
+      renderIdiomas();
+    };
+    document.getElementById('addLinkBtn').onclick = () => {
+      let nome = prompt('Nome do link:'); let url = prompt('URL:');
+      if (nome && url) links.push({ nome, url });
+      renderLinks();
+    };
+  })();
+
+  // Atualizações periódicas
+  setInterval(async () => {
+    if (profissionalAtual) {
+      await atualizarTokenDisplay();
+      await carregarChats();
+    }
+  }, 10000);
+</script>
+</body>
+</html>

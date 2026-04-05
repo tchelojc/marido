@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro · Marido de Aluguel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Arquivos de dados e integração -->
+  <script src="dados.js"></script>
+  <script src="integracao.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6fa;
+      color: #1a2634;
+      padding: 24px;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    .card {
+      background: white;
+      border-radius: 28px;
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #1e3c72, #2b4c7c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 8px;
+    }
+    .tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 40px;
+      transition: 0.2s;
+      color: #4a5b7a;
+    }
+    .tab-btn.active {
+      background: #2b4c7c;
+      color: white;
+    }
+    .form-container { display: none; }
+    .form-container.active { display: block; }
+    .form-group { margin-bottom: 20px; }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid #cbd5e1;
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #2b4c7c;
+      box-shadow: 0 0 0 3px rgba(43,76,124,0.1);
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    .servicos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px;
+      background: #fafcff;
+    }
+    .servico-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .servico-check input { width: 18px; height: 18px; margin: 0; cursor: pointer; }
+    .btn-cadastrar {
+      background: #2b4c7c;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 40px;
+      width: 100%;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: 0.2s;
+    }
+    .btn-cadastrar:hover { background: #1e3c72; }
+    .btn-cadastrar:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+    .login-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.85rem;
+    }
+    .login-link a { color: #2b4c7c; text-decoration: none; font-weight: 500; }
+    .error-message {
+      color: #e74c3c;
+      font-size: 0.8rem;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .success-message {
+      color: #27ae60;
+      font-size: 0.8rem;
+      margin-top: 8px;
+    }
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #fff;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .small-text { font-size: 0.75rem; color: #5a6e8a; margin-top: 4px; }
+    
+    /* ========== TERMOS E REGULAMENTO ========== */
+    .termos-container {
+      margin: 20px 0 16px 0;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+    }
+    .checkbox-termo {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+    .checkbox-termo input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .checkbox-termo span {
+      cursor: pointer;
+    }
+    .checkbox-termo a {
+      color: #2b4c7c;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .checkbox-termo a:hover {
+      text-decoration: underline;
+    }
+    .termos-error {
+      color: #e74c3c;
+      font-size: 0.75rem;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding: 20px 20px 0 20px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 0.7rem;
+      color: #5a6e8a;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .footer-links a {
+      color: #2b4c7c;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-links a:hover {
+      color: #1e3c72;
+      text-decoration: underline;
+    }
+    
+    /* MODAL DE POLÍTICA DE PRIVACIDADE */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      max-width: 500px;
+      width: 90%;
+      border-radius: 32px;
+      padding: 28px;
+      position: relative;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .close-modal {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      font-size: 1.6rem;
+      cursor: pointer;
+      color: #5a6e8a;
+    }
+    .close-modal:hover { color: #1a2634; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <div class="logo">🛠️ Marido de Aluguel</div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="cliente">👤 Sou Cliente</button>
+      <button class="tab-btn" data-tab="profissional">🔧 Sou Profissional</button>
+    </div>
+
+    <!-- Formulário Cliente -->
+    <div id="formCliente" class="form-container active">
+      <h2 style="margin-bottom: 24px;">Cadastro de Cliente</h2>
+      <form id="clienteForm">
+        <div class="form-group">
+          <label>Nome completo *</label>
+          <input type="text" id="cliNome" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label>E-mail (será seu login) *</label>
+          <input type="email" id="cliEmail" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label>Senha de acesso</label>
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <span id="cliSenhaGerada" style="font-family:monospace; font-size:1.2rem; font-weight:700; letter-spacing:4px; color:#1e3c72;">------</span>
+            <button type="button" id="btnGerarSenhaCli" style="background:#2b4c7c;color:white;border:none;padding:6px 14px;border-radius:30px;font-size:0.8rem;cursor:pointer;white-space:nowrap;">🔄 Gerar senha</button>
+          </div>
+          <div class="small-text" style="margin-top:6px;">⚠️ <strong>Anote essa senha</strong> — ela será usada para fazer login. Você pode alterá-la depois no seu perfil.</div>
+          <input type="hidden" id="cliSenha">
+        </div>
+        <div class="form-group">
+          <label>Telefone (com DDD) *</label>
+          <input type="tel" id="cliTelefone" placeholder="(11) 98765-4321" required>
+        </div>
+        <div class="form-group">
+          <label>Endereço</label>
+          <input type="text" id="cliEndereco" placeholder="Cidade, bairro, rua...">
+        </div>
+        
+        <!-- TERMOS E REGULAMENTO (OBRIGATÓRIO) -->
+        <div class="termos-container">
+          <label class="checkbox-termo">
+            <input type="checkbox" id="cliAceitoTermos">
+            <span>Li e concordo com o <a href="regulamento.html" target="_blank" rel="noopener noreferrer">Regulamento da Plataforma</a> e com a <a href="#" id="openPrivacyFromCliente" style="display: inline;">Política de Privacidade</a>.</span>
+          </label>
+          <div id="cliTermosError" class="termos-error" style="display: none;">
+            <i class="fas fa-exclamation-circle"></i> Você precisa aceitar os termos para se cadastrar.
+          </div>
+        </div>
+        
+        <div id="cliError" class="error-message" style="display: none;"></div>
+        <button type="submit" class="btn-cadastrar" id="btnCliente">Cadastrar como Cliente</button>
+      </form>
+    </div>
+
+    <!-- Formulário Profissional -->
+    <div id="formProfissional" class="form-container">
+      <h2 style="margin-bottom: 24px;">Cadastro de Profissional</h2>
+      <form id="profissionalForm">
+        <div class="form-group">
+          <label>Nome completo *</label>
+          <input type="text" id="profNome" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label>E-mail (será seu login) *</label>
+          <input type="email" id="profEmail" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label>Senha de acesso</label>
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <span id="profSenhaGerada" style="font-family:monospace; font-size:1.2rem; font-weight:700; letter-spacing:4px; color:#1e3c72;">------</span>
+            <button type="button" id="btnGerarSenhaProf" style="background:#2b4c7c;color:white;border:none;padding:6px 14px;border-radius:30px;font-size:0.8rem;cursor:pointer;white-space:nowrap;">🔄 Gerar senha</button>
+          </div>
+          <div class="small-text" style="margin-top:6px;">⚠️ <strong>Anote essa senha</strong> — ela será usada para fazer login. Você pode alterá-la depois no seu perfil.</div>
+          <input type="hidden" id="profSenha">
+        </div>
+        <div class="form-group">
+          <label>Telefone (com DDD) *</label>
+          <input type="tel" id="profTelefone" placeholder="(11) 98765-4321" required>
+        </div>
+        <div class="form-group">
+          <label>Cidade/Estado</label>
+          <input type="text" id="profEndereco" placeholder="Ex: São Paulo - SP">
+        </div>
+        <div class="form-group">
+          <label>Descrição profissional</label>
+          <textarea id="profDescricao" placeholder="Fale sobre sua experiência, diferenciais..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Tempo de experiência</label>
+          <input type="text" id="profExperiencia" placeholder="Ex: 10 anos">
+        </div>
+        <div class="form-group">
+          <label>Selecione os serviços que você oferece *</label>
+          <div id="servicosList" class="servicos-grid"></div>
+          <div id="servicosError" class="error-message" style="display: none;"></div>
+        </div>
+        
+        <!-- TERMOS E REGULAMENTO (OBRIGATÓRIO) -->
+        <div class="termos-container">
+          <label class="checkbox-termo">
+            <input type="checkbox" id="profAceitoTermos">
+            <span>Li e concordo com o <a href="regulamento.html" target="_blank" rel="noopener noreferrer">Regulamento da Plataforma</a> e com a <a href="#" id="openPrivacyFromProfissional" style="display: inline;">Política de Privacidade</a>.</span>
+          </label>
+          <div id="profTermosError" class="termos-error" style="display: none;">
+            <i class="fas fa-exclamation-circle"></i> Você precisa aceitar os termos para se cadastrar.
+          </div>
+        </div>
+        
+        <div id="profError" class="error-message" style="display: none;"></div>
+        <button type="submit" class="btn-cadastrar" id="btnProfissional">Cadastrar como Profissional</button>
+      </form>
+    </div>
+
+    <div class="login-link">
+      Já tem cadastro? <a href="marido_aluguel.html">Faça login aqui</a>
+    </div>
+  </div>
+  
+  <!-- FOOTER COM LINKS -->
+  <div class="footer">
+    <div class="footer-links">
+      <a href="regulamento.html" target="_blank" rel="noopener noreferrer">
+        <i class="fas fa-file-alt"></i> Regulamento
+      </a>
+      <a href="#" id="openPrivacyFooter">
+        <i class="fas fa-lock"></i> Política de Privacidade
+      </a>
+      <a href="/cdn-cgi/l/email-protection#afcec3c2cec9c3dad7c0efcec3c2cec9c3dad7c081dac4">
+        <i class="fas fa-envelope"></i> Contato
+      </a>
+    </div>
+    <div class="footer-copyright">
+      © 2026 Marido de Aluguel · Plataforma de intermediação
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE POLÍTICA DE PRIVACIDADE (RESUMO) -->
+<div id="privacyModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closePrivacyModal">&times;</span>
+    <h3><i class="fas fa-lock"></i> Política de Privacidade (Resumo)</h3>
+    <div style="margin: 20px 0; font-size: 0.85rem; line-height: 1.6;">
+      <p><strong>Coleta de dados:</strong> Nome, e-mail, telefone, endereço, fotos e histórico de serviços.</p>
+      <p><strong>Uso:</strong> Exclusivamente para viabilizar a intermediação entre cliente e profissional.</p>
+      <p><strong>Compartilhamento:</strong> Seus dados são compartilhados apenas com o profissional que você contratar (ou cliente, no caso de profissional).</p>
+      <p><strong>Direitos (LGPD):</strong> Você pode solicitar correção, exclusão ou portabilidade dos seus dados pelo e-mail <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6410070c01080b0e07240309050d084a070b09">[email&#160;protected]</a></strong>.</p>
+      <p><strong>Armazenamento:</strong> Por até 6 meses após o término da conta para fins legais.</p>
+      <hr style="margin: 16px 0;">
+      <p class="small-text">Para a versão completa, consulte o <a href="regulamento.html" target="_blank">Regulamento completo</a> (Seção 12).</p>
+    </div>
+    <button class="btn-cadastrar" id="closePrivacyBtn" style="margin-top: 0;">Entendi</button>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  (function() {
+    // ========== VARIÁVEIS GLOBAIS ==========
+    let servicosList = [];
+
+    // ========== GERAÇÃO DE SENHA AUTOMÁTICA ==========
+    function gerarSenha() {
+      // 6 dígitos numéricos — fácil de anotar, difícil de errar na digitação
+      return String(Math.floor(100000 + Math.random() * 900000));
+    }
+
+    // Gera e exibe a senha do cliente
+    function gerarEExibirSenhaCli() {
+      const senha = gerarSenha();
+      document.getElementById('cliSenhaGerada').textContent = senha;
+      document.getElementById('cliSenha').value = senha;
+    }
+    document.getElementById('btnGerarSenhaCli').addEventListener('click', gerarEExibirSenhaCli);
+    gerarEExibirSenhaCli(); // gera automaticamente ao carregar
+
+    // Gera e exibe a senha do profissional
+    function gerarEExibirSenhaProf() {
+      const senha = gerarSenha();
+      document.getElementById('profSenhaGerada').textContent = senha;
+      document.getElementById('profSenha').value = senha;
+    }
+    document.getElementById('btnGerarSenhaProf').addEventListener('click', gerarEExibirSenhaProf);
+    gerarEExibirSenhaProf(); // gera automaticamente ao carregar
+
+    // ========== MODAL DE PRIVACIDADE ==========
+    const privacyModal = document.getElementById('privacyModal');
+    function openPrivacyModal() { privacyModal.style.display = 'flex'; }
+    function closePrivacyModal() { privacyModal.style.display = 'none'; }
+    
+    document.getElementById('closePrivacyModal').onclick = closePrivacyModal;
+    document.getElementById('closePrivacyBtn').onclick = closePrivacyModal;
+    window.addEventListener('click', (e) => { if (e.target === privacyModal) closePrivacyModal(); });
+    
+    // Abrir modal a partir dos links
+    const openPrivacyFromCliente = document.getElementById('openPrivacyFromCliente');
+    const openPrivacyFromProfissional = document.getElementById('openPrivacyFromProfissional');
+    const openPrivacyFooter = document.getElementById('openPrivacyFooter');
+    
+    if (openPrivacyFromCliente) openPrivacyFromCliente.onclick = (e) => { e.preventDefault(); openPrivacyModal(); };
+    if (openPrivacyFromProfissional) openPrivacyFromProfissional.onclick = (e) => { e.preventDefault(); openPrivacyModal(); };
+    if (openPrivacyFooter) openPrivacyFooter.onclick = (e) => { e.preventDefault(); openPrivacyModal(); };
+
+    // ========== UTILITÁRIOS ==========
+    function showError(elementId, message) {
+      const errorDiv = document.getElementById(elementId);
+      if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'flex';
+        setTimeout(() => {
+          errorDiv.style.display = 'none';
+        }, 5000);
+      }
+    }
+
+    function clearError(elementId) {
+      const errorDiv = document.getElementById(elementId);
+      if (errorDiv) errorDiv.style.display = 'none';
+    }
+
+    function clearTermosError(tipo) {
+      const errorDiv = document.getElementById(`${tipo}TermosError`);
+      if (errorDiv) errorDiv.style.display = 'none';
+    }
+
+    function setLoading(buttonId, isLoading) {
+      const btn = document.getElementById(buttonId);
+      if (!btn) return;
+      if (isLoading) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-spinner"></span> Processando...';
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = btn.id === 'btnCliente' ? 'Cadastrar como Cliente' : 'Cadastrar como Profissional';
+      }
+    }
+
+    // ========== VALIDAÇÃO DE E-MAIL DUPLICADO ==========
+    async function emailJaExiste(email, tipo) {
+      try {
+        if (tipo === 'cliente') {
+          const clientes = await obterTodosClientes();
+          return clientes.some(c => c.email.toLowerCase() === email.toLowerCase());
+        } else {
+          const profissionais = await obterTodosProfissionais();
+          return profissionais.some(p => p.email.toLowerCase() === email.toLowerCase());
+        }
+      } catch (err) {
+        console.error('Erro ao verificar e-mail:', err);
+        return false;
+      }
+    }
+
+    // ========== CARREGAR SERVIÇOS ==========
+    function carregarServicos() {
+      const container = document.getElementById('servicosList');
+      if (!container) return;
+      try {
+        const servicos = obterServicos();
+        if (!servicos || servicos.length === 0) {
+          container.innerHTML = '<div class="small-text" style="color: #e74c3c;">Nenhum serviço disponível no momento.</div>';
+          return;
+        }
+        servicosList = servicos;
+        container.innerHTML = servicos.map(serv => `
+          <label class="servico-check">
+            <input type="checkbox" value="${serv.id}">
+            <span>${serv.nome} (R$ ${serv.preco_unitario?.toFixed(2) || (serv.diaria_base / serv.producao_dia).toFixed(2)}/${serv.unidade || 'unid'})</span>
+          </label>
+        `).join('');
+      } catch (err) {
+        console.error('Erro ao carregar serviços:', err);
+        container.innerHTML = '<div class="small-text" style="color: #e74c3c;">Erro ao carregar serviços. Verifique o arquivo dados.js.</div>';
+      }
+    }
+
+    // ========== CADASTRO CLIENTE ==========
+    document.getElementById('clienteForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError('cliError');
+      clearTermosError('cli');
+      
+      const aceitoTermos = document.getElementById('cliAceitoTermos').checked;
+      if (!aceitoTermos) {
+        const termosError = document.getElementById('cliTermosError');
+        if (termosError) termosError.style.display = 'flex';
+        return;
+      }
+      
+      const nome     = document.getElementById('cliNome').value.trim();
+      const email    = document.getElementById('cliEmail').value.trim();
+      const senha    = document.getElementById('cliSenha').value;  // já preenchida pelo gerador
+      const telefone = document.getElementById('cliTelefone').value.trim();
+      const endereco = document.getElementById('cliEndereco').value.trim();
+
+      if (!nome || !email || !telefone) {
+        showError('cliError', 'Preencha nome, e-mail e telefone.');
+        return;
+      }
+      if (!senha) {
+        showError('cliError', 'Clique em "Gerar senha" para criar sua senha de acesso.');
+        return;
+      }
+
+      setLoading('btnCliente', true);
+
+      try {
+        const existe = await emailJaExiste(email, 'cliente');
+        if (existe) {
+          showError('cliError', 'Este e-mail já está cadastrado como cliente.');
+          setLoading('btnCliente', false);
+          return;
+        }
+
+        const id = 'cli_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const avatar = `https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(nome)}`;
+        
+        const novoCliente = {
+          id,
+          nome,
+          email,
+          senha,
+          telefone,
+          endereco,
+          avatar,
+          dataCadastro: new Date().toISOString(),
+          aceiteTermos: true,
+          dataAceiteTermos: new Date().toISOString()
+        };
+
+        const sucesso = await salvarNovoCliente(novoCliente);
+        if (sucesso) {
+          alert(`✅ Cadastro realizado com sucesso!\n\n🔑 Sua senha de acesso é: ${senha}\n\nAnote essa senha — você vai precisar dela para fazer login.\nFaça login agora na tela principal.`);
+          window.location.href = 'marido_aluguel.html';
+        } else {
+          showError('cliError', 'Não foi possível cadastrar. E-mail pode já existir ou erro no servidor.');
+        }
+      } catch (err) {
+        console.error(err);
+        showError('cliError', 'Erro de comunicação com o servidor. Tente novamente.');
+      } finally {
+        setLoading('btnCliente', false);
+      }
+    });
+
+    // ========== CADASTRO PROFISSIONAL ==========
+    document.getElementById('profissionalForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError('profError');
+      clearError('servicosError');
+      clearTermosError('prof');
+
+      const aceitoTermos = document.getElementById('profAceitoTermos').checked;
+      if (!aceitoTermos) {
+        const termosError = document.getElementById('profTermosError');
+        if (termosError) termosError.style.display = 'flex';
+        return;
+      }
+
+      const nome       = document.getElementById('profNome').value.trim();
+      const email      = document.getElementById('profEmail').value.trim();
+      const senha      = document.getElementById('profSenha').value;  // já preenchida pelo gerador
+      const telefone   = document.getElementById('profTelefone').value.trim();
+      const endereco   = document.getElementById('profEndereco').value.trim();
+      const descricao  = document.getElementById('profDescricao').value.trim();
+      const experiencia = document.getElementById('profExperiencia').value.trim();
+
+      if (!nome || !email || !telefone) {
+        showError('profError', 'Preencha nome, e-mail e telefone.');
+        return;
+      }
+      if (!senha) {
+        showError('profError', 'Clique em "Gerar senha" para criar sua senha de acesso.');
+        return;
+      }
+
+      const servicosSelecionados = Array.from(document.querySelectorAll('#servicosList input:checked')).map(cb => cb.value);
+      if (servicosSelecionados.length === 0) {
+        showError('servicosError', 'Selecione pelo menos um serviço.');
+        return;
+      }
+
+      setLoading('btnProfissional', true);
+
+      try {
+        const existe = await emailJaExiste(email, 'profissional');
+        if (existe) {
+          showError('profError', 'Este e-mail já está cadastrado como profissional.');
+          setLoading('btnProfissional', false);
+          return;
+        }
+
+        const id = 'prof_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const avatar = `https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(nome)}`;
+        
+        const novoProfissional = {
+          id,
+          nome,
+          email,
+          senha,
+          telefone,
+          endereco,
+          descricao: descricao || 'Profissional cadastrado recentemente.',
+          experiencia: experiencia || 'Não informada',
+          avatar,
+          avaliacao: 0,
+          total_avaliacoes: 0,
+          servicos_ids: servicosSelecionados,
+          dataCadastro: new Date().toISOString(),
+          aceiteTermos: true,
+          dataAceiteTermos: new Date().toISOString()
+        };
+
+        const sucesso = await salvarNovoProfissional(novoProfissional);
+        if (sucesso) {
+          alert(`✅ Cadastro de profissional realizado com sucesso!\n\n🔑 Sua senha de acesso é: ${senha}\n\nAnote essa senha — você vai precisar dela para fazer login.\nFaça login agora na tela principal.`);
+          window.location.href = 'marido_aluguel.html';
+        } else {
+          showError('profError', 'Não foi possível cadastrar. E-mail pode já existir ou erro no servidor.');
+        }
+      } catch (err) {
+        console.error(err);
+        showError('profError', 'Erro de comunicação com o servidor. Tente novamente.');
+      } finally {
+        setLoading('btnProfissional', false);
+      }
+    });
+
+    // ========== ABA DE SERVIÇOS ==========
+    carregarServicos();
+
+    // ========== ALTERNÂNCIA DE ABAS ==========
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const formClienteDiv = document.getElementById('formCliente');
+    const formProfissionalDiv = document.getElementById('formProfissional');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (btn.dataset.tab === 'cliente') {
+          formClienteDiv.classList.add('active');
+          formProfissionalDiv.classList.remove('active');
+        } else {
+          formProfissionalDiv.classList.add('active');
+          formClienteDiv.classList.remove('active');
+          if (servicosList.length === 0) carregarServicos();
+        }
+      });
+    });
+  })();
+</script>
+</body>
+</html>
