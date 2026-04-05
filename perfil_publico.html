@@ -7,10 +7,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="dados.js"></script>
-  <script src="profissionais.js"></script>
   <script src="integracao.js"></script>
   <style>
-    /* ========== ESTILOS (mantidos originais) ========== */
+    /* ========== ESTILOS ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
@@ -180,7 +179,7 @@
     .fotos-pub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; }
     .foto-pub-item { border-radius: 16px; overflow: hidden; aspect-ratio: 1; background: #f0f4fa; position: relative; cursor: pointer; }
     .foto-pub-item img { width: 100%; height: 100%; object-fit: cover; }
-    .foto-pub-item .foto-pub-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: white; font-size: 0.65rem; padding: 4px 8px; }
+    .foto-pub-item .foto-pub-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: white; font-size: 0.65rem; padding: 4px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
     #lightbox.open { display: flex; }
     #lightbox img { max-width: 90vw; max-height: 80vh; border-radius: 12px; }
@@ -211,11 +210,39 @@
       font-style: italic;
       font-size: 0.85rem;
     }
+    .headline-tag {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+    .loc-setor {
+      font-size: 0.85rem;
+      opacity: 0.85;
+      margin-top: 4px;
+    }
+    .links-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .links-list a {
+      background: #eef2ff;
+      padding: 8px 16px;
+      border-radius: 30px;
+      text-decoration: none;
+      color: #1e3c72;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .links-list a:hover { background: #dbeafe; }
 
     @media (max-width: 700px) { .profile-header { flex-direction: column; text-align: center; } }
     .error-message { background: #fee2e2; color: #b91c1c; padding: 20px; border-radius: 20px; text-align: center; }
     .loading { text-align: center; padding: 50px; font-size: 1.2rem; color: #2b4c7c; }
     .small-text { font-size: 0.75rem; color: #5a6e8a; }
+    .sub { font-size: 0.75rem; color: #5a6e8a; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -230,6 +257,46 @@
 </div>
 
 <script>
+  // ========== FUNÇÃO AUXILIAR ESCAPE HTML ==========
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  // ========== FUNÇÃO DE ESTRELAS ==========
+  function estrelas(v) {
+    const cheias = Math.floor(v);
+    const meia = v % 1 >= 0.5 ? '½' : '';
+    return '★'.repeat(cheias) + meia + '☆'.repeat(5 - cheias - (meia ? 1 : 0));
+  }
+
+  // ========== FUNÇÃO PARA BUSCAR DISPONIBILIDADE ==========
+  async function buscarDisponibilidade(profissionalId) {
+    try {
+      const resultado = await callBackend("obter_disponibilidade", { profissionalId }, 30);
+      return resultado?.dias || [];
+    } catch (err) {
+      console.error('Erro ao buscar disponibilidade:', err);
+      return [];
+    }
+  }
+
+  // ========== FUNÇÃO PARA BUSCAR PERFIL EXTRA ==========
+  async function buscarPerfilExtraCompleto(profissionalId) {
+    try {
+      const resultado = await callBackend("obter_perfil_extra", { profissionalId }, 30);
+      return resultado?.dados || {};
+    } catch (err) {
+      console.error('Erro ao buscar perfil extra:', err);
+      return {};
+    }
+  }
+
   (async () => {
     // ========== OBTEM PARÂMETRO DA URL ==========
     const urlParams = new URLSearchParams(window.location.search);
@@ -242,22 +309,20 @@
     }
 
     try {
-      // ========== CARREGA DADOS DO PROFISSIONAL (ASSÍNCRONO) ==========
+      // ========== CARREGA DADOS DO PROFISSIONAL ==========
       const profissional = await buscarProfissionalPorId(profissionalId);
       if (!profissional) {
         container.innerHTML = '<div class="error-message">❌ Profissional não encontrado.</div>';
         return;
       }
 
-      // ========== DADOS AUXILIARES (perfil extra, fotos, avaliações) ==========
       // ========== DADOS AUXILIARES VIA BACKEND ==========
       const servicosData = obterServicos(); // síncrono
-      const perfilExtra = await obterPerfilExtra(profissional.id) || {};
+      const perfilExtra = await buscarPerfilExtraCompleto(profissional.id);
       const fotosServicos = await listarFotosServico(profissional.id);
       let avaliacoes = await obterAvaliacoesProfissional(profissional.id);
-
-      // ========== DISPONIBILIDADE ==========
-      const disponibilidade = JSON.parse(localStorage.getItem('disp_' + profissional.id) || '[]');
+      const disponibilidade = await buscarDisponibilidade(profissional.id);
+      
       const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
       function getDisponibilidadeHTML() {
@@ -271,8 +336,8 @@
       }
 
       function campo(field, defaultValue = '') {
-        let val = perfilExtra[field] !== undefined ? perfilExtra[field] : profissional[field];
-        return (val !== undefined && val !== '') ? val : defaultValue;
+        let val = perfilExtra[field] !== undefined && perfilExtra[field] !== '' ? perfilExtra[field] : profissional[field];
+        return (val !== undefined && val !== null && val !== '') ? val : defaultValue;
       }
 
       const nome = campo('nome', profissional.nome);
@@ -284,11 +349,11 @@
       const setor = campo('setor', '');
       const avatar = campo('avatar', profissional.avatar);
       const coverPhoto = campo('coverPhoto', '');
-      const experiencias = campo('experiencias', []);
-      const formacoes = campo('formacoes', []);
-      const habilidades = campo('habilidades', []);
-      const idiomas = campo('idiomas', []);
-      const links = campo('links', []);
+      const experiencias = perfilExtra.experiencias || [];
+      const formacoes = perfilExtra.formacoes || [];
+      const habilidades = perfilExtra.habilidades || [];
+      const idiomas = perfilExtra.idiomas || [];
+      const links = perfilExtra.links || [];
       const servicos_ids = profissional.servicos_ids || [];
       const servicosOferecidos = servicosData.filter(s => servicos_ids.includes(s.id));
 
@@ -300,41 +365,40 @@
       }
       let mediaAtual = calcularMedia();
 
-      function estrelas(v) {
-        const cheias = Math.floor(v);
-        const meia = v % 1 >= 0.5 ? '½' : '';
-        return '★'.repeat(cheias) + meia + '☆'.repeat(5 - cheias - (meia ? 1 : 0));
-      }
-
       // ========== SEÇÕES DINÂMICAS ==========
       function secaoExperiencias() {
         if (!experiencias.length) return '';
         return `<hr class="section-divider"><div class="section-label"><i class="fas fa-briefcase"></i> Experiência profissional</div>
           ${experiencias.map(e => `<div class="exp-item"><strong>${escapeHtml(e.cargo || '')}</strong> — ${escapeHtml(e.empresa || '')}<div class="sub">${escapeHtml(e.periodo || '')} ${e.descricao ? '· ' + escapeHtml(e.descricao) : ''}</div></div>`).join('')}`;
       }
+      
       function secaoFormacoes() {
         if (!formacoes.length) return '';
         return `<hr class="section-divider"><div class="section-label"><i class="fas fa-graduation-cap"></i> Formação acadêmica</div>
           ${formacoes.map(f => `<div class="form-item"><strong>${escapeHtml(f.curso || '')}</strong> — ${escapeHtml(f.instituicao || '')}<div class="sub">${escapeHtml(f.anoConclusao || '')} ${f.descricao ? '· ' + escapeHtml(f.descricao) : ''}</div></div>`).join('')}`;
       }
+      
       function secaoHabilidades() {
         if (!habilidades.length) return '';
         return `<hr class="section-divider"><div class="section-label"><i class="fas fa-star"></i> Habilidades</div><div class="skills-wrap">${habilidades.map(h => `<span class="skill-chip">${escapeHtml(h)}</span>`).join('')}</div>`;
       }
+      
       function secaoIdiomas() {
         if (!idiomas.length) return '';
         return `<hr class="section-divider"><div class="section-label"><i class="fas fa-language"></i> Idiomas</div>
           ${idiomas.map(i => `<div class="idioma-item"><strong>${escapeHtml(i.idioma)}</strong><div class="sub">Nível: ${escapeHtml(i.nivel)}</div></div>`).join('')}`;
       }
+      
       function secaoLinks() {
         if (!links.length) return '';
         return `<hr class="section-divider"><div class="section-label"><i class="fas fa-link"></i> Links</div><div class="links-list">
           ${links.map(l => `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i> ${escapeHtml(l.nome || l.url)}</a>`).join('')}</div>`;
       }
+      
       function secaoFotos() {
         if (!fotosServicos.length) return '';
         return `<hr class="section-divider"><div class="section-label"><i class="fas fa-images"></i> Portfólio de trabalhos</div>
-          <div class="fotos-pub-grid">${fotosServicos.map((f, idx) => `<div class="foto-pub-item"><img src="${escapeHtml(f.src)}" alt="${escapeHtml(f.legenda || 'Foto do serviço')}" onclick="abrirLightbox(${idx})" title="${escapeHtml(f.legenda || '')}">${f.legenda ? `<div class="foto-pub-label">${escapeHtml(f.legenda)}</div>` : ''}</div>`).join('')}</div>`;
+          <div class="fotos-pub-grid">${fotosServicos.map((f, idx) => `<div class="foto-pub-item"><img src="${escapeHtml(f.src)}" alt="${escapeHtml(f.legenda || 'Foto do serviço')}" loading="lazy" onclick="abrirLightbox(${idx})" title="${escapeHtml(f.legenda || '')}">${f.legenda ? `<div class="foto-pub-label">${escapeHtml(f.legenda)}</div>` : ''}</div>`).join('')}</div>`;
       }
 
       // ========== AVALIAÇÕES (LISTAGEM + FORMULÁRIO) ==========
@@ -389,9 +453,9 @@
       // ========== MONTA HTML PRINCIPAL ==========
       const htmlPerfil = `
         <div class="profile-card">
-          ${coverPhoto ? `<img class="cover-banner" src="${escapeHtml(coverPhoto)}" alt="Foto de capa">` : `<div class="cover-banner" style="background:linear-gradient(135deg,#1e3c72,#2b4c7c);"></div>`}
+          ${coverPhoto ? `<img class="cover-banner" src="${escapeHtml(coverPhoto)}" alt="Foto de capa" loading="lazy">` : `<div class="cover-banner" style="background:linear-gradient(135deg,#1e3c72,#2b4c7c);"></div>`}
           <div class="profile-header">
-            <img src="${escapeHtml(avatar)}" alt="${escapeHtml(nome)}" class="profile-avatar" onerror="this.src='https://ui-avatars.com/api/?background=ffffff&color=1e3c72&name=${encodeURIComponent(nome)}'">
+            <img src="${escapeHtml(avatar)}" alt="${escapeHtml(nome)}" class="profile-avatar" onerror="this.src='https://ui-avatars.com/api/?background=ffffff&color=1e3c72&name=${encodeURIComponent(nome)}'" loading="lazy">
             <div>
               <div class="profile-name">${escapeHtml(nome)}</div>
               ${titulo ? `<div class="headline-tag">${escapeHtml(titulo)}</div>` : ''}
@@ -429,7 +493,7 @@
       const avaliacoesHTML = await secaoAvaliacoes();
       document.getElementById('avaliacoesSection').innerHTML = avaliacoesHTML;
 
-      // ========== FUNÇÃO PARA CRIAR CHAT (AGORA ASSÍNCRONA, USANDO INTEGRACAO.JS) ==========
+      // ========== FUNÇÃO PARA CRIAR CHAT ==========
       async function criarChatViaIntegracao(servicoId, servicoNome, quantidade, unidade, valorEstimado, tempoEstimado, diasEstimados) {
         const sess = obterSessao();
         if (!sess || sess.tipo !== 'cliente') {
@@ -437,7 +501,9 @@
           return null;
         }
         const clienteId = sess.usuarioId;
-        const clienteNome = sess.email.split('@')[0]; // fallback
+        const cliente = await buscarClientePorId(clienteId);
+        const clienteNome = cliente ? cliente.nome : sess.email.split('@')[0];
+        
         const chat = await criarChat({
           clienteId: clienteId,
           clienteNome: clienteNome,
@@ -498,7 +564,10 @@
         document.getElementById('lightbox').classList.add('open');
       };
       document.getElementById('lbClose').onclick = () => document.getElementById('lightbox').classList.remove('open');
-      document.getElementById('lightbox').addEventListener('click', (e) => { if (e.target === document.getElementById('lightbox')) document.getElementById('lightbox').classList.remove('open'); });
+      document.getElementById('lightbox').addEventListener('click', (e) => { 
+        if (e.target === document.getElementById('lightbox')) 
+          document.getElementById('lightbox').classList.remove('open'); 
+      });
 
       // ========== AVALIAÇÃO (ESTRELAS E ENVIO) ==========
       if (document.getElementById('estrelasInput')) {
@@ -526,23 +595,34 @@
             });
           });
         });
-        document.getElementById('btnEnviarAvaliacao').addEventListener('click', async () => {
-          if (notaSelecionada === 0) { alert('Selecione uma nota de 1 a 5 estrelas.'); return; }
-          const comentario = document.getElementById('comentarioAvaliacao').value.trim();
-          const sess = obterSessao();
-          if (!sess || sess.tipo !== 'cliente') { alert('Você precisa estar logado como cliente para avaliar.'); return; }
-          const cliente = await buscarClientePorEmail(sess.email);
-          const clienteNome = cliente ? cliente.nome : sess.email.split('@')[0];
-          try {
-            await salvarAvaliacao(profissional.id, sess.email, clienteNome, notaSelecionada, comentario);
-            alert('✅ Avaliação enviada com sucesso! Obrigado pelo feedback.');
-            // Recarrega a seção de avaliações
-            const novaSecao = await secaoAvaliacoes();
-            document.getElementById('avaliacoesSection').innerHTML = novaSecao;
-          } catch (err) {
-            alert('Erro ao enviar avaliação: ' + err.message);
-          }
-        });
+        
+        const btnEnviar = document.getElementById('btnEnviarAvaliacao');
+        if (btnEnviar) {
+          btnEnviar.addEventListener('click', async () => {
+            if (notaSelecionada === 0) { alert('Selecione uma nota de 1 a 5 estrelas.'); return; }
+            const comentario = document.getElementById('comentarioAvaliacao').value.trim();
+            const sess = obterSessao();
+            if (!sess || sess.tipo !== 'cliente') { alert('Você precisa estar logado como cliente para avaliar.'); return; }
+            const cliente = await buscarClientePorEmail(sess.email);
+            const clienteNome = cliente ? cliente.nome : sess.email.split('@')[0];
+            try {
+              await salvarAvaliacao(profissional.id, sess.email, clienteNome, notaSelecionada, comentario);
+              alert('✅ Avaliação enviada com sucesso! Obrigado pelo feedback.');
+              // Recarrega a seção de avaliações
+              const novaSecao = await secaoAvaliacoes();
+              document.getElementById('avaliacoesSection').innerHTML = novaSecao;
+              // Recarrega também a média
+              avaliacoes = await obterAvaliacoesProfissional(profissional.id);
+              mediaAtual = calcularMedia();
+              const ratingSpan = document.querySelector('.profile-rating');
+              if (ratingSpan) {
+                ratingSpan.innerHTML = `${estrelas(mediaAtual)} <span style="opacity:0.8;font-size:0.8rem;">(${avaliacoes.length} avaliações)</span>`;
+              }
+            } catch (err) {
+              alert('Erro ao enviar avaliação: ' + err.message);
+            }
+          });
+        }
       }
 
       // ========== AJUSTA LINK VOLTAR ==========
@@ -558,19 +638,6 @@
       </div>`;
     }
   })();
-
-  // ========== FUNÇÃO AUXILIAR ESCAPE HTML ==========
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-      return c;
-    });
-  }
 </script>
 </body>
 </html>
