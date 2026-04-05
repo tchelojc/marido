@@ -177,6 +177,21 @@
       margin-top: 8px;
     }
     .error-message { color: #e74c3c; font-size: 0.8rem; margin-top: 8px; display: none; }
+    
+    /* ========== LOADING ========== */
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #eef2ff;
+      border-top: 2px solid #2b4c7c;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -205,7 +220,9 @@
           <i class="fas fa-images"></i> Fotos dos serviços
         </div>
         <p class="small-text" style="margin-bottom:8px;">Adicione fotos do seu trabalho. Elas aparecem no seu perfil público.</p>
-        <div class="fotos-grid" id="fotosGrid"></div>
+        <div class="fotos-grid" id="fotosGrid">
+          <div class="loading-spinner" style="margin: 20px auto;"></div>
+        </div>
       </div>
     </div>
 
@@ -349,26 +366,6 @@
     });
   }
 
-  // ========== COMPRESSÃO DE IMAGEM ==========
-  function compressImage(base64, maxWidth = 800, quality = 0.7, callback) {
-    const img = new Image();
-    img.onload = () => {
-      let width = img.width;
-      let height = img.height;
-      if (width > maxWidth) {
-        height = (height * maxWidth) / width;
-        width = maxWidth;
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-      callback(canvas.toDataURL('image/jpeg', quality));
-    };
-    img.src = base64;
-  }
-
   // ========== SESSÃO E DADOS DO PROFISSIONAL ==========
   let profissionalAtual = null;
   let perfilCompleto = {};
@@ -390,7 +387,7 @@
     return profissional;
   }
 
-  // ========== CARREGAR CHATS COM TRATAMENTO DE ERRO ==========
+  // ========== CARREGAR CHATS ==========
   async function carregarChats() {
     if (!profissionalAtual) return;
     try {
@@ -567,62 +564,86 @@
     container.innerHTML = meusServicos.map(s => `<span class="servico-tag">${escapeHtml(s.nome)} <strong>R$ ${(s.diaria_base/s.producao_dia).toFixed(2)}/${escapeHtml(s.unidade)}</strong></span>`).join('');
   }
 
-  // ========== FOTOS ==========
+  // ========== FOTOS COM IMGBB (VERSÃO CORRIGIDA) ==========
   let fotosServicos = [];
   
   async function renderFotos() {
     const grid = document.getElementById('fotosGrid');
     if (!grid || !profissionalAtual) return;
     try {
+      // Usa a função do integracao.js que já retorna as URLs do ImgBB
       const fotos = await listarFotosServico(profissionalAtual.id);
       fotosServicos = Array.isArray(fotos) ? fotos : [];
-      grid.innerHTML = fotosServicos.map((f, idx) => `
-        <div class="foto-item" data-id="${f.id}">
-          <img src="${escapeHtml(f.src)}" alt="${escapeHtml(f.legenda || '')}">
-          <button class="foto-remove" onclick="removerFoto('${f.id}')" title="Remover">×</button>
-          ${f.legenda ? `<div class="foto-label">${escapeHtml(f.legenda)}</div>` : ''}
-        </div>
-      `).join('');
-      grid.innerHTML += `<div class="btn-add-foto" id="btnAddFoto"><i class="fas fa-camera"></i><span>Adicionar foto</span></div>`;
+      
+      if (fotosServicos.length === 0) {
+        grid.innerHTML = `<div class="btn-add-foto" id="btnAddFoto"><i class="fas fa-camera"></i><span>Adicionar foto</span></div>`;
+      } else {
+        grid.innerHTML = fotosServicos.map((f, idx) => `
+          <div class="foto-item" data-id="${f.id}">
+            <img src="${escapeHtml(f.src)}" alt="${escapeHtml(f.legenda || 'Foto de serviço')}" loading="lazy">
+            <button class="foto-remove" onclick="removerFoto('${f.id}')" title="Remover">×</button>
+            ${f.legenda ? `<div class="foto-label">${escapeHtml(f.legenda)}</div>` : ''}
+          </div>
+        `).join('');
+        grid.innerHTML += `<div class="btn-add-foto" id="btnAddFoto"><i class="fas fa-camera"></i><span>Adicionar foto</span></div>`;
+      }
+      
       document.getElementById('btnAddFoto')?.addEventListener('click', adicionarFoto);
     } catch (err) {
       console.error('Erro ao carregar fotos:', err);
+      grid.innerHTML = `<p class="small-text">Erro ao carregar fotos. ${err.message}</p>`;
     }
   }
 
   async function adicionarFoto() {
-    const legenda = prompt('Legenda da foto (ex: Pintura de sala):', '') || '';
+    const legenda = prompt('Legenda da foto (ex: Pintura de sala concluída):', 'Trabalho realizado') || '';
     let input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { toast('Imagem muito grande. Máx 5MB.', 'error'); return; }
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        compressImage(ev.target.result, 800, 0.7, async (compressed) => {
-          try {
-            await adicionarFotoServico(profissionalAtual.id, compressed, legenda);
-            toast('Foto adicionada!');
-            await renderFotos();
-          } catch (err) {
-            toast('Erro ao salvar foto: ' + err.message, 'error');
-          }
-        });
-      };
-      reader.readAsDataURL(file);
+      if (file.size > 5 * 1024 * 1024) { 
+        toast('Imagem muito grande. Máximo 5MB.', 'error'); 
+        return; 
+      }
+      
+      toast('Enviando imagem...', 'success');
+      
+      try {
+        // Usa a nova função uploadImageToHost do integracao.js
+        // que faz upload para ImgBB e retorna a URL
+        const imageUrl = await uploadImageToHost(file, 800, 0.7);
+        
+        // Salva a URL no backend
+        const resultado = await adicionarFotoServico(profissionalAtual.id, imageUrl, legenda);
+        
+        if (resultado) {
+          toast('Foto adicionada com sucesso!', 'success');
+          await renderFotos();
+        } else {
+          throw new Error('Falha ao salvar no backend');
+        }
+      } catch (err) {
+        console.error('Erro ao adicionar foto:', err);
+        toast('Erro ao adicionar foto: ' + err.message, 'error');
+      }
     };
     input.click();
   }
 
   window.removerFoto = async (fotoId) => {
-    if (confirm('Remover esta foto?')) {
+    if (confirm('Remover esta foto permanentemente?')) {
       try {
-        await removerFotoServico(fotoId);
-        toast('Foto removida.');
-        await renderFotos();
+        const resultado = await removerFotoServico(fotoId);
+        if (resultado) {
+          toast('Foto removida com sucesso!', 'success');
+          await renderFotos();
+        } else {
+          throw new Error('Falha ao remover');
+        }
       } catch (err) {
+        console.error('Erro ao remover foto:', err);
         toast('Erro ao remover foto: ' + err.message, 'error');
       }
     }
@@ -730,23 +751,26 @@
     toast('✅ Perfil salvo com sucesso!', 'success');
   }
 
-  // ========== UPLOAD DE IMAGEM ==========
-  function uploadImagemCompress(callback, maxWidth = 800) {
+  // ========== UPLOAD DE IMAGEM COM IMGBB ==========
+  function uploadImagemComImgBB(callback, maxWidth = 800) {
     let input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       let file = e.target.files[0];
-      if (file) {
-        if (file.size > 5 * 1024 * 1024) {
-          toast('Imagem muito grande. Máximo 5MB.', 'error');
-          return;
-        }
-        let reader = new FileReader();
-        reader.onload = (ev) => {
-          compressImage(ev.target.result, maxWidth, 0.7, callback);
-        };
-        reader.readAsDataURL(file);
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        toast('Imagem muito grande. Máximo 5MB.', 'error');
+        return;
+      }
+      try {
+        toast('Enviando imagem...', 'success');
+        const imageUrl = await uploadImageToHost(file, maxWidth, 0.7);
+        callback(imageUrl);
+        toast('Imagem enviada com sucesso! Salve o perfil para confirmar.', 'success');
+      } catch (err) {
+        console.error('Erro no upload:', err);
+        toast('Erro ao enviar imagem: ' + err.message, 'error');
       }
     };
     input.click();
@@ -811,7 +835,7 @@
     renderAgenda();
     await atualizarTokenDisplay();
     await carregarChats();
-    renderFotos();
+    await renderFotos();
 
     // Modal senha
     senhaModal = document.getElementById('senhaModal');
@@ -822,15 +846,18 @@
 
     document.getElementById('logoutBtn').onclick = () => { limparSessao(); window.location.href = 'marido_aluguel.html'; };
     document.getElementById('salvarPerfil').onclick = salvarPerfilCompleto;
-    document.getElementById('uploadAvatarBtn').onclick = () => uploadImagemCompress((imgData) => {
-      document.getElementById('avatarPreview').src = imgData;
-      document.getElementById('profAvatar').src = imgData;
-      toast('Avatar atualizado. Salve o perfil para confirmar.');
+    
+    // Upload de avatar usando ImgBB
+    document.getElementById('uploadAvatarBtn').onclick = () => uploadImagemComImgBB((imgUrl) => {
+      document.getElementById('avatarPreview').src = imgUrl;
+      document.getElementById('profAvatar').src = imgUrl;
     }, 300);
-    document.getElementById('uploadCoverBtn').onclick = () => uploadImagemCompress((imgData) => {
-      document.getElementById('coverImg').src = imgData;
-      toast('Capa atualizada. Salve o perfil para confirmar.');
+    
+    // Upload de capa usando ImgBB
+    document.getElementById('uploadCoverBtn').onclick = () => uploadImagemComImgBB((imgUrl) => {
+      document.getElementById('coverImg').src = imgUrl;
     }, 1200);
+    
     document.getElementById('salvarDisponibilidade').onclick = () => {
       localStorage.setItem('disp_' + profissionalAtual.id, JSON.stringify(disponibilidade));
       toast('Disponibilidade salva com sucesso!');
