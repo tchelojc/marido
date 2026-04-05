@@ -1,8 +1,5 @@
-// integracao.js — ATUALIZADO PARA NOVA IMPLANTAÇÃO
-// BACKEND: Google Apps Script com suporte a GitHub para imagens
-
-// ATUALIZE ESTA LINHA COM A URL DA NOVA IMPLANTAÇÃO
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycby9CDjPKc0fEqEtm2YkpahHuOe5JbrRoIE44yZ66Cwd/dev";
+// ATUALIZE ESTA LINHA COM A URL DA VERSÃO 8
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbz9BF7Y7lvnbvFHeZshd57RN2WdNmFZDBQWz9rzei16o6vYLcudiv-2iY_6VByqFEMO2Q/exec";
 
 // ========== FUNÇÃO BASE COM POLLING E TIMEOUT ==========
 async function callBackend(acao, dados = {}, timeoutSegundos = 45) {
@@ -10,12 +7,13 @@ async function callBackend(acao, dados = {}, timeoutSegundos = 45) {
   const timeoutId = setTimeout(() => controller.abort(), timeoutSegundos * 1000);
   
   try {
+    // Preparar os dados no formato que o GAS gosta (x-www-form-urlencoded)
     const formData = new URLSearchParams();
     formData.append('data', JSON.stringify({ acao, dados }));
 
     const response = await fetch(BACKEND_URL, {
       method: "POST",
-      mode: "cors",
+      mode: "cors", // Força o modo CORS
       headers: { 
         "Content-Type": "application/x-www-form-urlencoded" 
       },
@@ -33,7 +31,7 @@ async function callBackend(acao, dados = {}, timeoutSegundos = 45) {
       throw new Error(postResult.erro || "Erro interno no servidor");
     }
 
-    return postResult;
+    return postResult; // Retorna o objeto completo com o ID
 
   } catch (err) {
     console.error("❌ Falha na comunicação:", err.message);
@@ -56,7 +54,8 @@ async function obterTodosClientes() {
 async function salvarNovoCliente(cliente) {
   try {
     const resultado = await callBackend("cadastrar_cliente", cliente, 45);
-    return resultado?.id !== undefined;
+    // GAS retorna { ok: true, id: {...}, ...resultado }
+    return resultado?.ok === true;
   } catch (err) {
     console.error("Erro ao salvar cliente:", err);
     return false;
@@ -65,7 +64,8 @@ async function salvarNovoCliente(cliente) {
 
 async function buscarClientePorEmail(email) {
   try {
-    return await callBackend("buscar_cliente_por_email", { email });
+    const resultado = await callBackend("buscar_cliente_por_email", { email });
+    return resultado?.ok ? resultado.id : null;  // id contém o objeto do resultado
   } catch (err) {
     console.error("Erro ao buscar cliente por email:", err);
     return null;
@@ -74,7 +74,8 @@ async function buscarClientePorEmail(email) {
 
 async function buscarClientePorId(id) {
   try {
-    return await callBackend("buscar_cliente_por_id", { id });
+    const resultado = await callBackend("buscar_cliente_por_id", { id });
+    return resultado?.ok ? resultado.id : null;
   } catch (err) {
     console.error("Erro ao buscar cliente por ID:", err);
     return null;
@@ -99,7 +100,7 @@ async function obterTodosProfissionais() {
 async function salvarNovoProfissional(profissional) {
   try {
     const resultado = await callBackend("cadastrar_profissional", profissional, 45);
-    return resultado?.id !== undefined;
+    return resultado?.ok === true;
   } catch (err) {
     console.error("Erro ao salvar profissional:", err);
     return false;
@@ -108,7 +109,8 @@ async function salvarNovoProfissional(profissional) {
 
 async function buscarProfissionalPorEmail(email) {
   try {
-    return await callBackend("buscar_profissional_por_email", { email });
+    const resultado = await callBackend("buscar_profissional_por_email", { email });
+    return resultado?.ok ? resultado.id : null;
   } catch (err) {
     console.error("Erro ao buscar profissional por email:", err);
     return null;
@@ -117,7 +119,8 @@ async function buscarProfissionalPorEmail(email) {
 
 async function buscarProfissionalPorId(id) {
   try {
-    return await callBackend("buscar_profissional_por_id", { id });
+    const resultado = await callBackend("buscar_profissional_por_id", { id });
+    return resultado?.ok ? resultado.id : null;
   } catch (err) {
     console.error("Erro ao buscar profissional por ID:", err);
     return null;
@@ -129,7 +132,7 @@ async function atualizarProfissional(dados) {
   return resultado?.ok === true;
 }
 
-// ========== SERVIÇOS ==========
+// ========== SERVIÇOS (locais, vindos de dados.js) ==========
 function obterServicos() {
   if (typeof PROFISSOES_DATA === "undefined") {
     console.warn("PROFISSOES_DATA não definido");
@@ -146,7 +149,7 @@ function obterServicoPorId(id) {
   return obterServicos().find(s => s.id === id);
 }
 
-// ========== SESSÃO ==========
+// ========== SESSÃO (localStorage) ==========
 function salvarSessao(email, tipo, id) {
   const sess = {
     email: email.toLowerCase(),
@@ -182,11 +185,11 @@ function limparSessao() {
 async function autenticarUsuarioComSenha(email, senha) {
   try {
     const result = await callBackend("autenticar", { email, senha }, 30);
-    
+    // O GAS retorna { ok, tipo, usuario } ou { ok, precisaEscolher, cliente, profissional }
+    // O marido_aluguel.html espera { success, tipo, usuario } ou { success, precisaEscolher, ... }
     if (!result.ok) {
       return { success: false, error: result.erro || 'E-mail ou senha incorretos.' };
     }
-    
     if (result.precisaEscolher) {
       return {
         success: true,
@@ -196,18 +199,17 @@ async function autenticarUsuarioComSenha(email, senha) {
         profissional: result.profissional
       };
     }
-    
+    // Login bem-sucedido com um único perfil — salva sessão aqui mesmo
     if (result.tipo && result.usuario) {
       salvarSessao(email, result.tipo, result.usuario.id);
     }
-    
     return { success: true, tipo: result.tipo, usuario: result.usuario };
   } catch (err) {
     return { success: false, error: err.message || 'Erro de comunicação.' };
   }
 }
 
-// ========== TOKEN ALMA ==========
+// ========== TOKEN ALMA (saldo) ==========
 async function getTokenBalance(userId, tipo = "cliente") {
   try {
     const resultado = await callBackend("obter_saldo", { usuarioId: userId, tipo }, 30);
@@ -301,7 +303,7 @@ async function obterPerfilExtra(profissionalId) {
   }
 }
 
-// ========== FOTOS (COM GITHUB) ==========
+// ========== FOTOS ==========
 async function adicionarFotoServico(profissionalId, src, legenda) {
   const resultado = await callBackend("adicionar_foto_servico", { profissionalId, src, legenda });
   return resultado?.ok === true;
@@ -321,42 +323,12 @@ async function removerFotoServico(fotoId) {
   return resultado?.ok === true;
 }
 
-// ========== AVATAR E COVER (UPLOAD VIA GITHUB) ==========
-async function uploadAvatarCliente(clienteId, imagemBase64) {
-  const resultado = await callBackend("upload_avatar_cliente", { clienteId, imagem: imagemBase64 });
-  return resultado?.ok === true ? resultado.url : null;
-}
-
-async function uploadAvatarProfissional(profissionalId, imagemBase64) {
-  const resultado = await callBackend("upload_avatar_profissional", { profissionalId, imagem: imagemBase64 });
-  return resultado?.ok === true ? resultado.url : null;
-}
-
-async function uploadCoverCliente(clienteId, imagemBase64) {
-  const resultado = await callBackend("upload_cover_cliente", { clienteId, imagem: imagemBase64 });
-  return resultado?.ok === true ? resultado.url : null;
-}
-
-async function uploadCoverProfissional(profissionalId, imagemBase64) {
-  const resultado = await callBackend("upload_cover_profissional", { profissionalId, imagem: imagemBase64 });
-  return resultado?.ok === true ? resultado.url : null;
-}
-
 // ========== AVALIAÇÕES ==========
-async function obterAvaliacoes() {
-  try {
-    return await callBackend("listar_avaliacoes", {}, 45);
-  } catch (err) {
-    console.error("Erro ao listar avaliações:", err);
-    return [];
-  }
-}
-
 async function obterAvaliacoesProfissional(profissionalId) {
   try {
-    return await callBackend("listar_avaliacoes_profissional", { profissionalId: profissionalId });
+    return await callBackend("listar_avaliacoes_profissional", { profissionalId });
   } catch (err) {
-    console.error("Erro ao listar avaliações do profissional:", err);
+    console.error("Erro ao listar avaliações:", err);
     return [];
   }
 }
@@ -366,29 +338,7 @@ async function salvarAvaliacao(profissionalId, clienteEmail, clienteNome, nota, 
   return resultado?.ok === true;
 }
 
-// ========== ALTERAR SENHA ==========
-async function alterarSenhaCliente(clienteId, novaSenha) {
-  const resultado = await callBackend("alterar_senha_cliente", { id: clienteId, novaSenha });
-  return resultado?.ok === true;
-}
-
-async function alterarSenhaProfissional(profissionalId, novaSenha) {
-  const resultado = await callBackend("alterar_senha_profissional", { id: profissionalId, novaSenha });
-  return resultado?.ok === true;
-}
-
-// ========== CRÉDITO/DÉBITO ==========
-async function creditarSaldo(usuarioId, tipo, valor) {
-  const resultado = await callBackend("creditar_saldo", { usuarioId, tipo, valor });
-  return resultado?.ok === true;
-}
-
-async function debitarSaldo(usuarioId, tipo, valor) {
-  const resultado = await callBackend("debitar_saldo", { usuarioId, tipo, valor });
-  return resultado?.ok === true;
-}
-
-// ========== TESTES ==========
+// ========== FUNÇÃO PARA TESTAR CONEXÃO COM O BACKEND ==========
 async function testarConexaoBackend() {
   try {
     console.log("🔌 Testando conexão com o backend...");
@@ -401,9 +351,11 @@ async function testarConexaoBackend() {
   }
 }
 
+// ========== FUNÇÃO PARA INICIALIZAR O SISTEMA (CHAMAR UMA VEZ) ==========
 async function inicializarSistemaBackend() {
   try {
     console.log("🚀 Inicializando sistema no backend...");
+    // Tenta listar clientes para verificar se está funcionando
     const clientes = await obterTodosClientes();
     console.log("✅ Sistema backend OK. Clientes existentes:", clientes.length);
     return { sucesso: true, clientesExistentes: clientes.length };
@@ -413,5 +365,5 @@ async function inicializarSistemaBackend() {
   }
 }
 
-console.log("✅ integracao.js — backend com GitHub para imagens");
+console.log("✅ integracao.js — backend assíncrono com polling ativo");
 console.log("📍 Backend URL:", BACKEND_URL);
