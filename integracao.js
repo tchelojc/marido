@@ -1,5 +1,8 @@
-// ATUALIZE ESTA LINHA COM A URL DA VERSÃO 8
+// ========== CONFIGURAÇÃO ==========
 const BACKEND_URL = "https://script.google.com/macros/s/AKfycbz9BF7Y7lvnbvFHeZshd57RN2WdNmFZDBQWz9rzei16o6vYLcudiv-2iY_6VByqFEMO2Q/exec";
+
+// ⚠️ SUA API KEY DO IMGBB ⚠️
+const IMGBB_API_KEY = "2597fbdd4014975ed01d56ee9a6b404d";
 
 // ========== FUNÇÃO BASE COM POLLING E TIMEOUT ==========
 async function callBackend(acao, dados = {}, timeoutSegundos = 45) {
@@ -7,13 +10,12 @@ async function callBackend(acao, dados = {}, timeoutSegundos = 45) {
   const timeoutId = setTimeout(() => controller.abort(), timeoutSegundos * 1000);
   
   try {
-    // Preparar os dados no formato que o GAS gosta (x-www-form-urlencoded)
     const formData = new URLSearchParams();
     formData.append('data', JSON.stringify({ acao, dados }));
 
     const response = await fetch(BACKEND_URL, {
       method: "POST",
-      mode: "cors", // Força o modo CORS
+      mode: "cors",
       headers: { 
         "Content-Type": "application/x-www-form-urlencoded" 
       },
@@ -31,7 +33,7 @@ async function callBackend(acao, dados = {}, timeoutSegundos = 45) {
       throw new Error(postResult.erro || "Erro interno no servidor");
     }
 
-    return postResult; // Retorna o objeto completo com o ID
+    return postResult;
 
   } catch (err) {
     console.error("❌ Falha na comunicação:", err.message);
@@ -39,6 +41,165 @@ async function callBackend(acao, dados = {}, timeoutSegundos = 45) {
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+// ========== FUNÇÕES DE IMAGEM (IMGBB) ==========
+
+/**
+ * Compressão de imagem antes do upload
+ */
+function compressImage(base64, maxWidth = 800, quality = 0.7, callback) {
+    const img = new Image();
+    img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        callback(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = base64;
+}
+
+/**
+ * Faz upload de uma imagem para o ImgBB e retorna a URL pública
+ */
+async function uploadParaImgBB(base64Image) {
+    try {
+        let imageData = base64Image;
+        if (base64Image.includes(',')) {
+            imageData = base64Image.split(',')[1];
+        }
+        
+        const formData = new FormData();
+        formData.append('key', IMGBB_API_KEY);
+        formData.append('image', imageData);
+        
+        const response = await fetch('https://api.imgbb.com/1/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('✅ Upload ImgBB realizado com sucesso:', result.data.url);
+            return result.data.url;
+        } else {
+            throw new Error(result.error?.message || 'Falha no upload para ImgBB');
+        }
+    } catch (err) {
+        console.error('❌ Erro no upload para ImgBB:', err);
+        throw err;
+    }
+}
+
+/**
+ * Upload de arquivo com compressão e envio para ImgBB
+ */
+async function uploadImageToHost(file, maxWidth = 800, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+        if (file.size > 5 * 1024 * 1024) {
+            reject(new Error('Imagem muito grande. Máximo 5MB.'));
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            compressImage(ev.target.result, maxWidth, quality, async (compressedBase64) => {
+                try {
+                    const url = await uploadParaImgBB(compressedBase64);
+                    resolve(url);
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        };
+        reader.onerror = () => reject(new Error('Erro ao ler o arquivo'));
+        reader.readAsDataURL(file);
+    });
+}
+
+/**
+ * Testa a conexão com o ImgBB
+ */
+async function testarImgBB() {
+    try {
+        const testPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+        const url = await uploadParaImgBB(testPixel);
+        console.log("✅ Teste ImgBB OK! URL:", url);
+        return { sucesso: true, url: url };
+    } catch (err) {
+        console.error("❌ Teste ImgBB falhou:", err.message);
+        return { sucesso: false, erro: err.message };
+    }
+}
+
+// ========== FUNÇÕES DE FOTO (com ImgBB) ==========
+
+/**
+ * Adiciona foto do serviço - faz upload para ImgBB e salva URL no backend
+ */
+async function adicionarFotoServico(profissionalId, imagemBase64, legenda) {
+    try {
+        const imageUrl = await uploadParaImgBB(imagemBase64);
+        
+        const resultado = await callBackend("adicionar_foto_servico", { 
+            profissionalId, 
+            src: imageUrl,
+            legenda 
+        });
+        return resultado?.ok === true;
+    } catch (err) {
+        console.error("Erro ao adicionar foto:", err);
+        return false;
+    }
+}
+
+/**
+ * Lista fotos do serviço (retorna URLs do ImgBB)
+ */
+async function listarFotosServico(profissionalId) {
+    try {
+        return await callBackend("listar_fotos_servico", { profissionalId });
+    } catch (err) {
+        console.error("Erro ao listar fotos:", err);
+        return [];
+    }
+}
+
+/**
+ * Remove foto do serviço
+ */
+async function removerFotoServico(fotoId) {
+    const resultado = await callBackend("remover_foto_servico", { fotoId });
+    return resultado?.ok === true;
+}
+
+/**
+ * Upload de foto de perfil (avatar ou capa)
+ */
+async function uploadFotoPerfil(imagemBase64, tipo, profissionalId) {
+    try {
+        const imageUrl = await uploadParaImgBB(imagemBase64);
+        
+        const resultado = await callBackend("atualizar_foto_perfil", {
+            profissionalId,
+            tipo: tipo,
+            url: imageUrl
+        });
+        
+        return { success: resultado?.ok === true, url: imageUrl };
+    } catch (err) {
+        console.error("Erro ao atualizar foto de perfil:", err);
+        return { success: false, error: err.message };
+    }
 }
 
 // ========== CLIENTES ==========
@@ -54,7 +215,6 @@ async function obterTodosClientes() {
 async function salvarNovoCliente(cliente) {
   try {
     const resultado = await callBackend("cadastrar_cliente", cliente, 45);
-    // GAS retorna { ok: true, id: {...}, ...resultado }
     return resultado?.ok === true;
   } catch (err) {
     console.error("Erro ao salvar cliente:", err);
@@ -65,7 +225,7 @@ async function salvarNovoCliente(cliente) {
 async function buscarClientePorEmail(email) {
   try {
     const resultado = await callBackend("buscar_cliente_por_email", { email });
-    return resultado?.ok ? resultado.id : null;  // id contém o objeto do resultado
+    return resultado?.ok ? resultado.id : null;
   } catch (err) {
     console.error("Erro ao buscar cliente por email:", err);
     return null;
@@ -132,7 +292,7 @@ async function atualizarProfissional(dados) {
   return resultado?.ok === true;
 }
 
-// ========== SERVIÇOS (locais, vindos de dados.js) ==========
+// ========== SERVIÇOS ==========
 function obterServicos() {
   if (typeof PROFISSOES_DATA === "undefined") {
     console.warn("PROFISSOES_DATA não definido");
@@ -149,7 +309,7 @@ function obterServicoPorId(id) {
   return obterServicos().find(s => s.id === id);
 }
 
-// ========== SESSÃO (localStorage) ==========
+// ========== SESSÃO ==========
 function salvarSessao(email, tipo, id) {
   const sess = {
     email: email.toLowerCase(),
@@ -185,8 +345,6 @@ function limparSessao() {
 async function autenticarUsuarioComSenha(email, senha) {
   try {
     const result = await callBackend("autenticar", { email, senha }, 30);
-    // O GAS retorna { ok, tipo, usuario } ou { ok, precisaEscolher, cliente, profissional }
-    // O marido_aluguel.html espera { success, tipo, usuario } ou { success, precisaEscolher, ... }
     if (!result.ok) {
       return { success: false, error: result.erro || 'E-mail ou senha incorretos.' };
     }
@@ -199,7 +357,6 @@ async function autenticarUsuarioComSenha(email, senha) {
         profissional: result.profissional
       };
     }
-    // Login bem-sucedido com um único perfil — salva sessão aqui mesmo
     if (result.tipo && result.usuario) {
       salvarSessao(email, result.tipo, result.usuario.id);
     }
@@ -209,7 +366,7 @@ async function autenticarUsuarioComSenha(email, senha) {
   }
 }
 
-// ========== TOKEN ALMA (saldo) ==========
+// ========== TOKEN ALMA ==========
 async function getTokenBalance(userId, tipo = "cliente") {
   try {
     const resultado = await callBackend("obter_saldo", { usuarioId: userId, tipo }, 30);
@@ -303,26 +460,6 @@ async function obterPerfilExtra(profissionalId) {
   }
 }
 
-// ========== FOTOS ==========
-async function adicionarFotoServico(profissionalId, src, legenda) {
-  const resultado = await callBackend("adicionar_foto_servico", { profissionalId, src, legenda });
-  return resultado?.ok === true;
-}
-
-async function listarFotosServico(profissionalId) {
-  try {
-    return await callBackend("listar_fotos_servico", { profissionalId });
-  } catch (err) {
-    console.error("Erro ao listar fotos:", err);
-    return [];
-  }
-}
-
-async function removerFotoServico(fotoId) {
-  const resultado = await callBackend("remover_foto_servico", { fotoId });
-  return resultado?.ok === true;
-}
-
 // ========== AVALIAÇÕES ==========
 async function obterAvaliacoesProfissional(profissionalId) {
   try {
@@ -338,7 +475,7 @@ async function salvarAvaliacao(profissionalId, clienteEmail, clienteNome, nota, 
   return resultado?.ok === true;
 }
 
-// ========== FUNÇÃO PARA TESTAR CONEXÃO COM O BACKEND ==========
+// ========== TESTES ==========
 async function testarConexaoBackend() {
   try {
     console.log("🔌 Testando conexão com o backend...");
@@ -351,19 +488,27 @@ async function testarConexaoBackend() {
   }
 }
 
-// ========== FUNÇÃO PARA INICIALIZAR O SISTEMA (CHAMAR UMA VEZ) ==========
 async function inicializarSistemaBackend() {
   try {
     console.log("🚀 Inicializando sistema no backend...");
-    // Tenta listar clientes para verificar se está funcionando
     const clientes = await obterTodosClientes();
     console.log("✅ Sistema backend OK. Clientes existentes:", clientes.length);
-    return { sucesso: true, clientesExistentes: clientes.length };
+    
+    // Testa também a conexão com ImgBB
+    const imgbbTest = await testarImgBB();
+    if (imgbbTest.sucesso) {
+      console.log("✅ ImgBB configurado corretamente!");
+    } else {
+      console.warn("⚠️ ImgBB com problemas:", imgbbTest.erro);
+    }
+    
+    return { sucesso: true, clientesExistentes: clientes.length, imgbb: imgbbTest };
   } catch (err) {
     console.error("❌ Erro na inicialização do backend:", err.message);
     return { sucesso: false, erro: err.message };
   }
 }
 
-console.log("✅ integracao.js — backend assíncrono com polling ativo");
+console.log("✅ integracao.js — backend com ImgBB para imagens");
 console.log("📍 Backend URL:", BACKEND_URL);
+console.log("🖼️ ImgBB API Key configurada:", IMGBB_API_KEY ? "✅ Sim" : "❌ Não");
