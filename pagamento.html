@@ -198,8 +198,6 @@
       color: #721c24;
       border: 1px solid #f5c6cb;
     }
-    
-    /* TERMOS E REGULAMENTO */
     .termos-container {
       margin: 20px 0 16px 0;
       padding: 12px;
@@ -241,8 +239,6 @@
       align-items: center;
       gap: 4px;
     }
-    
-    /* FOOTER */
     .footer {
       margin-top: 24px;
       text-align: center;
@@ -270,11 +266,6 @@
     .footer-links a:hover {
       text-decoration: underline;
     }
-    .footer strong {
-      color: var(--primary);
-    }
-    
-    /* MODAL DE POLÍTICA DE PRIVACIDADE */
     .modal {
       display: none;
       position: fixed;
@@ -337,7 +328,7 @@
       <div><span style="display:block; font-size:0.65rem;">Clique para copiar a chave</span><span class="pix-chave" id="chavePix">f1461640-6c03-4298-8c28-f1119c968612</span></div>
       <button class="btn-copy" id="btnCopy">Copiar</button>
     </div>
-    <p class="small-text" style="margin-top: 12px; font-size:0.7rem;">⚠️ Após o PIX, preencha o comprovante abaixo para creditarmos os ALMA na sua carteira.</p>
+    <p class="small-text" style="margin-top: 12px; font-size:0.7rem;">⚠️ Após o PIX, preencha o comprovante abaixo. O crédito será liberado após aprovação manual pelo administrador.</p>
   </div>
 
   <div class="form-title">🛡️ Confirmação de Pagamento</div>
@@ -351,7 +342,6 @@
       <input type="number" step="0.01" name="valor_pago" id="inputValorPago" required>
     </div>
     
-    <!-- TERMOS E REGULAMENTO (OBRIGATÓRIO) -->
     <div class="termos-container">
       <label class="checkbox-termo">
         <input type="checkbox" id="aceitoTermos">
@@ -362,11 +352,10 @@
       </div>
     </div>
     
-    <button type="submit" id="btnSubmit">ENVIAR COMPROVANTE</button>
+    <button type="submit" id="btnSubmit">SOLICITAR RECARGA</button>
   </form>
   <div id="msg" class="msg"></div>
   
-  <!-- FOOTER COM LINKS -->
   <div class="footer">
     <div class="footer-links">
       <a href="regulamento.html" target="_blank" rel="noopener noreferrer">
@@ -380,14 +369,14 @@
       </a>
     </div>
     <div>
-      A recarga é manual e será creditada após confirmação.<br>
+      A recarga é MANUAL e será creditada APÓS aprovação do administrador.<br>
       <strong>Tempo médio:</strong> 15 a 60 minutos.<br>
       💡 <strong>1 ALMA = R$ 1,00</strong> – Use para pagar serviços.
     </div>
   </div>
 </div>
 
-<!-- MODAL DE POLÍTICA DE PRIVACIDADE (RESUMO) -->
+<!-- MODAL DE POLÍTICA DE PRIVACIDADE -->
 <div id="privacyModal" class="modal">
   <div class="modal-content">
     <span class="close-modal" id="closePrivacyModal">&times;</span>
@@ -430,10 +419,6 @@
   let email = decodeURIComponent(params.get('email') || '');
   let valorRecarga = params.get('valor') || '0';
 
-  // Opções de recarga pré-definidas
-  const opcoesRecarga = [10, 20, 50, 100, 200, 500];
-  
-  // Fallback: tenta obter da sessão atual
   async function preencherDadosCliente() {
     const sess = obterSessao();
     if (sess && sess.tipo === 'cliente') {
@@ -446,14 +431,12 @@
       }
     }
     
-    // Exibe na tela
     if (nome && email) {
       document.getElementById('nome').textContent = nome;
       document.getElementById('email').textContent = email;
     } else {
       document.getElementById('nome').textContent = 'Não identificado';
       document.getElementById('email').textContent = 'Faça login novamente';
-      // Redireciona para login se não tiver dados
       setTimeout(() => {
         if (!nome || !email) window.location.href = 'marido_aluguel.html';
       }, 3000);
@@ -465,13 +448,11 @@
     document.getElementById('valor').textContent = `R$ ${valorFormatado.toFixed(2).replace('.',',')}`;
     document.getElementById('inputValorPago').value = valorFormatado;
 
-    // QR Code (apenas para referência)
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=pix:${encodeURIComponent(CHAVE_PIX)}?amount=${valorFormatado}`;
     document.getElementById('qrCode').innerHTML = `<img src="${qrUrl}" alt="QR PIX" style="width:120px;height:120px;">`;
     document.getElementById('chavePix').textContent = CHAVE_PIX;
   }
 
-  // Copiar chave
   window.copyPix = function() {
     navigator.clipboard.writeText(CHAVE_PIX).then(() => {
       const btn = document.getElementById('btnCopy');
@@ -484,7 +465,7 @@
     });
   };
 
-  // ========== REGISTRAR SOLICITAÇÃO DE RECARGA ==========
+  // ========== REGISTRAR SOLICITAÇÃO DE RECARGA (SEM CREDITAR) ==========
   async function registrarSolicitacaoRecarga(transacaoId, valorPago, valorSolicitado) {
     const solicitacao = {
       id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8),
@@ -500,12 +481,11 @@
     };
     
     try {
-      // Salva usando a função do integracao.js
       await salvarSolicitacaoRecarga(solicitacao);
+      console.log('✅ Solicitação de recarga registrada:', solicitacao.id);
       return solicitacao.id;
     } catch (err) {
       console.error('Erro ao salvar solicitação:', err);
-      // Fallback: salvar no localStorage
       let solicitacoes = JSON.parse(localStorage.getItem('solicitacoes_recarga') || '[]');
       solicitacoes.push(solicitacao);
       localStorage.setItem('solicitacoes_recarga', JSON.stringify(solicitacoes));
@@ -513,26 +493,7 @@
     }
   }
 
-  // ========== REGISTRAR TRANSAÇÃO FINANCEIRA ==========
-  async function registrarTransacaoFinanceira(tipo, valor, descricao) {
-    try {
-      const transacao = {
-        id: 'trans_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-        usuarioId: clienteId,
-        tipoUsuario: 'cliente',
-        tipo: tipo, // 'recarga_solicitada' ou 'recarga_aprovada'
-        valor: valor,
-        descricao: descricao,
-        status: 'pendente',
-        data: new Date().toISOString()
-      };
-      await salvarTransacao(transacao);
-    } catch (err) {
-      console.warn('Erro ao registrar transação:', err);
-    }
-  }
-
-  // ========== ENVIO DO COMPROVANTE ==========
+  // ========== ENVIO DO COMPROVANTE (SÓ REGISTRA, NÃO CREDITA) ==========
   document.getElementById('comprovanteForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -560,7 +521,7 @@
       msgDiv.classList.add('error');
       msgDiv.style.display = 'block';
       btn.disabled = false;
-      btn.textContent = 'ENVIAR COMPROVANTE';
+      btn.textContent = 'SOLICITAR RECARGA';
       return;
     }
     
@@ -569,38 +530,20 @@
       msgDiv.classList.add('error');
       msgDiv.style.display = 'block';
       btn.disabled = false;
-      btn.textContent = 'ENVIAR COMPROVANTE';
+      btn.textContent = 'SOLICITAR RECARGA';
       return;
     }
     
-    // Verifica se o valor pago corresponde ao valor solicitado
-    if (Math.abs(valorPago - valorSolicitado) > 0.01) {
-      if (!confirm(`⚠️ Atenção: Você informou um valor pago de R$ ${valorPago.toFixed(2)}, mas o valor solicitado é R$ ${valorSolicitado.toFixed(2)}. Deseja continuar mesmo assim? O crédito será proporcional ao valor enviado.`)) {
-        btn.disabled = false;
-        btn.textContent = 'ENVIAR COMPROVANTE';
-        return;
-      }
-    }
-
     let solicitacaoId = null;
     try {
-      // Registra a solicitação
       solicitacaoId = await registrarSolicitacaoRecarga(transacaoId, valorPago, valorSolicitado);
-      
-      // Registra a transação pendente
-      await registrarTransacaoFinanceira(
-        'recarga_solicitada',
-        valorPago,
-        `Solicitação de recarga de ${valorSolicitado} ALMA via PIX (ID: ${transacaoId})`
-      );
-      
     } catch (err) {
       console.warn(err);
       solicitacaoId = 'NÃO_REGISTRADO_LOCALMENTE';
     }
 
-    // ========== ENVIA E-MAIL DE NOTIFICAÇÃO ==========
-    const corpoEmail = `🪙 NOVA SOLICITAÇÃO DE RECARGA TOKEN-ALMA
+    // ========== ENVIA E-MAIL DE NOTIFICAÇÃO (SÓ AVISO, NÃO CREDITA) ==========
+    const corpoEmail = `🪙 NOVA SOLICITAÇÃO DE RECARGA TOKEN-ALMA - AGUARDANDO APROVAÇÃO
 ────────────────────────────────────────
 CLIENTE: ${nome}
 EMAIL: ${email}
@@ -615,10 +558,9 @@ CLIENTE ID: ${clienteId}
 
 🔐 Chave PIX utilizada: ${CHAVE_PIX}
 ────────────────────────────────────────
-Status: AGUARDANDO CONFIRMAÇÃO MANUAL
+Status: AGUARDANDO APROVAÇÃO MANUAL
 
-⏱️ Prazo estimado para crédito: 15 a 60 minutos.
-Após aprovação, o cliente receberá os ALMA na carteira.`;
+⏱️ O crédito será liberado APÓS aprovação do administrador.`;
 
     const formData = new FormData();
     formData.append('access_key', 'eb4edc0c-b94c-4287-83bf-6f2e05f65774');
@@ -634,21 +576,19 @@ Após aprovação, o cliente receberá os ALMA na carteira.`;
       
       if (result.success) {
         msgDiv.innerHTML = `
-          ✅ <strong>Comprovante enviado com sucesso!</strong><br>
-          Solicitação #${solicitacaoId} registrada.<br><br>
-          📌 O saldo será creditado em sua carteira APÓS a confirmação manual (até 60 minutos).<br>
-          🔔 Você será notificado por e-mail quando o crédito for aprovado.<br><br>
-          <strong>Acompanhe no seu painel do cliente.</strong>
+          ✅ <strong>Solicitação enviada com sucesso!</strong><br>
+          Solicitação #${solicitacaoId}<br><br>
+          📌 O saldo será creditado APÓS a aprovação manual do administrador.<br>
+          🔔 Você será notificado quando o crédito for aprovado.<br><br>
+          <strong>🔐 Nenhum valor foi creditado automaticamente. Aguarde aprovação.</strong>
         `;
         msgDiv.classList.add('success');
         msgDiv.style.display = 'block';
         
-        // Limpa o formulário mantendo o valor
         document.querySelector('input[name="transaction_id"]').value = '';
         document.getElementById('inputValorPago').value = valorSolicitado;
         document.getElementById('aceitoTermos').checked = false;
         
-        // Redireciona após 5 segundos
         setTimeout(() => { 
           window.location.href = 'painel_do_cliente.html'; 
         }, 5000);
@@ -661,7 +601,7 @@ Após aprovação, o cliente receberá os ALMA na carteira.`;
         ⚠️ <strong>Solicitação registrada localmente!</strong><br>
         Houve um erro no envio do comprovante por e-mail, mas sua solicitação foi salva.<br>
         Envie o comprovante manualmente para <strong>almafluxo@almafluxo.uk</strong> informando o ID: <strong>${solicitacaoId}</strong><br>
-        O saldo será creditado assim que confirmarmos.
+        O crédito será liberado APÓS confirmação manual.
       `;
       msgDiv.classList.add('error');
       msgDiv.style.display = 'block';
@@ -671,7 +611,7 @@ Após aprovação, o cliente receberá os ALMA na carteira.`;
       }, 8000);
     } finally {
       btn.disabled = false;
-      btn.textContent = 'ENVIAR COMPROVANTE';
+      btn.textContent = 'SOLICITAR RECARGA';
     }
   });
 
@@ -679,7 +619,6 @@ Após aprovação, o cliente receberá os ALMA na carteira.`;
   (async () => {
     await preencherDadosCliente();
     
-    // Validação de segurança: se não tiver clienteId, redireciona
     if (!clienteId) {
       setTimeout(() => {
         if (!clienteId) window.location.href = 'marido_aluguel.html';
