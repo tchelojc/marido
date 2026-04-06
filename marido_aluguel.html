@@ -833,13 +833,44 @@
   // Inicialização
   carregarServicos();
 
-  // Verificar se já está logado e redirecionar
-  (async () => {
+  (async function atualizarBotaoLogin() {
     const sess = obterSessao();
+    const loginBtn = document.getElementById('loginBtnHeader');
+    
     if (sess && sess.autenticado && sess.expira > Date.now()) {
-      // Usuário já está logado, mas está na página inicial
-      // Não redireciona automaticamente para não quebrar a experiência
-      console.log('Usuário já logado:', sess.tipo);
+      if (sess.tipo === 'cliente') {
+        const cliente = await buscarClientePorId(sess.usuarioId);
+        if (cliente) {
+          const primeiroNome = cliente.nome.split(' ')[0];
+          loginBtn.innerHTML = `<i class="fas fa-user-circle"></i> ${primeiroNome}`;
+          loginBtn.style.background = "#e8edf8";
+          loginBtn.style.border = "1px solid #2b4c7c";
+          loginBtn.style.color = "#1e3c72";
+          
+          loginBtn.onclick = (e) => {
+            e.preventDefault();
+            if (confirm(`Olá ${cliente.nome}!\n\nDeseja ir para seu painel de cliente?`)) {
+              window.location.href = 'cliente_dashboard.html';
+            }
+          };
+        }
+      } else if (sess.tipo === 'profissional') {
+        const profissional = await buscarProfissionalPorId(sess.usuarioId);
+        if (profissional) {
+          loginBtn.innerHTML = `<i class="fas fa-user-cog"></i> Meu Painel`;
+          loginBtn.style.background = "#e8edf8";
+          loginBtn.style.border = "1px solid #2b4c7c";
+          loginBtn.style.color = "#1e3c72";
+          
+          loginBtn.onclick = (e) => {
+            e.preventDefault();
+            window.location.href = 'profissional_dashboard.html';
+          };
+        }
+      }
+    } else {
+      // Usuário não logado - comportamento padrão
+      loginBtn.onclick = () => openAuthModal();
     }
   })();
 </script>
