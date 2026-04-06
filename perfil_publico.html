@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="dados.js"></script>
+  <script src="profissionais.js"></script>
   <script src="integracao.js"></script>
   <style>
     /* ========== ESTILOS ========== */
@@ -279,7 +280,10 @@
   async function buscarDisponibilidade(profissionalId) {
     try {
       const resultado = await callBackend("obter_disponibilidade", { profissionalId }, 30);
-      return resultado?.dias || [];
+      // doPost: { ok: true, id: { dias: [...] } } ou { ok: true, id: null }
+      if (resultado?.ok && resultado.id?.dias) return resultado.id.dias;
+      if (resultado?.ok && Array.isArray(resultado.id)) return resultado.id;
+      return [];
     } catch (err) {
       console.error('Erro ao buscar disponibilidade:', err);
       return [];
@@ -290,7 +294,9 @@
   async function buscarPerfilExtraCompleto(profissionalId) {
     try {
       const resultado = await callBackend("obter_perfil_extra", { profissionalId }, 30);
-      return resultado?.dados || {};
+      // doPost: { ok: true, id: <objeto_ou_null> }
+      if (resultado?.ok && resultado.id && typeof resultado.id === 'object') return resultado.id;
+      return {};
     } catch (err) {
       console.error('Erro ao buscar perfil extra:', err);
       return {};
