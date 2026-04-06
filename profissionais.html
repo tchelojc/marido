@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="dados.js"></script>
+  <script src="profissionais.js"></script>
   <script src="integracao.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -291,33 +292,15 @@
     return estrelas;
   }
 
-  // ========== FUNÇÃO PARA BUSCAR PROFISSIONAIS (LOCAL + BACKEND) ==========
+  // ========== FUNÇÃO PARA BUSCAR PROFISSIONAIS (ESTÁTICOS + BACKEND) ==========
   async function buscarProfissionais() {
-    // Primeiro tenta carregar do arquivo profissional.json local
-    try {
-      console.log('Tentando carregar profissionais do arquivo local...');
-      const response = await fetch('profissional.json');
-      if (response.ok) {
-        const profissionais = await response.json();
-        console.log('✅ Profissionais carregados do arquivo local:', profissionais.length);
-        return Array.isArray(profissionais) ? profissionais : [];
-      } else {
-        console.log('Arquivo profissional.json não encontrado, tentando backend...');
-      }
-    } catch (err) {
-      console.log('Erro ao carregar arquivo local:', err.message);
-    }
-    
-    // Fallback: tenta buscar do backend via integracao.js
-    try {
-      console.log('Tentando carregar profissionais do backend...');
-      const profissionais = await obterTodosProfissionais();
-      console.log('✅ Profissionais carregados do backend:', Array.isArray(profissionais) ? profissionais.length : 0);
-      return Array.isArray(profissionais) ? profissionais : [];
-    } catch (err) {
-      console.error('Erro ao carregar profissionais do backend:', err);
-      return [];
-    }
+    // obterTodosProfissionais() já faz a mesclagem:
+    //   1. Chama o backend (profissionais.json do Drive)
+    //   2. Mescla com PROFISSIONAIS_DATA (estáticos do profissionais.js)
+    //   3. Backend tem prioridade (mesmo email = backend vence)
+    const todos = await obterTodosProfissionais();
+    console.log('Total profissionais (backend + estáticos):', todos.length);
+    return Array.isArray(todos) ? todos : [];
   }
 
   // ========== FUNÇÃO PARA CRIAR CHAT ==========
