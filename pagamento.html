@@ -650,7 +650,7 @@ Após aprovação, o cliente receberá os ALMA na carteira.`;
         
         // Redireciona após 5 segundos
         setTimeout(() => { 
-          window.location.href = 'cliente_dashboard.html'; 
+          window.location.href = 'painel_do_cliente.html'; 
         }, 5000);
       } else {
         throw new Error('Erro no envio do e-mail');
@@ -667,7 +667,7 @@ Após aprovação, o cliente receberá os ALMA na carteira.`;
       msgDiv.style.display = 'block';
       
       setTimeout(() => { 
-        window.location.href = 'cliente_dashboard.html'; 
+        window.location.href = 'painel_do_cliente.html'; 
       }, 8000);
     } finally {
       btn.disabled = false;
