@@ -563,6 +563,23 @@ async function inicializarSistemaBackend() {
   }
 }
 
+// Adicionar ao final do integracao.js
+async function salvarDisponibilidadeBackend(profissionalId, dias) {
+    // Tenta salvar no perfil extra do backend
+    try {
+        const perfilAtual = await obterPerfilExtra(profissionalId) || {};
+        perfilAtual.disponibilidade = dias;
+        const resultado = await callBackend("salvar_perfil_extra", { 
+            profissionalId, 
+            dados: perfilAtual 
+        }, 30);
+        return resultado?.ok === true;
+    } catch (err) {
+        console.log('Backend não suporta salvar disponibilidade, apenas localStorage');
+        return false;
+    }
+}
+
 console.log("✅ integracao.js — backend com ImgBB para imagens");
 console.log("📍 Backend URL:", BACKEND_URL);
 console.log("🖼️ ImgBB API Key configurada:", IMGBB_API_KEY ? "✅ Sim" : "❌ Não");
