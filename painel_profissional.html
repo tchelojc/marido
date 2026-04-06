@@ -731,10 +731,13 @@
       setor: document.getElementById('editSetor').value.trim(),
       avatar: document.getElementById('avatarPreview').src,
       coverPhoto: document.getElementById('coverImg').src,
-      experiencias, formacoes, habilidades, idiomas, links
+      experiencias, formacoes, habilidades, idiomas, links,
+      disponibilidade: disponibilidade
     };
+    // Salva no localStorage (cache local)
     localStorage.setItem(PERFIL_COMPLETO_KEY, JSON.stringify(novoPerfilExtra));
     
+    // Salva dados base no registro principal do profissional
     const dadosBase = {
       id: profissionalAtual.id,
       nome: novoPerfilExtra.nome,
@@ -745,6 +748,13 @@
       endereco: novoPerfilExtra.localizacao
     };
     await atualizarProfissional(dadosBase);
+    
+    // ✅ Salva perfil extra completo no backend (acessível de qualquer dispositivo)
+    try {
+      await salvarPerfilExtra(profissionalAtual.id, novoPerfilExtra);
+    } catch (err) {
+      console.warn('⚠️ Aviso: perfil extra não salvo no backend:', err.message);
+    }
     
     document.getElementById('profNome').innerText = novoPerfilExtra.nome;
     document.getElementById('profAvatar').src = novoPerfilExtra.avatar;
@@ -858,8 +868,14 @@
       document.getElementById('coverImg').src = imgUrl;
     }, 1200);
     
-    document.getElementById('salvarDisponibilidade').onclick = () => {
+    document.getElementById('salvarDisponibilidade').onclick = async () => {
       localStorage.setItem('disp_' + profissionalAtual.id, JSON.stringify(disponibilidade));
+      // ✅ Sincroniza disponibilidade no backend
+      try {
+        await salvarDisponibilidadeBackend(profissionalAtual.id, disponibilidade);
+      } catch (err) {
+        console.warn('⚠️ Disponibilidade não sincronizada no backend:', err.message);
+      }
       toast('Disponibilidade salva com sucesso!');
     };
     
