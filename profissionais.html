@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profissionais · Marido de Aluguel</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="dados.js"></script>
   <script src="profissionais.js"></script>
@@ -13,176 +13,259 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
-      background: #f4f6fa;
-      color: #1a2634;
-      padding: 24px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #eef2f6 100%);
+      color: #1a2c3e;
+      padding: 28px 24px;
     }
     .container {
-      max-width: 1200px;
+      max-width: 1300px;
       margin: 0 auto;
     }
     .header {
-      background: white;
-      border-radius: 24px;
-      padding: 20px 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 28px;
+      padding: 16px 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      border: 1px solid rgba(255,255,255,0.5);
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
     }
     .logo {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       font-weight: 800;
       background: linear-gradient(135deg, #1e3c72, #2b4c7c);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
+      letter-spacing: -0.3px;
     }
     .back-btn {
-      background: #eef2ff;
+      background: linear-gradient(135deg, #eef2ff, #e8edf8);
       border: none;
-      padding: 8px 20px;
+      padding: 10px 24px;
       border-radius: 40px;
       cursor: pointer;
-      font-weight: 500;
+      font-weight: 600;
       text-decoration: none;
       color: #1e3c72;
-      transition: 0.2s;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
     }
     .back-btn:hover {
-      background: #e2e8f0;
-      transform: translateY(-1px);
+      background: linear-gradient(135deg, #e2e8fc, #dfe5f5);
+      transform: translateX(-2px);
+      box-shadow: 0 4px 12px rgba(30,60,114,0.15);
     }
     .service-title {
       background: white;
-      border-radius: 20px;
-      padding: 16px 24px;
-      margin-bottom: 24px;
+      border-radius: 24px;
+      padding: 20px 28px;
+      margin-bottom: 28px;
       border-left: 5px solid #2b4c7c;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
     .service-title h2 {
       margin-bottom: 8px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e3c72;
+    }
+    .service-title p {
+      color: #64748b;
+      font-size: 0.85rem;
     }
     .profissionais-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 28px;
     }
     .card-profissional {
       background: white;
-      border-radius: 24px;
+      border-radius: 28px;
       overflow: hidden;
-      transition: 0.2s;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid rgba(226,232,240,0.6);
     }
     .card-profissional:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+      transform: translateY(-6px);
+      box-shadow: 0 20px 35px -12px rgba(0,0,0,0.15);
+      border-color: transparent;
     }
     .card-content {
-      padding: 20px;
+      padding: 24px;
     }
-    .avatar {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-right: 16px;
-      border: 2px solid #eef2ff;
-    }
-    .flex-row {
+    .profile-header {
       display: flex;
       align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background: linear-gradient(135deg, #eef2ff, #e2e8f0);
+    }
+    .prof-info {
+      flex: 1;
     }
     .nome {
       font-size: 1.2rem;
-      font-weight: 700;
-      margin-bottom: 4px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
     }
     .avaliacao {
-      color: #f5b042;
-      margin-top: 4px;
-      font-size: 0.9rem;
+      color: #fbbf24;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .avaliacao .small-text {
+      color: #64748b;
+      font-size: 0.7rem;
     }
     .descricao {
-      margin: 12px 0;
+      margin: 14px 0;
       font-size: 0.85rem;
-      color: #4a5b7a;
-      line-height: 1.4;
+      color: #475569;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
     .contato {
-      background: #f8fafc;
-      border-radius: 16px;
-      padding: 12px;
-      margin-top: 12px;
+      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+      border-radius: 20px;
+      padding: 14px 16px;
+      margin-top: 16px;
       font-size: 0.8rem;
     }
+    .contato div {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: #334155;
+    }
+    .contato div:last-child {
+      margin-bottom: 0;
+    }
     .contato i {
-      width: 24px;
+      width: 28px;
       color: #2b4c7c;
+      font-size: 0.9rem;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 16px 0 12px 0;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .tag-servico {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #eef2ff, #e8edf8);
+      padding: 5px 14px;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #1e3c72;
     }
     .btn-contatar {
-      background: #2b4c7c;
+      background: linear-gradient(135deg, #2b4c7c, #1e3c72);
       color: white;
       border: none;
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border-radius: 40px;
       margin-top: 12px;
       cursor: pointer;
-      font-weight: 600;
-      transition: 0.2s;
+      font-weight: 700;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
     .btn-contatar:hover {
-      background: #1e3c72;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(30,60,114,0.3);
     }
     .btn-perfil {
-      background: #4a5b7a;
-      color: white;
-      border: none;
+      background: rgba(100,116,139,0.1);
+      color: #475569;
+      border: 1px solid #e2e8f0;
       width: 100%;
       padding: 10px;
       border-radius: 40px;
       margin-top: 8px;
       cursor: pointer;
       font-weight: 600;
+      font-size: 0.8rem;
       text-align: center;
       text-decoration: none;
-      display: inline-block;
-      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
     }
     .btn-perfil:hover {
-      background: #3a4a6a;
+      background: #f1f5f9;
+      border-color: #cbd5e1;
       transform: translateY(-1px);
     }
     .no-results {
       text-align: center;
-      padding: 50px;
+      padding: 60px;
       background: white;
-      border-radius: 24px;
+      border-radius: 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
     .no-results i {
-      font-size: 3rem;
-      color: #aaa;
-      margin-bottom: 16px;
+      font-size: 3.5rem;
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }
+    .no-results p {
+      color: #475569;
+      margin-bottom: 8px;
     }
     .small-text {
-      font-size: 0.75rem;
-      color: #5a6e8a;
+      font-size: 0.7rem;
+      color: #64748b;
     }
     .loading {
       text-align: center;
-      padding: 40px;
-      font-size: 1.1rem;
+      padding: 60px;
+      font-size: 1rem;
       color: #2b4c7c;
+      background: white;
+      border-radius: 32px;
     }
     .loading-spinner {
       display: inline-block;
-      width: 40px;
-      height: 40px;
+      width: 45px;
+      height: 45px;
       border: 3px solid #eef2ff;
       border-top: 3px solid #2b4c7c;
       border-radius: 50%;
@@ -193,20 +276,6 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-    .tag-servico {
-      display: inline-block;
-      background: #eef2ff;
-      padding: 4px 12px;
-      border-radius: 30px;
-      font-size: 0.7rem;
-      margin-top: 8px;
-    }
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 8px;
-      font-size: 0.75rem;
-    }
     .toast {
       position: fixed;
       bottom: 28px;
@@ -214,11 +283,11 @@
       z-index: 9999;
       background: #155724;
       color: white;
-      padding: 14px 22px;
-      border-radius: 40px;
-      font-size: 0.9rem;
+      padding: 14px 24px;
+      border-radius: 50px;
+      font-size: 0.85rem;
       font-weight: 500;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
       display: flex;
       align-items: center;
       gap: 10px;
@@ -228,11 +297,18 @@
       pointer-events: none;
     }
     .toast.show { opacity: 1; transform: translateY(0); }
-    .toast.error { background: #721c24; }
-    .toast.info { background: #17a2b8; }
-    @media (max-width: 700px) {
-      .profissionais-grid { grid-template-columns: 1fr; }
+    .toast.error { background: #dc2626; }
+    .toast.info { background: #0891b2; }
+    @media (max-width: 800px) {
+      body { padding: 16px; }
+      .profissionais-grid { grid-template-columns: 1fr; gap: 20px; }
       .header { flex-direction: column; gap: 16px; text-align: center; }
+      .profile-header { flex-direction: column; text-align: center; }
+      .avatar { width: 100px; height: 100px; margin: 0 auto; }
+      .prof-info { text-align: center; }
+      .avaliacao { justify-content: center; }
+      .contato div { justify-content: center; }
+      .info-row { justify-content: center; }
     }
   </style>
 </head>
@@ -251,7 +327,7 @@
   </div>
 
   <div id="profissionaisContainer" class="profissionais-grid">
-    <div class="loading"><div class="loading-spinner"></div><p>Carregando profissionais...</p></div>
+    <div class="loading"><div class="loading-spinner"></div><p>Carregando profissionais especializados...</p></div>
   </div>
 </div>
 
@@ -292,12 +368,31 @@
     return estrelas;
   }
 
-  // ========== FUNÇÃO PARA BUSCAR PROFISSIONAIS (ESTÁTICOS + BACKEND) ==========
+  // ========== FUNÇÃO PARA OBTER URL DO AVATAR CORRETAMENTE ==========
+  function obterAvatarUrl(profissional) {
+    // Tenta obter do perfil completo no localStorage primeiro
+    const perfilKey = 'perfil_completo_' + profissional.id;
+    const perfilLocal = localStorage.getItem(perfilKey);
+    if (perfilLocal) {
+      try {
+        const perfil = JSON.parse(perfilLocal);
+        if (perfil.avatar && perfil.avatar !== '' && !perfil.avatar.startsWith('data:image/svg')) {
+          return perfil.avatar;
+        }
+      } catch(e) {}
+    }
+    
+    // Se não encontrou, usa o avatar do profissional base
+    if (profissional.avatar && profissional.avatar !== '' && !profissional.avatar.startsWith('data:image/svg')) {
+      return profissional.avatar;
+    }
+    
+    // Fallback: UI Avatars com nome
+    return `https://ui-avatars.com/api/?background=2b4c7c&color=fff&bold=true&size=80&name=${encodeURIComponent(profissional.nome || 'Profissional')}`;
+  }
+
+  // ========== FUNÇÃO PARA BUSCAR PROFISSIONAIS ==========
   async function buscarProfissionais() {
-    // obterTodosProfissionais() já faz a mesclagem:
-    //   1. Chama o backend (profissionais.json do Drive)
-    //   2. Mescla com PROFISSIONAIS_DATA (estáticos do profissionais.js)
-    //   3. Backend tem prioridade (mesmo email = backend vence)
     const todos = await obterTodosProfissionais();
     console.log('Total profissionais (backend + estáticos):', todos.length);
     return Array.isArray(todos) ? todos : [];
@@ -375,13 +470,12 @@
   const urlParams = new URLSearchParams(window.location.search);
   const servicoId = urlParams.get('id');
 
-  // ========== FUNÇÃO PRINCIPAL ASSÍNCRONA ==========
+  // ========== FUNÇÃO PRINCIPAL ==========
   (async () => {
     const container = document.getElementById('profissionaisContainer');
     const nomeServicoEl = document.getElementById('servicoNome');
     const categoriaServicoEl = document.getElementById('servicoCategoria');
 
-    // 1. Valida ID do serviço
     if (!servicoId) {
       nomeServicoEl.innerText = 'Serviço não especificado';
       categoriaServicoEl.innerHTML = '';
@@ -393,7 +487,6 @@
       return;
     }
 
-    // 2. Carrega informações do serviço
     const servicoEncontrado = obterServicoPorId(servicoId);
     if (servicoEncontrado) {
       const precoUnitario = servicoEncontrado.preco_unitario?.toFixed(2) || (servicoEncontrado.diaria_base / servicoEncontrado.producao_dia).toFixed(2);
@@ -414,30 +507,23 @@
       return;
     }
 
-    // 3. Carrega profissionais (local + backend)
     try {
-      toast('Carregando profissionais...', 'info');
+      toast('Carregando profissionais especializados...', 'info');
       
       const todosProfissionais = await buscarProfissionais();
       
       console.log('Total de profissionais carregados:', todosProfissionais.length);
-      console.log('Buscando profissionais com serviço ID:', servicoId);
       
-      // Filtra profissionais que oferecem este serviço
       const profissionaisFiltrados = todosProfissionais.filter(prof => {
         if (!prof) return false;
         if (!prof.servicos_ids) return false;
         if (!Array.isArray(prof.servicos_ids)) return false;
-        // Compara como string e como número
         return prof.servicos_ids.includes(servicoId) || 
                prof.servicos_ids.includes(parseInt(servicoId)) ||
                prof.servicos_ids.includes(String(servicoId));
       });
 
       console.log('Profissionais filtrados:', profissionaisFiltrados.length);
-      if (profissionaisFiltrados.length > 0) {
-        console.log('Profissionais encontrados:', profissionaisFiltrados.map(p => p.nome));
-      }
 
       if (profissionaisFiltrados.length === 0) {
         container.innerHTML = `<div class="no-results">
@@ -449,7 +535,6 @@
         return;
       }
 
-      // 4. Busca avaliações para cada profissional
       const profissionaisComAvaliacoes = await Promise.all(profissionaisFiltrados.map(async (prof) => {
         try {
           const avaliacoes = await obterAvaliacoesProfissional(prof.id);
@@ -465,26 +550,20 @@
         }
       }));
 
-      // 5. Ordena por avaliação (melhores primeiro)
       profissionaisComAvaliacoes.sort((a, b) => b.mediaAvaliacoes - a.mediaAvaliacoes);
 
-      // 6. Renderiza cards
       container.innerHTML = profissionaisComAvaliacoes.map(prof => {
-        // Verifica se avatar é URL válida ou usa fallback
-        let avatarUrl = prof.avatar;
-        if (!avatarUrl || avatarUrl.startsWith('data:image')) {
-          avatarUrl = `https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(prof.nome)}`;
-        }
-        
+        const avatarUrl = obterAvatarUrl(prof);
         const estrelas = gerarEstrelas(prof.mediaAvaliacoes);
         const totalAvaliacoes = prof.totalAvaliacoes;
         
         return `
           <div class="card-profissional">
             <div class="card-content">
-              <div class="flex-row">
-                <img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(prof.nome)}" class="avatar" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(prof.nome)}'">
-                <div>
+              <div class="profile-header">
+                <img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(prof.nome)}" class="avatar" loading="lazy" 
+                  onerror="this.src='https://ui-avatars.com/api/?background=2b4c7c&color=fff&bold=true&size=80&name=${encodeURIComponent(prof.nome)}'">
+                <div class="prof-info">
                   <div class="nome">${escapeHtml(prof.nome)}</div>
                   <div class="avaliacao" title="${prof.mediaAvaliacoes.toFixed(1)} de 5 estrelas">
                     ${estrelas} <span class="small-text">(${totalAvaliacoes} ${totalAvaliacoes === 1 ? 'avaliação' : 'avaliações'})</span>
@@ -512,7 +591,6 @@
         `;
       }).join('');
 
-      // 7. Adiciona event listeners para os botões de contato
       document.querySelectorAll('.btn-contatar').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const profId = btn.dataset.profId;
