@@ -1,6 +1,6 @@
 // ========== CONFIGURAÇÃO ==========
 // NOVA URL DO APPSCRIPT - VERSÃO 12 (06/04/2026)
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycby01Tfa4QypIA8iKO3X5JSI5QuAGhK8TtnFgrNnEyz5CQYw0vRTQ6VEhmA47NTLGQjCUg/exec";
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyQ6jovbppeECjmteu5yITzN62aIZETL5_6fRlzKwcU6a3TCIUaxjZfUjPVQHtyDMNtkQ/exec";
 
 // ⚠️ SUA API KEY DO IMGBB ⚠️
 const IMGBB_API_KEY = "2597fbdd4014975ed01d56ee9a6b404d";
@@ -516,6 +516,27 @@ async function obterAvaliacoesProfissional(profissionalId) {
 async function salvarAvaliacao(profissionalId, clienteEmail, clienteNome, nota, comentario) {
   const resultado = await callBackend("salvar_avaliacao", { profissionalId, clienteEmail, clienteNome, nota, comentario });
   return resultado?.ok === true;
+}
+
+// ========== ALTERAR SENHA ==========
+async function alterarSenhaProfissional(id, novaSenha) {
+  try {
+    const resultado = await callBackend("alterar_senha_profissional", { id, novaSenha }, 30);
+    return resultado?.ok === true;
+  } catch (err) {
+    console.error("Erro ao alterar senha do profissional:", err);
+    return false;
+  }
+}
+
+async function alterarSenhaCliente(id, novaSenha) {
+  try {
+    const resultado = await callBackend("alterar_senha_cliente", { id, novaSenha }, 30);
+    return resultado?.ok === true;
+  } catch (err) {
+    console.error("Erro ao alterar senha do cliente:", err);
+    return false;
+  }
 }
 
 // ========== TESTES ==========
