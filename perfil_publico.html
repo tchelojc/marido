@@ -278,16 +278,41 @@
 
   // ========== FUNÇÃO PARA BUSCAR DISPONIBILIDADE ==========
   async function buscarDisponibilidade(profissionalId) {
-    try {
-      const resultado = await callBackend("obter_disponibilidade", { profissionalId }, 30);
-      // doPost: { ok: true, id: { dias: [...] } } ou { ok: true, id: null }
-      if (resultado?.ok && resultado.id?.dias) return resultado.id.dias;
-      if (resultado?.ok && Array.isArray(resultado.id)) return resultado.id;
-      return [];
-    } catch (err) {
-      console.error('Erro ao buscar disponibilidade:', err);
-      return [];
-    }
+      try {
+          // PRIORIDADE 1: Buscar do localStorage (onde o dashboard profissional salva)
+          const localKey = 'disp_' + profissionalId;
+          const localData = localStorage.getItem(localKey);
+          if (localData) {
+              const dias = JSON.parse(localData);
+              if (Array.isArray(dias) && dias.length > 0) {
+                  console.log('✅ Disponibilidade encontrada no localStorage:', dias);
+                  return dias;
+              }
+          }
+          
+          // PRIORIDADE 2: Tentar buscar do perfil extra (se o backend tiver salvo lá)
+          try {
+              const perfilExtra = await callBackend("obter_perfil_extra", { profissionalId }, 30);
+              if (perfilExtra?.ok && perfilExtra.id?.disponibilidade) {
+                  const dias = perfilExtra.id.disponibilidade;
+                  if (Array.isArray(dias)) {
+                      console.log('✅ Disponibilidade encontrada no perfil extra:', dias);
+                      return dias;
+                  }
+              }
+          } catch (perfilErr) {
+              // Ignora erro - apenas não tinha no perfil extra
+              console.log('Perfil extra não contém disponibilidade');
+          }
+          
+          // Se não encontrou em nenhum lugar
+          console.log('⚠️ Nenhuma disponibilidade encontrada para o profissional');
+          return [];
+          
+      } catch (err) {
+          console.error('Erro ao buscar disponibilidade:', err);
+          return [];
+      }
   }
 
   // ========== FUNÇÃO PARA BUSCAR PERFIL EXTRA ==========
@@ -332,13 +357,18 @@
       const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
       function getDisponibilidadeHTML() {
-        const diasAtivos = disponibilidade.filter(d => diasSemana.includes(d));
-        if (diasAtivos.length === 0) {
-          return '<p class="sem-disponibilidade">Disponibilidade a definir. Entre em contato para agendar.</p>';
-        }
-        return `<div class="dias-disponiveis">
-          ${diasSemana.map(dia => `<span class="dia-badge ${disponibilidade.includes(dia) ? 'ativo' : ''}">${dia}</span>`).join('')}
-        </div>`;
+          // Garante que disponibilidade é um array
+          const diasDisponiveis = Array.isArray(disponibilidade) ? disponibilidade : [];
+          const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+          const diasAtivos = diasDisponiveis.filter(d => diasSemana.includes(d));
+          
+          if (diasAtivos.length === 0) {
+              return '<p class="sem-disponibilidade">Disponibilidade a definir. Entre em contato para agendar.</p>';
+          }
+          
+          return `<div class="dias-disponiveis">
+              ${diasSemana.map(dia => `<span class="dia-badge ${diasDisponiveis.includes(dia) ? 'ativo' : ''}">${dia}</span>`).join('')}
+          </div>`;
       }
 
       function campo(field, defaultValue = '') {
