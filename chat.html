@@ -352,17 +352,23 @@
   async function iniciarServicoComSenha(senha) {
     try {
       await validarTokenInicio(senha, chat.id, chat.profissionalId);
-      if (chat.statusServico !== 'pago_parcial') {
+      if (chat.statusServico !== 'pago_integral_aguardando_inicio') {
         toast('Status inválido para iniciar serviço.', 'error');
         return;
       }
       chat.statusServico = 'em_andamento';
-      chat.mensagens.push({ autor: 'sistema', texto: `🔧 Serviço iniciado pelo profissional.`, data: new Date().toLocaleString('pt-BR') });
+      chat.mensagens.push({
+        autor: 'sistema',
+        texto: `🔧 Profissional confirmou presença no local. Serviço iniciado.`,
+        data: new Date().toLocaleString('pt-BR')
+      });
       await persistChat();
+      // Libera parcela 1 ao profissional
+      await liberarParcela1();
       atualizarMensagens();
       atualizarBotoes();
       atualizarStatusHeader();
-      toast('Serviço iniciado com sucesso!');
+      toast('Serviço iniciado! Parcela 1 creditada ao profissional.');
     } catch (err) {
       toast('Senha inválida ou erro: ' + err.message, 'error');
     }
@@ -375,116 +381,188 @@
         toast('Status inválido para concluir serviço.', 'error');
         return;
       }
-      chat.statusServico = 'aguardando_pagamento_final';
-      chat.mensagens.push({ autor: 'sistema', texto: `✅ Cliente confirmou conclusão do serviço. Aguardando pagamento final de 50% (R$ ${(chat.valorCombinado * 0.5).toFixed(2)}).`, data: new Date().toLocaleString('pt-BR') });
-      await persistChat();
-      atualizarMensagens();
-      atualizarBotoes();
-      atualizarStatusHeader();
-      toast('Serviço concluído! Aguardando pagamento final.');
+      // Libera parcela 2 ao profissional e marca como concluído
+      await liberarParcela2EFinalizar();
     } catch (err) {
       toast('Senha inválida ou erro: ' + err.message, 'error');
     }
   }
 
-  // ========== PAGAMENTO PARCIAL (50% + TAXA ADMINISTRATIVA) ==========
-  async function pagarParcial() {
+  // ========================================================
+  // FLUXO DE PAGAMENTO CUSTÓDIA TOKEN ALMA
+  // ─────────────────────────────────────────────────────
+  // Serviço R$ 100 → taxa R$ 20 → CLIENTE PAGA R$ 120 TOTAL
+  //
+  // ETAPA 1 — Cliente paga tudo de uma vez (R$ 120):
+  //   • R$ 20 → plataforma (imediato)
+  //   • R$ 50 → profissional "reservado" (custódia, ilusório)
+  //   • R$ 50 → custódia pendente (aguarda senha de conclusão)
+  //
+  // ETAPA 2 — Profissional chega no local → usa senha de início:
+  //   • Os R$ 50 "reservados" tornam-se efetivos no saldo do profissional
+  //
+  // ETAPA 3 — Profissional termina → cliente gera senha de conclusão:
+  //   • Os R$ 50 restantes são liberados ao profissional
+  //
+  // Nenhum calote é possível: o dinheiro sai do cliente no ato
+  // e fica custodiado na plataforma até cada liberação.
+  // ========================================================
+
+  // ========== ETAPA 1: CLIENTE PAGA O VALOR INTEGRAL ==========
+  async function pagarIntegral() {
     const valorServico = chat.valorCombinado;
-    const valorParcial = valorServico * 0.5;
-    const taxaAdm = calcularTaxaAdministrativa(valorServico);
-    const totalDebitar = valorParcial + taxaAdm;
-    
+    const taxaAdm      = calcularTaxaAdministrativa(valorServico);
+    const parcela1     = valorServico * 0.5;   // liberada ao profissional ao iniciar
+    const parcela2     = valorServico * 0.5;   // liberada ao profissional ao concluir
+    const totalCliente = valorServico + taxaAdm; // o que o cliente paga
+
     try {
       const saldoCliente = await getTokenBalance(chat.clienteId, "cliente");
-      if (saldoCliente >= totalDebitar) {
-        await callBackend("pagar_parcial_com_taxa", {
-          clienteId: chat.clienteId,
-          profissionalId: chat.profissionalId,
-          valorServico: valorServico,
-          valorParcial: valorParcial,
-          taxaAdm: taxaAdm,
-          chatId: chat.id
-        });
-        
-        chat.statusServico = "pago_parcial";
-        chat.taxaAdministrativa = taxaAdm;
-        chat.valorParcialPago = valorParcial;
-        
-        chat.mensagens.push({
-          autor: "sistema",
-          texto: `💸 Pagamento de 50% (R$ ${valorParcial.toFixed(2)}) + Taxa administrativa (R$ ${taxaAdm.toFixed(2)}) = TOTAL DEBITADO: R$ ${totalDebitar.toFixed(2)}. O serviço pode ser iniciado pelo profissional.`,
-          data: new Date().toLocaleString('pt-BR')
-        });
-        await persistChat();
-        atualizarMensagens();
-        atualizarBotoes();
-        atualizarStatusHeader();
-        toast(`Pagamento parcial realizado! Total debitado: R$ ${totalDebitar.toFixed(2)}`);
-      } else {
-        const precisa = totalDebitar - saldoCliente;
-        if (confirm(`⚠️ Saldo insuficiente.\n\nNecessário: R$ ${totalDebitar.toFixed(2)}\nSaldo atual: R$ ${saldoCliente.toFixed(2)}\nFaltam: R$ ${precisa.toFixed(2)}\n\nDeseja recarregar TOKEN-ALMA?`)) {
+
+      if (saldoCliente < totalCliente) {
+        const precisa = totalCliente - saldoCliente;
+        if (confirm(
+          `⚠️ Saldo insuficiente.\n\n` +
+          `Necessário: ${totalCliente.toFixed(2)} TOKEN ALMA\n` +
+          `Saldo atual: ${saldoCliente.toFixed(2)} TOKEN ALMA\n` +
+          `Faltam: ${precisa.toFixed(2)} TOKEN ALMA\n\n` +
+          `Deseja recarregar TOKEN ALMA?`
+        )) {
           window.location.href = `pagamento.html?cliente=${chat.clienteId}&nome=${encodeURIComponent(chat.clienteNome)}&email=${encodeURIComponent(sess.email)}&valor=${Math.ceil(precisa)}`;
         }
+        return;
       }
+
+      // Debita valor integral do cliente
+      await callBackend("debitar_saldo", {
+        usuarioId: chat.clienteId,
+        tipo: "cliente",
+        valor: totalCliente
+      });
+
+      // Credita taxa administrativa à plataforma (usuário root/admin)
+      await callBackend("pagar_taxa_plataforma", {
+        valor: taxaAdm,
+        chatId: chat.id,
+        descricao: `Taxa administrativa — serviço: ${chat.servicoNome}`
+      });
+
+      // Registra custódia: parcela1 + parcela2 ficam reservadas
+      chat.statusServico        = "pago_integral_aguardando_inicio";
+      chat.taxaAdministrativa   = taxaAdm;
+      chat.valorParcela1        = parcela1;   // liberada na senha de início
+      chat.valorParcela2        = parcela2;   // liberada na senha de conclusão
+      chat.totalPagoCliente     = totalCliente;
+      chat.custodiaTotal        = valorServico; // parcela1 + parcela2 em custódia
+
+      chat.mensagens.push({
+        autor: "sistema",
+        texto:
+          `💳 PAGAMENTO INTEGRAL REALIZADO\n` +
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+          `🔹 Valor do serviço: ${valorServico.toFixed(2)} TOKEN ALMA\n` +
+          `🔹 Taxa administrativa (plataforma): ${taxaAdm.toFixed(2)} TOKEN ALMA\n` +
+          `💸 Total debitado do cliente: ${totalCliente.toFixed(2)} TOKEN ALMA\n` +
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+          `🔒 ${parcela1.toFixed(2)} TOKEN ALMA em custódia → liberado ao profissional quando ele inserir a senha de início no local\n` +
+          `🔒 ${parcela2.toFixed(2)} TOKEN ALMA em custódia → liberado quando o serviço for concluído`,
+        data: new Date().toLocaleString('pt-BR')
+      });
+
+      await persistChat();
+      atualizarMensagens();
+      atualizarBotoes();
+      atualizarStatusHeader();
+      toast(`✅ ${totalCliente.toFixed(2)} TOKEN ALMA debitados. Aguardando início do serviço.`);
+
     } catch (err) {
       toast("Erro no pagamento: " + err.message, "error");
     }
   }
 
-  // ========== PAGAMENTO FINAL (50% restante, sem taxa) ==========
-  async function pagarFinal() {
-    const valorFinal = chat.valorCombinado * 0.5;
+  // ========== ETAPA 2: SENHA DE INÍCIO → LIBERA PARCELA 1 AO PROFISSIONAL ==========
+  // (chamada após validarTokenInicio — injetada em iniciarServicoComSenha)
+
+  async function liberarParcela1() {
+    const parcela1 = chat.valorParcela1 || (chat.valorCombinado * 0.5);
     try {
-      const saldoCliente = await getTokenBalance(chat.clienteId, "cliente");
-      if (saldoCliente >= valorFinal) {
-        await callBackend("pagar_final", {
-          clienteId: chat.clienteId,
-          profissionalId: chat.profissionalId,
-          valor: valorFinal,
-          chatId: chat.id
-        });
-        
-        chat.statusServico = "concluido";
-        chat.dataConclusao = new Date().toISOString();
-        chat.mensagens.push({
-          autor: "sistema",
-          texto: `💸 Pagamento final de R$ ${valorFinal.toFixed(2)} realizado! Serviço concluído com sucesso. Obrigado por utilizar a plataforma Marido de Aluguel.`,
-          data: new Date().toLocaleString('pt-BR')
-        });
-        await persistChat();
-        atualizarMensagens();
-        atualizarBotoes();
-        atualizarStatusHeader();
-        toast("Pagamento final realizado! Serviço concluído.");
-        
-        setTimeout(() => {
-          if (isCliente) window.location.href = 'cliente_dashboard.html';
-          else if (isProfissional) window.location.href = 'profissional_dashboard.html';
-          else window.location.href = 'admin.html';
-        }, 3000);
-      } else {
-        const precisa = valorFinal - saldoCliente;
-        if (confirm(`⚠️ Saldo insuficiente para o pagamento final.\n\nNecessário: R$ ${valorFinal.toFixed(2)}\nSaldo atual: R$ ${saldoCliente.toFixed(2)}\nFaltam: R$ ${precisa.toFixed(2)}\n\nDeseja recarregar TOKEN-ALMA?`)) {
-          window.location.href = `pagamento.html?cliente=${chat.clienteId}&nome=${encodeURIComponent(chat.clienteNome)}&email=${encodeURIComponent(sess.email)}&valor=${Math.ceil(precisa)}`;
-        }
-      }
+      await callBackend("creditar_saldo", {
+        usuarioId: chat.profissionalId,
+        tipo: "profissional",
+        valor: parcela1
+      });
+      chat.mensagens.push({
+        autor: "sistema",
+        texto:
+          `✅ PARCELA 1 LIBERADA\n` +
+          `🔓 ${parcela1.toFixed(2)} TOKEN ALMA creditados ao profissional.\n` +
+          `🔒 ${(chat.valorParcela2 || parcela1).toFixed(2)} TOKEN ALMA ainda em custódia (liberados ao concluir).`,
+        data: new Date().toLocaleString('pt-BR')
+      });
+      await persistChat();
+      atualizarMensagens();
     } catch (err) {
-      toast("Erro no pagamento final: " + err.message, "error");
+      console.error("Erro ao liberar parcela 1:", err);
+    }
+  }
+
+  // ========== ETAPA 3: SENHA DE CONCLUSÃO → LIBERA PARCELA 2 AO PROFISSIONAL ==========
+  async function liberarParcela2EFinalizar() {
+    const parcela2 = chat.valorParcela2 || (chat.valorCombinado * 0.5);
+    try {
+      await callBackend("creditar_saldo", {
+        usuarioId: chat.profissionalId,
+        tipo: "profissional",
+        valor: parcela2
+      });
+      chat.statusServico  = "concluido";
+      chat.dataConclusao  = new Date().toISOString();
+      chat.mensagens.push({
+        autor: "sistema",
+        texto:
+          `🏁 SERVIÇO CONCLUÍDO\n` +
+          `🔓 ${parcela2.toFixed(2)} TOKEN ALMA liberados ao profissional.\n` +
+          `💰 Profissional recebeu no total: ${(chat.valorParcela1 + parcela2).toFixed(2)} TOKEN ALMA\n` +
+          `✅ Obrigado por utilizar a plataforma Marido de Aluguel!`,
+        data: new Date().toLocaleString('pt-BR')
+      });
+      await persistChat();
+      atualizarMensagens();
+      atualizarBotoes();
+      atualizarStatusHeader();
+      toast("🎉 Serviço concluído! Profissional pago integralmente.");
+      setTimeout(() => {
+        if (isCliente) window.location.href = 'painel_do_cliente.html';
+        else if (isProfissional) window.location.href = 'painel_profissional.html';
+        else window.location.href = 'admin.html';
+      }, 3000);
+    } catch (err) {
+      toast("Erro ao finalizar serviço: " + err.message, "error");
     }
   }
 
   // ========== PROFISSIONAL ACEITA PROPOSTA ==========
   function aceitarProposta() {
-    let novoValor = prompt('Digite o valor total acordado para o serviço (R$):', chat.valorCombinado?.toFixed(2) || '');
+    let novoValor = prompt('Digite o valor total acordado para o serviço (TOKEN ALMA):', chat.valorCombinado?.toFixed(2) || '');
     if (novoValor && !isNaN(parseFloat(novoValor))) {
       const valor = parseFloat(novoValor);
-      const taxa = calcularTaxaAdministrativa(valor);
-      chat.valorCombinado = valor;
-      chat.statusServico = 'aguardando_pagamento_parcial';
-      chat.mensagens.push({ 
-        autor: 'sistema', 
-        texto: `✅ Profissional aceitou a proposta. Valor total combinado: R$ ${chat.valorCombinado.toFixed(2)}.\n📊 Taxa administrativa: R$ ${taxa.toFixed(2)}\n💰 Valor a pagar agora (50% + taxa): R$ ${(valor * 0.5 + taxa).toFixed(2)}\n💵 Saldo restante (50%): R$ ${(valor * 0.5).toFixed(2)}`, 
-        data: new Date().toLocaleString('pt-BR') 
+      const taxa   = calcularTaxaAdministrativa(valor);
+      const parcela = valor * 0.5;
+      const totalCliente = valor + taxa;
+      chat.valorCombinado  = valor;
+      chat.statusServico   = 'aguardando_pagamento_integral';
+      chat.mensagens.push({
+        autor: 'sistema',
+        texto:
+          `✅ Profissional aceitou a proposta!\n` +
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+          `🔹 Valor do serviço: ${valor.toFixed(2)} TOKEN ALMA\n` +
+          `🔹 Taxa administrativa (plataforma): ${taxa.toFixed(2)} TOKEN ALMA\n` +
+          `💳 TOTAL a pagar agora: ${totalCliente.toFixed(2)} TOKEN ALMA\n` +
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+          `🔒 ${parcela.toFixed(2)} TOKEN ALMA liberados ao profissional quando ele inserir a senha de início\n` +
+          `🔒 ${parcela.toFixed(2)} TOKEN ALMA liberados ao profissional quando o serviço for concluído`,
+        data: new Date().toLocaleString('pt-BR')
       });
       persistChat().then(() => {
         atualizarMensagens();
@@ -532,36 +610,57 @@
     const container = document.getElementById('actionButtons');
     if (!container) return;
     let html = '';
-    const taxa = chat.valorCombinado ? calcularTaxaAdministrativa(chat.valorCombinado) : 0;
-    const valorParcialComTaxa = chat.valorCombinado ? (chat.valorCombinado * 0.5 + taxa) : 0;
+    const taxa             = chat.valorCombinado ? calcularTaxaAdministrativa(chat.valorCombinado) : 0;
+    const totalCliente     = chat.valorCombinado ? (chat.valorCombinado + taxa) : 0;
+    const parcela          = chat.valorCombinado ? (chat.valorCombinado * 0.5) : 0;
 
+    // PROFISSIONAL: aceitar proposta durante negociação
     if (isProfissional && chat.statusServico === 'negociacao') {
       html += `<button class="btn-action btn-primary" id="aceitarPropostaBtn">✅ Aceitar proposta e definir valor</button>`;
     }
-    if (isCliente && chat.statusServico === 'aguardando_pagamento_parcial') {
+
+    // CLIENTE: pagar valor integral (100% serviço + taxa administrativa)
+    if (isCliente && chat.statusServico === 'aguardando_pagamento_integral') {
       html += `<div style="width:100%; margin-bottom:8px;" class="valor-detalhe">
-        📊 Detalhes do pagamento:<br>
-        • Valor do serviço: R$ ${chat.valorCombinado.toFixed(2)}<br>
-        • Taxa administrativa: R$ ${taxa.toFixed(2)}<br>
-        • 50% do serviço: R$ ${(chat.valorCombinado * 0.5).toFixed(2)}<br>
-        • <strong>Total a debitar agora: R$ ${valorParcialComTaxa.toFixed(2)}</strong>
+        📊 <strong>Resumo do pagamento integral:</strong><br>
+        • Valor do serviço: ${chat.valorCombinado.toFixed(2)} TOKEN ALMA<br>
+        • Taxa administrativa (plataforma): ${taxa.toFixed(2)} TOKEN ALMA<br>
+        • <strong>Total a pagar agora: ${totalCliente.toFixed(2)} TOKEN ALMA</strong><br>
+        <small>🔒 ${parcela.toFixed(2)} liberados ao profissional ao iniciar · 🔒 ${parcela.toFixed(2)} ao concluir</small>
       </div>`;
-      html += `<button class="btn-action btn-success" id="pagarParcialBtn">💰 Pagar 50% + Taxa (R$ ${valorParcialComTaxa.toFixed(2)})</button>`;
+      html += `<button class="btn-action btn-success" id="pagarIntegralBtn">💳 Pagar ${totalCliente.toFixed(2)} TOKEN ALMA (serviço + taxa)</button>`;
     }
-    if (isProfissional && chat.statusServico === 'pago_parcial') {
-      html += `<button class="btn-action btn-primary" id="mostrarSenhaInicioBtn">🔑 Gerar senha de início</button>`;
-      html += `<button class="btn-action btn-secondary" id="validarInicioBtn">🔐 Inserir senha para iniciar</button>`;
+
+    // PROFISSIONAL: gerar ou inserir senha de início (após pagamento integral)
+    if (isProfissional && chat.statusServico === 'pago_integral_aguardando_inicio') {
+      html += `<div style="width:100%; margin-bottom:8px;" class="valor-detalhe">
+        🔒 Pagamento integral recebido pela plataforma.<br>
+        Insira a senha que o cliente vai te fornecer quando você chegar no local para liberar sua 1ª parcela de ${(chat.valorParcela1 || parcela).toFixed(2)} TOKEN ALMA.
+      </div>`;
+      html += `<button class="btn-action btn-secondary" id="validarInicioBtn">🔐 Inserir senha de início (cliente fornece)</button>`;
     }
+
+    // CLIENTE: gerar senha de início para dar ao profissional
+    if (isCliente && chat.statusServico === 'pago_integral_aguardando_inicio') {
+      html += `<div style="width:100%; margin-bottom:8px;" class="valor-detalhe">
+        ✅ Pagamento realizado! Quando o profissional chegar, gere a senha abaixo e forneça a ele.
+      </div>`;
+      html += `<button class="btn-action btn-primary" id="mostrarSenhaInicioBtn">🔑 Gerar senha de início (fornecer ao profissional)</button>`;
+    }
+
+    // CLIENTE: gerar senha de conclusão quando serviço em andamento
     if (isCliente && chat.statusServico === 'em_andamento') {
-      html += `<button class="btn-action btn-warning" id="mostrarSenhaFimBtn">🔑 Gerar senha de conclusão</button>`;
-      html += `<button class="btn-action btn-secondary" id="validarFimBtn">🔐 Inserir senha para concluir</button>`;
-    }
-    if (isCliente && chat.statusServico === 'aguardando_pagamento_final') {
       html += `<div style="width:100%; margin-bottom:8px;" class="valor-detalhe">
-        📊 Pagamento final (50% restante): <strong>R$ ${(chat.valorCombinado * 0.5).toFixed(2)}</strong>
+        🔧 Serviço em andamento. Quando o profissional concluir, gere a senha de conclusão para liberar o pagamento final de ${(chat.valorParcela2 || parcela).toFixed(2)} TOKEN ALMA.
       </div>`;
-      html += `<button class="btn-action btn-success" id="pagarFinalBtn">💰 Pagar 50% restante (R$ ${(chat.valorCombinado * 0.5).toFixed(2)})</button>`;
+      html += `<button class="btn-action btn-warning" id="mostrarSenhaFimBtn">🔑 Gerar senha de conclusão</button>`;
     }
+
+    // PROFISSIONAL: inserir senha de conclusão que o cliente gerou
+    if (isProfissional && chat.statusServico === 'em_andamento') {
+      html += `<button class="btn-action btn-secondary" id="validarFimBtn">🔐 Inserir senha de conclusão (cliente fornece)</button>`;
+    }
+
     if (chat.statusServico === 'concluido') {
       html += `<button class="btn-action" disabled>✅ Serviço finalizado com sucesso</button>`;
     }
@@ -572,22 +671,20 @@
     container.innerHTML = html;
 
     document.getElementById('aceitarPropostaBtn')?.addEventListener('click', aceitarProposta);
-    document.getElementById('pagarParcialBtn')?.addEventListener('click', pagarParcial);
+    document.getElementById('pagarIntegralBtn')?.addEventListener('click', pagarIntegral);
     document.getElementById('mostrarSenhaInicioBtn')?.addEventListener('click', () => gerarEExibirSenha('inicio'));
     document.getElementById('validarInicioBtn')?.addEventListener('click', () => abrirModal('Digite a senha de início fornecida pelo cliente', iniciarServicoComSenha));
     document.getElementById('mostrarSenhaFimBtn')?.addEventListener('click', () => gerarEExibirSenha('fim'));
-    document.getElementById('validarFimBtn')?.addEventListener('click', () => abrirModal('Digite a senha de conclusão fornecida pelo profissional', concluirServicoComSenha));
-    document.getElementById('pagarFinalBtn')?.addEventListener('click', pagarFinal);
+    document.getElementById('validarFimBtn')?.addEventListener('click', () => abrirModal('Digite a senha de conclusão fornecida pelo cliente', concluirServicoComSenha));
   }
 
   function atualizarStatusHeader() {
     const statusMap = {
-      negociacao: 'Negociação',
-      aguardando_pagamento_parcial: 'Aguardando pagamento (50% + taxa)',
-      pago_parcial: 'Pagamento parcial realizado - Aguardando início',
-      em_andamento: 'Serviço em andamento',
-      aguardando_pagamento_final: 'Aguardando pagamento final (50%)',
-      concluido: 'Concluído'
+      negociacao:                        '🤝 Negociação',
+      aguardando_pagamento_integral:     '💳 Aguardando pagamento integral (serviço + taxa)',
+      pago_integral_aguardando_inicio:   '🔒 Pago · Aguardando início (senha ao profissional)',
+      em_andamento:                      '🔧 Serviço em andamento',
+      concluido:                         '✅ Concluído'
     };
     const statusLabel = statusMap[chat.statusServico] || chat.statusServico;
     const badge = document.getElementById('statusBadge');
@@ -595,19 +692,19 @@
     const valorSpan = document.getElementById('servicoInfo');
     if (valorSpan) {
       const taxa = chat.valorCombinado ? calcularTaxaAdministrativa(chat.valorCombinado) : 0;
-      valorSpan.innerHTML = `Serviço: ${escapeHtml(chat.servicoNome)} | Valor: R$ ${chat.valorCombinado?.toFixed(2) || 'a definir'} | Taxa: R$ ${taxa.toFixed(2)}`;
+      const total = chat.valorCombinado ? (chat.valorCombinado + taxa) : 0;
+      valorSpan.innerHTML = `Serviço: ${escapeHtml(chat.servicoNome)} | Valor: ${chat.valorCombinado?.toFixed(2) || 'a definir'} TOKEN ALMA | Taxa: ${taxa.toFixed(2)} | Total cliente: ${total.toFixed(2)} TOKEN ALMA`;
     }
   }
 
   function inicializarInterface() {
     const container = document.getElementById('chatContainer');
     const statusMap = {
-      negociacao: 'Negociação',
-      aguardando_pagamento_parcial: 'Aguardando pagamento (50% + taxa)',
-      pago_parcial: 'Pagamento parcial realizado - Aguardando início',
-      em_andamento: 'Serviço em andamento',
-      aguardando_pagamento_final: 'Aguardando pagamento final (50%)',
-      concluido: 'Concluído'
+      negociacao:                        '🤝 Negociação',
+      aguardando_pagamento_integral:     '💳 Aguardando pagamento integral (serviço + taxa)',
+      pago_integral_aguardando_inicio:   '🔒 Pago · Aguardando início (senha ao profissional)',
+      em_andamento:                      '🔧 Serviço em andamento',
+      concluido:                         '✅ Concluído'
     };
     const statusLabel = statusMap[chat.statusServico] || chat.statusServico;
     
@@ -669,8 +766,8 @@
         if (oldStatus !== chat.statusServico && chat.statusServico === 'concluido') {
           toast('✅ Serviço concluído! Redirecionando...');
           setTimeout(() => {
-            if (isCliente) window.location.href = 'cliente_dashboard.html';
-            else if (isProfissional) window.location.href = 'profissional_dashboard.html';
+            if (isCliente) window.location.href = 'painel_do_cliente.html';
+            else if (isProfissional) window.location.href = 'painel_profissional.html';
             else window.location.href = 'admin.html';
           }, 2000);
         }
