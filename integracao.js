@@ -166,12 +166,16 @@ async function adicionarFotoServico(profissionalId, imagemBase64, legenda) {
  * Lista fotos do serviço (retorna URLs do ImgBB)
  */
 async function listarFotosServico(profissionalId) {
-    try {
-        return await callBackend("listar_fotos_servico", { profissionalId });
-    } catch (err) {
-        console.error("Erro ao listar fotos:", err);
-        return [];
-    }
+  try {
+    const resultado = await callBackend("listar_fotos_servico", { profissionalId });
+    // doPost: { ok: true, id: <array_de_fotos> }
+    if (resultado?.ok && Array.isArray(resultado.id)) return resultado.id;
+    if (Array.isArray(resultado)) return resultado;
+    return [];
+  } catch (err) {
+    console.error("Erro ao listar fotos:", err);
+    return [];
+  }
 }
 
 /**
@@ -205,7 +209,11 @@ async function uploadFotoPerfil(imagemBase64, tipo, profissionalId) {
 // ========== CLIENTES ==========
 async function obterTodosClientes() {
   try {
-    return await callBackend("listar_clientes", {}, 45);
+    const resultado = await callBackend("listar_clientes", {}, 45);
+    // doPost retorna { ok: true, id: <array> }
+    if (resultado?.ok && Array.isArray(resultado.id)) return resultado.id;
+    if (Array.isArray(resultado)) return resultado;
+    return [];
   } catch (err) {
     console.error("Erro ao listar clientes:", err);
     return [];
@@ -225,7 +233,9 @@ async function salvarNovoCliente(cliente) {
 async function buscarClientePorEmail(email) {
   try {
     const resultado = await callBackend("buscar_cliente_por_email", { email });
-    return resultado?.ok ? resultado.id : null;
+    // doPost: { ok: true, id: <objeto_cliente> }
+    if (resultado?.ok && resultado.id && typeof resultado.id === 'object') return resultado.id;
+    return null;
   } catch (err) {
     console.error("Erro ao buscar cliente por email:", err);
     return null;
@@ -235,7 +245,8 @@ async function buscarClientePorEmail(email) {
 async function buscarClientePorId(id) {
   try {
     const resultado = await callBackend("buscar_cliente_por_id", { id });
-    return resultado?.ok ? resultado.id : null;
+    if (resultado?.ok && resultado.id && typeof resultado.id === 'object') return resultado.id;
+    return null;
   } catch (err) {
     console.error("Erro ao buscar cliente por ID:", err);
     return null;
@@ -249,12 +260,29 @@ async function atualizarCliente(dados) {
 
 // ========== PROFISSIONAIS ==========
 async function obterTodosProfissionais() {
-  try {
-    return await callBackend("listar_profissionais", {}, 45);
-  } catch (err) {
-    console.error("Erro ao listar profissionais:", err);
-    return [];
+  // Começa sempre com os profissionais estáticos (PROFISSIONAIS_DATA do profissionais.js)
+  let fixos = [];
+  if (typeof PROFISSIONAIS_DATA !== 'undefined' && Array.isArray(PROFISSIONAIS_DATA)) {
+    fixos = PROFISSIONAIS_DATA;
   }
+
+  let doBackend = [];
+  try {
+    const resultado = await callBackend("listar_profissionais", {}, 45);
+    // doPost retorna { ok: true, id: <array> } — o array está em .id
+    if (resultado?.ok && Array.isArray(resultado.id)) {
+      doBackend = resultado.id;
+    } else if (Array.isArray(resultado)) {
+      doBackend = resultado;
+    }
+  } catch (err) {
+    console.error("Erro ao listar profissionais do backend:", err);
+  }
+
+  // Mescla: backend tem prioridade sobre estáticos (mesmo email = backend vence)
+  const emailsBackend = new Set(doBackend.map(p => (p.email || '').toLowerCase()));
+  const fixosFiltrados = fixos.filter(f => !emailsBackend.has((f.email || '').toLowerCase()));
+  return [...doBackend, ...fixosFiltrados];
 }
 
 async function salvarNovoProfissional(profissional) {
@@ -270,21 +298,29 @@ async function salvarNovoProfissional(profissional) {
 async function buscarProfissionalPorEmail(email) {
   try {
     const resultado = await callBackend("buscar_profissional_por_email", { email });
-    return resultado?.ok ? resultado.id : null;
+    if (resultado?.ok && resultado.id && typeof resultado.id === 'object') return resultado.id;
   } catch (err) {
     console.error("Erro ao buscar profissional por email:", err);
-    return null;
   }
+  // Fallback: tenta nos estáticos
+  if (typeof PROFISSIONAIS_DATA !== 'undefined') {
+    return PROFISSIONAIS_DATA.find(p => (p.email || '').toLowerCase() === email.toLowerCase()) || null;
+  }
+  return null;
 }
 
 async function buscarProfissionalPorId(id) {
   try {
     const resultado = await callBackend("buscar_profissional_por_id", { id });
-    return resultado?.ok ? resultado.id : null;
+    if (resultado?.ok && resultado.id && typeof resultado.id === 'object') return resultado.id;
   } catch (err) {
     console.error("Erro ao buscar profissional por ID:", err);
-    return null;
   }
+  // Fallback: tenta nos estáticos
+  if (typeof PROFISSIONAIS_DATA !== 'undefined') {
+    return PROFISSIONAIS_DATA.find(p => p.id === id) || null;
+  }
+  return null;
 }
 
 async function atualizarProfissional(dados) {
@@ -370,7 +406,10 @@ async function autenticarUsuarioComSenha(email, senha) {
 async function getTokenBalance(userId, tipo = "cliente") {
   try {
     const resultado = await callBackend("obter_saldo", { usuarioId: userId, tipo }, 30);
-    return resultado?.saldo || 0;
+    // doPost: { ok: true, id: { saldo: N } }
+    if (resultado?.ok && resultado.id?.saldo !== undefined) return resultado.id.saldo;
+    if (resultado?.saldo !== undefined) return resultado.saldo;
+    return 0;
   } catch (err) {
     console.error("Erro ao obter saldo:", err);
     return 0;
@@ -380,7 +419,10 @@ async function getTokenBalance(userId, tipo = "cliente") {
 // ========== CHATS ==========
 async function obterChats() {
   try {
-    return await callBackend("listar_chats", {}, 45);
+    const resultado = await callBackend("listar_chats", {}, 45);
+    if (resultado?.ok && Array.isArray(resultado.id)) return resultado.id;
+    if (Array.isArray(resultado)) return resultado;
+    return [];
   } catch (err) {
     console.error("Erro ao listar chats:", err);
     return [];
@@ -393,7 +435,13 @@ async function salvarChat(chat) {
 }
 
 async function criarChat(dados) {
-  return await callBackend("criar_chat", dados, 45);
+  const resultado = await callBackend("criar_chat", dados, 45);
+  // doPost: { ok: true, id: <objeto_novoChat> }
+  // O objeto retornado é o chat completo (com .id, .clienteId, etc.)
+  if (resultado?.ok && resultado.id && typeof resultado.id === 'object') {
+    return resultado.id;  // retorna o objeto chat diretamente
+  }
+  throw new Error(resultado?.erro || 'Erro ao criar chat');
 }
 
 // ========== RECARGAS ==========
@@ -453,7 +501,10 @@ async function salvarPerfilExtra(profissionalId, dados) {
 
 async function obterPerfilExtra(profissionalId) {
   try {
-    return await callBackend("obter_perfil_extra", { profissionalId });
+    const resultado = await callBackend("obter_perfil_extra", { profissionalId });
+    // doPost: { ok: true, id: <objeto_perfil_ou_null> }
+    if (resultado?.ok && resultado.id && typeof resultado.id === 'object') return resultado.id;
+    return null;
   } catch (err) {
     console.error("Erro ao obter perfil extra:", err);
     return null;
@@ -463,7 +514,10 @@ async function obterPerfilExtra(profissionalId) {
 // ========== AVALIAÇÕES ==========
 async function obterAvaliacoesProfissional(profissionalId) {
   try {
-    return await callBackend("listar_avaliacoes_profissional", { profissionalId });
+    const resultado = await callBackend("listar_avaliacoes_profissional", { profissionalId });
+    if (resultado?.ok && Array.isArray(resultado.id)) return resultado.id;
+    if (Array.isArray(resultado)) return resultado;
+    return [];
   } catch (err) {
     console.error("Erro ao listar avaliações:", err);
     return [];
