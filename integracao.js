@@ -1,6 +1,6 @@
 // ========== CONFIGURAÇÃO ==========
 // NOVA URL DO APPSCRIPT - VERSÃO 12 (06/04/2026)
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyk3jbVVd6gzIQaCA43P5R4kJjW3BhjJvHyHUzNxQHsmZ6EN6HZnMmheHSJbfnidmGpVA/exec";
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzYaWFVqa_6kzJ5mPoR78yPUTYxQoclEuDhY8fgcYX_OJN1csCgZHV4Yfq_b9uNw6_xyQ/exec";
 
 // ⚠️ SUA API KEY DO IMGBB ⚠️
 const IMGBB_API_KEY = "2597fbdd4014975ed01d56ee9a6b404d";
@@ -452,7 +452,10 @@ async function salvarSolicitacaoRecarga(solicitacao) {
 // ========== TRANSAÇÕES ==========
 async function obterTransacoes() {
   try {
-    return await callBackend("listar_transacoes", {}, 45);
+    const resultado = await callBackend("listar_transacoes", {}, 45);
+    if (resultado?.ok && Array.isArray(resultado.id)) return resultado.id;
+    if (Array.isArray(resultado)) return resultado;
+    return [];
   } catch (err) {
     console.error("Erro ao listar transações:", err);
     return [];
@@ -461,6 +464,12 @@ async function obterTransacoes() {
 
 async function salvarTransacao(transacao) {
   const resultado = await callBackend("salvar_transacao", { transacao });
+  return resultado?.ok === true;
+}
+
+// ========== APROVAR RECARGA ==========
+async function aprovarRecarga(clienteId, valor, solicitacaoId) {
+  const resultado = await callBackend("aprovar_recarga", { clienteId, valor, solicitacaoId }, 30);
   return resultado?.ok === true;
 }
 
@@ -668,3 +677,4 @@ console.log("✅ integracao.js — backend com ImgBB para imagens");
 console.log("📍 Backend URL:", BACKEND_URL);
 console.log("🖼️ ImgBB API Key configurada:", IMGBB_API_KEY ? "✅ Sim" : "❌ Não");
 console.log("👑 Admin Root configurado no backend (seguro)");
+console.log("📊 Com suporte a TRANSAÇÕES e APROVAÇÃO DE RECARGAS");
