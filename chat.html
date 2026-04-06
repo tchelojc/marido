@@ -34,6 +34,15 @@
       font-size: 0.7rem;
       font-weight: 600;
     }
+    .admin-badge {
+      background: #f59e0b;
+      color: #0f172a;
+      padding: 4px 12px;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-left: 8px;
+    }
     .messages-area {
       background: white;
       height: 400px;
@@ -68,6 +77,12 @@
       font-style: italic;
       font-size: 0.75rem;
       max-width: 90%;
+    }
+    .message.admin {
+      background: #fef3c7;
+      color: #92400e;
+      align-self: flex-start;
+      border-left: 3px solid #f59e0b;
     }
     .message small {
       display: block;
@@ -177,6 +192,14 @@
       margin-top: 4px;
     }
     hr { margin: 12px 0; }
+    .admin-mode-badge {
+      background: #f59e0b;
+      color: #0f172a;
+      padding: 6px 12px;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -209,7 +232,7 @@
     el._t = setTimeout(() => { el.className = ''; }, 3200);
   }
 
-  // ========== CÁLCULO DA TAXA ADMINISTRATIVA (conforme regulamento) ==========
+  // ========== CÁLCULO DA TAXA ADMINISTRATIVA ==========
   function calcularTaxaAdministrativa(valorServico) {
     if (valorServico <= 99) return 10;
     if (valorServico <= 599) return 20;
@@ -220,7 +243,7 @@
     return 100;
   }
 
-  // ========== SESSÃO E SEGURANÇA ==========
+  // ========== SESSÃO ==========
   const sess = obterSessao();
   if (!sess) {
     alert('Faça login para acessar o chat.');
@@ -234,14 +257,31 @@
     throw new Error('Chat ID não informado');
   }
 
-  // ========== CARREGAMENTO ASSÍNCRONO DOS CHATS ==========
+  // ========== VARIÁVEIS GLOBAIS ==========
   let chat = null;
   let chatIndex = -1;
   const usuarioId = sess.usuarioId;
   const tipoUsuario = sess.tipo;
   const isCliente = tipoUsuario === 'cliente';
   const isProfissional = tipoUsuario === 'profissional';
+  let isAdmin = false;
 
+  // ========== VERIFICAR SE É ADMIN ROOT ==========
+  async function verificarAdmin() {
+    try {
+      const cliente = await buscarClientePorId(usuarioId);
+      if (cliente && cliente.root === true) {
+        isAdmin = true;
+        console.log('✅ Modo Admin ativado para este chat');
+        return true;
+      }
+    } catch(e) {
+      console.log('Erro ao verificar admin:', e);
+    }
+    return false;
+  }
+
+  // ========== CARREGAMENTO DO CHAT ==========
   async function carregarChat() {
     const chats = await obterChats();
     chatIndex = chats.findIndex(c => c.id === chatId);
@@ -251,9 +291,15 @@
     }
     chat = chats[chatIndex];
 
-    if ((isCliente && chat.clienteId !== usuarioId) || (isProfissional && chat.profissionalId !== usuarioId)) {
-      document.getElementById('chatContainer').innerHTML = '<div class="chat-header" style="border-radius:24px;padding:40px;text-align:center;">⛔ Você não tem permissão para acessar este chat.</div>';
-      throw new Error('Acesso negado');
+    // VERIFICAÇÃO DE PERMISSÃO (ADMIN TEM ACESSO TOTAL)
+    const isAdminUser = await verificarAdmin();
+    
+    if (!isAdminUser) {
+      // Verificação normal para não-admin
+      if ((isCliente && chat.clienteId !== usuarioId) || (isProfissional && chat.profissionalId !== usuarioId)) {
+        document.getElementById('chatContainer').innerHTML = '<div class="chat-header" style="border-radius:24px;padding:40px;text-align:center;">⛔ Você não tem permissão para acessar este chat.</div>';
+        throw new Error('Acesso negado');
+      }
     }
 
     inicializarInterface();
@@ -351,7 +397,6 @@
     try {
       const saldoCliente = await getTokenBalance(chat.clienteId, "cliente");
       if (saldoCliente >= totalDebitar) {
-        // Chama o backend para debitar o valor total (50% + taxa)
         await callBackend("pagar_parcial_com_taxa", {
           clienteId: chat.clienteId,
           profissionalId: chat.profissionalId,
@@ -412,10 +457,10 @@
         atualizarStatusHeader();
         toast("Pagamento final realizado! Serviço concluído.");
         
-        // Redireciona após 3 segundos
         setTimeout(() => {
           if (isCliente) window.location.href = 'cliente_dashboard.html';
-          else window.location.href = 'profissional_dashboard.html';
+          else if (isProfissional) window.location.href = 'profissional_dashboard.html';
+          else window.location.href = 'admin.html';
         }, 3000);
       } else {
         const precisa = valorFinal - saldoCliente;
@@ -547,7 +592,7 @@
     const statusLabel = statusMap[chat.statusServico] || chat.statusServico;
     const badge = document.getElementById('statusBadge');
     if (badge) badge.innerText = statusLabel;
-    const valorSpan = document.querySelector('#chatContainer .chat-header .small-text');
+    const valorSpan = document.getElementById('servicoInfo');
     if (valorSpan) {
       const taxa = chat.valorCombinado ? calcularTaxaAdministrativa(chat.valorCombinado) : 0;
       valorSpan.innerHTML = `Serviço: ${escapeHtml(chat.servicoNome)} | Valor: R$ ${chat.valorCombinado?.toFixed(2) || 'a definir'} | Taxa: R$ ${taxa.toFixed(2)}`;
@@ -565,10 +610,13 @@
       concluido: 'Concluído'
     };
     const statusLabel = statusMap[chat.statusServico] || chat.statusServico;
+    
+    const adminModeHtml = isAdmin ? `<span class="admin-mode-badge"><i class="fas fa-crown"></i> Modo Admin</span>` : '';
+    
     container.innerHTML = `
       <div class="chat-header">
         <div>
-          <h2><i class="fas fa-comments"></i> Conversa com ${escapeHtml(isCliente ? chat.profissionalNome : chat.clienteNome)}</h2>
+          <h2><i class="fas fa-comments"></i> Conversa com ${escapeHtml(isCliente ? chat.profissionalNome : chat.clienteNome)} ${adminModeHtml}</h2>
           <div><span class="status-badge" id="statusBadge">${escapeHtml(statusLabel)}</span></div>
           <div class="small-text" id="servicoInfo">Serviço: ${escapeHtml(chat.servicoNome)} | Valor: R$ ${chat.valorCombinado?.toFixed(2) || 'a definir'}</div>
         </div>
@@ -589,7 +637,12 @@
       sendBtn.onclick = async () => {
         const texto = msgInput.value.trim();
         if (!texto) return;
-        const autor = isCliente ? chat.clienteNome : chat.profissionalNome;
+        let autor;
+        if (isAdmin) {
+          autor = `👑 ADMIN: ${sess.email}`;
+        } else {
+          autor = isCliente ? chat.clienteNome : chat.profissionalNome;
+        }
         chat.mensagens.push({ autor, texto, data: new Date().toLocaleString('pt-BR') });
         await persistChat();
         atualizarMensagens();
@@ -617,7 +670,8 @@
           toast('✅ Serviço concluído! Redirecionando...');
           setTimeout(() => {
             if (isCliente) window.location.href = 'cliente_dashboard.html';
-            else window.location.href = 'profissional_dashboard.html';
+            else if (isProfissional) window.location.href = 'profissional_dashboard.html';
+            else window.location.href = 'admin.html';
           }, 2000);
         }
       }
@@ -625,6 +679,7 @@
   }
 
   (async () => {
+    await verificarAdmin();
     await carregarChat();
   })();
 </script>
