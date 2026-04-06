@@ -7,7 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="dados.js"></script>
-  <script src="profissionais.js"></script>
   <script src="integracao.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -49,6 +48,11 @@
       font-weight: 500;
       text-decoration: none;
       color: #1e3c72;
+      transition: 0.2s;
+    }
+    .back-btn:hover {
+      background: #e2e8f0;
+      transform: translateY(-1px);
     }
     .service-title {
       background: white;
@@ -57,21 +61,24 @@
       margin-bottom: 24px;
       border-left: 5px solid #2b4c7c;
     }
+    .service-title h2 {
+      margin-bottom: 8px;
+    }
     .profissionais-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 24px;
     }
     .card-profissional {
       background: white;
-      border-radius: 20px;
+      border-radius: 24px;
       overflow: hidden;
       transition: 0.2s;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     .card-profissional:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.1);
     }
     .card-content {
       padding: 20px;
@@ -82,6 +89,7 @@
       border-radius: 50%;
       object-fit: cover;
       margin-right: 16px;
+      border: 2px solid #eef2ff;
     }
     .flex-row {
       display: flex;
@@ -90,15 +98,18 @@
     .nome {
       font-size: 1.2rem;
       font-weight: 700;
+      margin-bottom: 4px;
     }
     .avaliacao {
       color: #f5b042;
       margin-top: 4px;
+      font-size: 0.9rem;
     }
     .descricao {
       margin: 12px 0;
       font-size: 0.85rem;
       color: #4a5b7a;
+      line-height: 1.4;
     }
     .contato {
       background: #f8fafc;
@@ -106,6 +117,10 @@
       padding: 12px;
       margin-top: 12px;
       font-size: 0.8rem;
+    }
+    .contato i {
+      width: 24px;
+      color: #2b4c7c;
     }
     .btn-contatar {
       background: #2b4c7c;
@@ -121,12 +136,37 @@
     }
     .btn-contatar:hover {
       background: #1e3c72;
+      transform: translateY(-1px);
+    }
+    .btn-perfil {
+      background: #4a5b7a;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 10px;
+      border-radius: 40px;
+      margin-top: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      transition: 0.2s;
+    }
+    .btn-perfil:hover {
+      background: #3a4a6a;
+      transform: translateY(-1px);
     }
     .no-results {
       text-align: center;
       padding: 50px;
       background: white;
       border-radius: 24px;
+    }
+    .no-results i {
+      font-size: 3rem;
+      color: #aaa;
+      margin-bottom: 16px;
     }
     .small-text {
       font-size: 0.75rem;
@@ -138,9 +178,66 @@
       font-size: 1.1rem;
       color: #2b4c7c;
     }
+    .loading-spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 3px solid #eef2ff;
+      border-top: 3px solid #2b4c7c;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .tag-servico {
+      display: inline-block;
+      background: #eef2ff;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      margin-top: 8px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.75rem;
+    }
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 9999;
+      background: #155724;
+      color: white;
+      padding: 14px 22px;
+      border-radius: 40px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: #721c24; }
+    .toast.info { background: #17a2b8; }
+    @media (max-width: 700px) {
+      .profissionais-grid { grid-template-columns: 1fr; }
+      .header { flex-direction: column; gap: 16px; text-align: center; }
+    }
   </style>
 </head>
 <body>
+<div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+
 <div class="container">
   <div class="header">
     <div class="logo">🛠️ Marido de Aluguel</div>
@@ -153,11 +250,24 @@
   </div>
 
   <div id="profissionaisContainer" class="profissionais-grid">
-    <div class="loading"><i class="fas fa-spinner fa-pulse"></i> Carregando profissionais...</div>
+    <div class="loading"><div class="loading-spinner"></div><p>Carregando profissionais...</p></div>
   </div>
 </div>
 
 <script>
+  // ========== TOAST ==========
+  function toast(msg, tipo = 'success') {
+    const el = document.getElementById('toast');
+    if (!el) { alert(msg); return; }
+    const txt = document.getElementById('toastMsg');
+    txt.textContent = msg;
+    el.className = `toast show ${tipo === 'error' ? 'error' : tipo === 'info' ? 'info' : ''}`;
+    const icon = el.querySelector('i');
+    if (icon) icon.className = tipo === 'error' ? 'fas fa-exclamation-circle' : tipo === 'info' ? 'fas fa-info-circle' : 'fas fa-check-circle';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.className = 'toast'; }, 3200);
+  }
+
   // ========== FUNÇÃO AUXILIAR ESCAPE HTML ==========
   function escapeHtml(str) {
     if (!str) return '';
@@ -166,9 +276,87 @@
       if (m === '<') return '&lt;';
       if (m === '>') return '&gt;';
       return m;
-    }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-      return c;
     });
+  }
+
+  // ========== FUNÇÃO PARA GERAR ESTRELAS ==========
+  function gerarEstrelas(nota) {
+    const notaNum = parseFloat(nota) || 0;
+    const cheias = Math.floor(notaNum);
+    const meia = notaNum % 1 >= 0.5;
+    let estrelas = '';
+    for (let i = 0; i < cheias; i++) estrelas += '★';
+    if (meia) estrelas += '½';
+    for (let i = 0; i < 5 - cheias - (meia ? 1 : 0); i++) estrelas += '☆';
+    return estrelas;
+  }
+
+  // ========== FUNÇÃO PARA CRIAR CHAT ==========
+  async function criarChatComProfissional(profissionalId, profissionalNome, servicoId, servicoNome) {
+    const sess = obterSessao();
+    if (!sess || sess.tipo !== 'cliente') {
+      toast('Você precisa estar logado como cliente para conversar com profissionais.', 'error');
+      setTimeout(() => {
+        if (confirm('Deseja fazer login agora?')) {
+          window.location.href = 'marido_aluguel.html';
+        }
+      }, 1000);
+      return null;
+    }
+    
+    const cliente = await buscarClientePorId(sess.usuarioId);
+    if (!cliente) {
+      toast('Erro ao identificar seu perfil. Faça login novamente.', 'error');
+      return null;
+    }
+    
+    try {
+      const chat = await criarChat({
+        clienteId: cliente.id,
+        clienteNome: cliente.nome,
+        profissionalId: profissionalId,
+        profissionalNome: profissionalNome,
+        servicoId: servicoId,
+        servicoNome: servicoNome,
+        quantidade: 1,
+        unidade: 'serviço',
+        valorEstimado: 0,
+        tempoEstimado: 0,
+        diasEstimados: 0,
+        statusServico: 'negociacao'
+      });
+      
+      return chat.id;
+    } catch (err) {
+      console.error('Erro ao criar chat:', err);
+      toast('Erro ao iniciar conversa. Tente novamente.', 'error');
+      return null;
+    }
+  }
+
+  // ========== FUNÇÃO PARA CONTATAR PROFISSIONAL ==========
+  async function contatarProfissional(profissionalId, profissionalNome, servicoId, servicoNome) {
+    const sess = obterSessao();
+    if (!sess) {
+      toast('Faça login para conversar com o profissional.', 'info');
+      setTimeout(() => {
+        window.location.href = 'marido_aluguel.html';
+      }, 1500);
+      return;
+    }
+    
+    if (sess.tipo === 'profissional') {
+      toast('Você está logado como profissional. Para contratar serviços, faça login como cliente.', 'error');
+      return;
+    }
+    
+    const chatId = await criarChatComProfissional(profissionalId, profissionalNome, servicoId, servicoNome);
+    if (chatId) {
+      toast('Conversa iniciada! Redirecionando para o chat...', 'success');
+      setTimeout(() => {
+        window.location.href = `chat.html?chat=${chatId}`;
+      }, 1000);
+    }
   }
 
   // ========== OBTÉM PARÂMETRO DA URL ==========
@@ -181,68 +369,142 @@
     const nomeServicoEl = document.getElementById('servicoNome');
     const categoriaServicoEl = document.getElementById('servicoCategoria');
 
-    // 1. Carrega informações do serviço (síncrono, dados locais)
+    // 1. Valida ID do serviço
+    if (!servicoId) {
+      nomeServicoEl.innerText = 'Serviço não especificado';
+      categoriaServicoEl.innerHTML = '';
+      container.innerHTML = `<div class="no-results">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>Nenhum serviço foi selecionado.</p>
+        <a href="marido_aluguel.html" class="back-btn" style="display: inline-block; margin-top: 16px;">Voltar para serviços</a>
+      </div>`;
+      return;
+    }
+
+    // 2. Carrega informações do serviço
     const servicoEncontrado = obterServicoPorId(servicoId);
     if (servicoEncontrado) {
-      nomeServicoEl.innerText = servicoEncontrado.nome;
       const precoUnitario = servicoEncontrado.preco_unitario?.toFixed(2) || (servicoEncontrado.diaria_base / servicoEncontrado.producao_dia).toFixed(2);
-      categoriaServicoEl.innerHTML = `<i class="fas fa-tag"></i> Categoria: ${escapeHtml(servicoEncontrado.categoria)} · Preço médio: R$ ${precoUnitario} / ${escapeHtml(servicoEncontrado.unidade)}`;
+      nomeServicoEl.innerText = servicoEncontrado.nome;
+      categoriaServicoEl.innerHTML = `
+        <i class="fas fa-tag"></i> Categoria: ${escapeHtml(servicoEncontrado.categoria)} · 
+        Preço médio: <strong>R$ ${precoUnitario}</strong> / ${escapeHtml(servicoEncontrado.unidade)} · 
+        Produtividade: ${servicoEncontrado.producao_dia} ${escapeHtml(servicoEncontrado.unidade)}/dia
+      `;
     } else {
       nomeServicoEl.innerText = 'Serviço não encontrado';
       categoriaServicoEl.innerHTML = '';
+      container.innerHTML = `<div class="no-results">
+        <i class="fas fa-search"></i>
+        <p>Serviço não encontrado na base de dados.</p>
+        <a href="marido_aluguel.html" class="back-btn" style="display: inline-block; margin-top: 16px;">Voltar para serviços</a>
+      </div>`;
+      return;
     }
 
-    // 2. Carrega profissionais (assíncrono, via integracao.js)
+    // 3. Carrega profissionais que oferecem este serviço
     try {
       const todosProfissionais = await obterTodosProfissionais();
-      // Filtra profissionais que oferecem este serviço
-      const profissionaisFiltrados = todosProfissionais.filter(prof =>
-        prof.servicos_ids && Array.isArray(prof.servicos_ids) && prof.servicos_ids.includes(servicoId)
+      const profissionaisArray = Array.isArray(todosProfissionais) ? todosProfissionais : [];
+      
+      const profissionaisFiltrados = profissionaisArray.filter(prof =>
+        prof && prof.servicos_ids && Array.isArray(prof.servicos_ids) && prof.servicos_ids.includes(servicoId)
       );
 
       if (profissionaisFiltrados.length === 0) {
         container.innerHTML = `<div class="no-results">
-          <i class="fas fa-user-slash" style="font-size: 3rem; color:#aaa;"></i>
-          <p style="margin-top: 16px;">Nenhum profissional cadastrado para este serviço ainda.<br>Volte em breve ou cadastre-se.</p>
+          <i class="fas fa-user-slash"></i>
+          <p style="margin-top: 16px;">Nenhum profissional cadastrado para este serviço ainda.</p>
+          <p class="small-text">Volte em breve ou seja o primeiro a contratar!</p>
+          <a href="cadastro.html?tipo=profissional" class="back-btn" style="display: inline-block; margin-top: 16px;">Cadastrar como profissional</a>
         </div>`;
         return;
       }
 
-      // Renderiza cards
-      container.innerHTML = profissionaisFiltrados.map(prof => {
+      // 4. Busca avaliações para cada profissional
+      const profissionaisComAvaliacoes = await Promise.all(profissionaisFiltrados.map(async (prof) => {
+        try {
+          const avaliacoes = await obterAvaliacoesProfissional(prof.id);
+          const totalAvaliacoes = avaliacoes.length;
+          let mediaAvaliacoes = 0;
+          if (totalAvaliacoes > 0) {
+            mediaAvaliacoes = avaliacoes.reduce((acc, a) => acc + (a.nota || 0), 0) / totalAvaliacoes;
+          }
+          return { ...prof, mediaAvaliacoes, totalAvaliacoes };
+        } catch (err) {
+          console.error(`Erro ao buscar avaliações para ${prof.nome}:`, err);
+          return { ...prof, mediaAvaliacoes: 0, totalAvaliacoes: 0 };
+        }
+      }));
+
+      // 5. Ordena por avaliação (melhores primeiro)
+      profissionaisComAvaliacoes.sort((a, b) => b.mediaAvaliacoes - a.mediaAvaliacoes);
+
+      // 6. Renderiza cards
+      container.innerHTML = profissionaisComAvaliacoes.map(prof => {
         const avatar = prof.avatar || `https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(prof.nome)}`;
-        const avaliacao = prof.avaliacao || 0;
-        const totalAvaliacoes = prof.total_avaliacoes || 0;
-        const estrelas = '★'.repeat(Math.floor(avaliacao)) + (avaliacao % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.floor(avaliacao) - (avaliacao % 1 >= 0.5 ? 1 : 0));
+        const estrelas = gerarEstrelas(prof.mediaAvaliacoes);
+        const totalAvaliacoes = prof.totalAvaliacoes;
+        
         return `
           <div class="card-profissional">
             <div class="card-content">
               <div class="flex-row">
-                <img src="${escapeHtml(avatar)}" alt="${escapeHtml(prof.nome)}" class="avatar" onerror="this.src='https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(prof.nome)}'">
+                <img src="${escapeHtml(avatar)}" alt="${escapeHtml(prof.nome)}" class="avatar" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(prof.nome)}'">
                 <div>
                   <div class="nome">${escapeHtml(prof.nome)}</div>
-                  <div class="avaliacao">${estrelas} (${totalAvaliacoes})</div>
+                  <div class="avaliacao" title="${prof.mediaAvaliacoes.toFixed(1)} de 5 estrelas">
+                    ${estrelas} <span class="small-text">(${totalAvaliacoes} ${totalAvaliacoes === 1 ? 'avaliação' : 'avaliações'})</span>
+                  </div>
                 </div>
               </div>
-              <div class="descricao">${escapeHtml(prof.descricao || 'Profissional sem descrição.')}</div>
+              <div class="descricao">${escapeHtml(prof.descricao || 'Profissional ainda não adicionou uma descrição.')}</div>
               <div class="contato">
-                <i class="fas fa-phone-alt"></i> ${escapeHtml(prof.telefone || 'Não informado')}<br>
-                <i class="fas fa-envelope"></i> ${escapeHtml(prof.email)}
+                <div><i class="fas fa-phone-alt"></i> ${escapeHtml(prof.telefone || 'Não informado')}</div>
+                <div><i class="fas fa-envelope"></i> ${escapeHtml(prof.email)}</div>
+                ${prof.endereco ? `<div><i class="fas fa-map-marker-alt"></i> ${escapeHtml(prof.endereco)}</div>` : ''}
               </div>
-              <div style="display: flex; gap: 8px; margin-top: 12px;">
-                <button class="btn-contatar" onclick="alert('Contato: ${escapeHtml(prof.telefone || '')} / ${escapeHtml(prof.email)}')"><i class="fas fa-comment"></i> Falar com profissional</button>
-                <a href="perfil_publico.html?id=${encodeURIComponent(prof.id)}" class="btn-contatar" style="background: #4a5b7a; text-align: center; text-decoration: none;"><i class="fas fa-user-circle"></i> Ver perfil completo</a>
+              <div class="info-row">
+                <span class="tag-servico"><i class="fas fa-tools"></i> ${escapeHtml(servicoEncontrado.nome)}</span>
+                <span class="tag-servico"><i class="fas fa-star"></i> ${prof.mediaAvaliacoes.toFixed(1)}</span>
               </div>
+              <button class="btn-contatar" data-prof-id="${prof.id}" data-prof-nome="${escapeHtml(prof.nome)}" data-serv-id="${servicoId}" data-serv-nome="${escapeHtml(servicoEncontrado.nome)}">
+                <i class="fas fa-comment"></i> Falar com profissional
+              </button>
+              <a href="perfil_publico.html?id=${encodeURIComponent(prof.id)}" class="btn-perfil">
+                <i class="fas fa-user-circle"></i> Ver perfil completo
+              </a>
             </div>
           </div>
         `;
       }).join('');
+
+      // 7. Adiciona event listeners para os botões de contato
+      document.querySelectorAll('.btn-contatar').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const profId = btn.dataset.profId;
+          const profNome = btn.dataset.profNome;
+          const servId = btn.dataset.servId;
+          const servNome = btn.dataset.servNome;
+          
+          // Desabilita o botão temporariamente para evitar duplo clique
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Iniciando...';
+          
+          await contatarProfissional(profId, profNome, servId, servNome);
+          
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-comment"></i> Falar com profissional';
+        });
+      });
+
     } catch (err) {
       console.error('Erro ao carregar profissionais:', err);
       container.innerHTML = `<div class="no-results">
-        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color:#e74c3c;"></i>
-        <p style="margin-top: 16px;">Erro ao carregar profissionais. Tente novamente mais tarde.</p>
-        <small>${escapeHtml(err.message)}</small>
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>Erro ao carregar profissionais. Tente novamente mais tarde.</p>
+        <p class="small-text">${escapeHtml(err.message)}</p>
+        <a href="marido_aluguel.html" class="back-btn" style="display: inline-block; margin-top: 16px;">Voltar para serviços</a>
       </div>`;
     }
   })();
