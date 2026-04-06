@@ -91,7 +91,7 @@
     }
     .profile-avatar:hover { transform: scale(1.02); }
     .profile-name { font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; }
-    .profile-rating { margin-top: 8px; color: #ffd966; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .profile-rating { margin-top: 8px; color: #ffd966; display: flex; align-items: center; gap: 8px; }
     .profile-body { padding: 36px; background: #ffffff; }
     .info-section { margin-bottom: 32px; }
     .info-section h3 {
@@ -167,14 +167,9 @@
       padding: 16px 20px;
       margin-bottom: 12px;
       border: 1px solid #eef2ff;
-      transition: all 0.2s;
     }
-    .avaliacao-item:hover { background: #ffffff; border-color: #cbd5e1; }
     .avaliacao-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
-    .avaliacao-estrelas { color: #fbbf24; font-size: 0.9rem; letter-spacing: 2px; }
-    .avaliacao-nome { font-weight: 700; color: #1e293b; }
-    .avaliacao-data { font-size: 0.7rem; color: #64748b; }
-    .avaliacao-comentario { font-size: 0.85rem; color: #475569; margin-top: 8px; font-style: italic; }
+    .avaliacao-estrelas { color: #fbbf24; }
     .form-avaliar {
       background: linear-gradient(135deg, #f8fafc, #ffffff);
       border-radius: 24px;
@@ -193,12 +188,10 @@
       border-radius: 40px;
       cursor: pointer;
       font-weight: 600;
-      transition: all 0.2s;
     }
-    .btn-avaliar:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(30,60,114,0.3); }
     .section-divider { border: none; border-top: 1px solid #eef2ff; margin: 28px 0; }
     .section-label { font-size: 1rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; color: #1e3c72; }
-    .skills-wrap { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+    .skills-wrap { display: flex; flex-wrap: wrap; gap: 10px; }
     .skill-chip {
       background: linear-gradient(135deg, #eef2ff, #e8edf8);
       color: #1e3c72;
@@ -206,18 +199,14 @@
       border-radius: 40px;
       font-size: 0.78rem;
       font-weight: 600;
-      transition: all 0.2s;
     }
-    .skill-chip:hover { background: linear-gradient(135deg, #2b4c7c, #1e3c72); color: white; transform: translateY(-2px); }
     .exp-item, .form-item, .idioma-item {
       background: #f8fafc;
       border-radius: 20px;
       padding: 14px 20px;
       margin-bottom: 12px;
       border: 1px solid #eef2ff;
-      transition: all 0.2s;
     }
-    .exp-item:hover, .form-item:hover, .idioma-item:hover { background: #ffffff; border-color: #cbd5e1; }
     .fotos-pub-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -232,7 +221,6 @@
       position: relative;
       cursor: pointer;
       transition: all 0.25s ease;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     .foto-pub-item:hover { transform: scale(1.02); box-shadow: 0 12px 24px rgba(0,0,0,0.15); }
     .foto-pub-item img { width: 100%; height: 100%; object-fit: cover; }
@@ -245,9 +233,6 @@
       color: white;
       font-size: 0.7rem;
       padding: 8px 12px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
     #lightbox {
       display: none;
@@ -262,8 +247,7 @@
       gap: 16px;
     }
     #lightbox.open { display: flex; }
-    #lightbox img { max-width: 90vw; max-height: 85vh; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-    #lightbox .lb-caption { color: rgba(255,255,255,0.9); font-size: 0.9rem; background: rgba(0,0,0,0.5); padding: 8px 20px; border-radius: 40px; }
+    #lightbox img { max-width: 90vw; max-height: 85vh; border-radius: 24px; }
     #lightbox .lb-close {
       position: absolute;
       top: 24px;
@@ -278,9 +262,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
     }
-    #lightbox .lb-close:hover { background: rgba(0,0,0,0.8); transform: scale(1.05); }
     .dias-disponiveis { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
     .dia-badge {
       background: #eef2ff;
@@ -289,22 +271,14 @@
       font-size: 0.8rem;
       font-weight: 600;
       color: #1e3c72;
-      transition: all 0.2s;
     }
     .dia-badge.ativo {
       background: linear-gradient(135deg, #2b4c7c, #1e3c72);
       color: white;
-      box-shadow: 0 2px 8px rgba(30,60,114,0.2);
-    }
-    .sem-disponibilidade {
-      color: #64748b;
-      font-style: italic;
-      font-size: 0.85rem;
-      padding: 12px 0;
     }
     .headline-tag { font-size: 0.9rem; opacity: 0.9; margin-top: 6px; display: flex; align-items: center; gap: 6px; }
     .loc-setor { font-size: 0.85rem; opacity: 0.8; margin-top: 6px; display: flex; align-items: center; gap: 6px; }
-    .links-list { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+    .links-list { display: flex; flex-wrap: wrap; gap: 12px; }
     .links-list a {
       background: linear-gradient(135deg, #eef2ff, #e8edf8);
       padding: 8px 20px;
@@ -316,20 +290,16 @@
       align-items: center;
       gap: 8px;
       font-weight: 500;
-      transition: all 0.2s;
     }
-    .links-list a:hover { background: linear-gradient(135deg, #2b4c7c, #1e3c72); color: white; transform: translateY(-2px); }
+    .links-list a:hover { background: linear-gradient(135deg, #2b4c7c, #1e3c72); color: white; }
     @media (max-width: 700px) {
       .profile-header { flex-direction: column; text-align: center; padding: 28px 20px; }
       .profile-body { padding: 24px; }
-      .servicos-grid { grid-template-columns: 1fr; }
-      .fotos-pub-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
     }
-    .error-message { background: #fef2f2; color: #dc2626; padding: 28px; border-radius: 28px; text-align: center; border: 1px solid #fecaca; }
+    .error-message { background: #fef2f2; color: #dc2626; padding: 28px; border-radius: 28px; text-align: center; }
     .loading { text-align: center; padding: 60px; font-size: 1.1rem; color: #2b4c7c; display: flex; flex-direction: column; align-items: center; gap: 12px; }
     .small-text { font-size: 0.75rem; color: #64748b; }
     .sub { font-size: 0.75rem; color: #64748b; margin-top: 6px; }
-    .avaliacoes-lista { margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -338,9 +308,9 @@
     <div class="logo">🛠️ Marido de Aluguel</div>
     <a href="profissionais.html" class="back-btn" id="backLink"><i class="fas fa-arrow-left"></i> Voltar</a>
   </div>
-  <div id="perfilContainer"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Carregando perfil profissional...</div></div>
+  <div id="perfilContainer"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Carregando perfil...</div></div>
   <div id="lightbox"><button class="lb-close" id="lbClose">&times;</button><img id="lbImg" src=""><div class="lb-caption" id="lbCaption"></div></div>
-  <div class="footer">© 2025 Marido de Aluguel · Profissionais verificados com excelência</div>
+  <div class="footer">© 2025 Marido de Aluguel · Profissionais verificados</div>
 </div>
 
 <script>
@@ -360,57 +330,65 @@
     return '★'.repeat(cheias) + meia + '☆'.repeat(5 - cheias - (meia ? 1 : 0));
   }
 
-  // ========== BUSCAR PERFIL COMPLETO (PRIORIZA LOCALSTORAGE) ==========
-  async function buscarPerfilCompleto(profissionalId) {
+  // ========== BUSCAR PERFIL COMPLETO DO BACKEND (com fallback para localStorage) ==========
+  async function buscarPerfilCompletoLocal(profissionalId) {
     try {
-      // PRIORIDADE 1: localStorage (onde o dashboard do profissional salva)
-      const perfilKey = 'perfil_completo_' + profissionalId;
-      const perfilLocal = localStorage.getItem(perfilKey);
-      if (perfilLocal) {
-        const dados = JSON.parse(perfilLocal);
-        console.log('✅ Perfil encontrado no localStorage:', dados);
-        return dados;
-      }
-      
-      // PRIORIDADE 2: backend
+      // PRIORIDADE 1: Buscar do backend (fonte de verdade compartilhada entre dispositivos)
       const resultado = await callBackend("obter_perfil_extra", { profissionalId }, 30);
       if (resultado?.ok && resultado.id && typeof resultado.id === 'object') {
-        console.log('✅ Perfil encontrado no backend:', resultado.id);
+        // Atualiza cache local com dado fresco do backend
+        localStorage.setItem('perfil_completo_' + profissionalId, JSON.stringify(resultado.id));
+        console.log('✅ Perfil completo carregado do backend:', resultado.id);
         return resultado.id;
       }
       
-      console.log('⚠️ Nenhum perfil extra encontrado');
+      // PRIORIDADE 2: Fallback para localStorage (cache local)
+      const perfilLocal = localStorage.getItem('perfil_completo_' + profissionalId);
+      if (perfilLocal) {
+        const dados = JSON.parse(perfilLocal);
+        console.log('📦 Perfil carregado do cache local (offline):', dados);
+        return dados;
+      }
+      
       return {};
     } catch (err) {
-      console.error('Erro ao buscar perfil:', err);
+      console.error('Erro ao buscar perfil extra do backend, tentando localStorage:', err);
+      // Fallback para localStorage em caso de erro de rede
+      try {
+        const perfilLocal = localStorage.getItem('perfil_completo_' + profissionalId);
+        if (perfilLocal) return JSON.parse(perfilLocal);
+      } catch (_) {}
       return {};
     }
   }
 
-  // ========== BUSCAR DISPONIBILIDADE ==========
+  // ========== BUSCAR DISPONIBILIDADE (backend primeiro) ==========
   async function buscarDisponibilidade(profissionalId) {
     try {
-      const localKey = 'disp_' + profissionalId;
-      const localData = localStorage.getItem(localKey);
-      if (localData) {
-        const dias = JSON.parse(localData);
-        if (Array.isArray(dias) && dias.length > 0) {
-          console.log('✅ Disponibilidade encontrada no localStorage:', dias);
-          return dias;
-        }
-      }
-      
+      // PRIORIDADE 1: Backend (compartilhado entre dispositivos)
       try {
         const perfilExtra = await callBackend("obter_perfil_extra", { profissionalId }, 30);
         if (perfilExtra?.ok && perfilExtra.id?.disponibilidade) {
           const dias = perfilExtra.id.disponibilidade;
-          if (Array.isArray(dias)) {
-            console.log('✅ Disponibilidade encontrada no backend:', dias);
+          if (Array.isArray(dias) && dias.length > 0) {
+            // Atualiza cache local
+            localStorage.setItem('disp_' + profissionalId, JSON.stringify(dias));
+            console.log('✅ Disponibilidade carregada do backend:', dias);
             return dias;
           }
         }
-      } catch (perfilErr) {
-        console.log('Perfil extra não contém disponibilidade');
+      } catch (backendErr) {
+        console.warn('Backend não retornou disponibilidade, tentando localStorage');
+      }
+      
+      // PRIORIDADE 2: localStorage como fallback
+      const localData = localStorage.getItem('disp_' + profissionalId);
+      if (localData) {
+        const dias = JSON.parse(localData);
+        if (Array.isArray(dias) && dias.length > 0) {
+          console.log('📦 Disponibilidade do cache local:', dias);
+          return dias;
+        }
       }
       
       return [];
@@ -431,7 +409,6 @@
     }
 
     try {
-      // Carrega dados do profissional base
       const profissional = await buscarProfissionalPorId(profissionalId);
       if (!profissional) {
         container.innerHTML = '<div class="error-message">❌ Profissional não encontrado.</div>';
@@ -439,17 +416,10 @@
       }
 
       const servicosData = obterServicos();
-      
-      // Busca perfil completo (localStorage + backend)
-      const perfilExtra = await buscarPerfilCompleto(profissional.id);
-      
-      // Busca fotos do portfólio
-      const fotosServicos = await listarFotosServico(profissional.id) || [];
-      
-      // Busca avaliações
-      let avaliacoes = await obterAvaliacoesProfissional(profissional.id) || [];
-      
-      // Busca disponibilidade
+      // Busca o perfil completo do localStorage PRIMEIRO
+      const perfilExtra = await buscarPerfilCompletoLocal(profissional.id);
+      const fotosServicos = await listarFotosServico(profissional.id);
+      let avaliacoes = await obterAvaliacoesProfissional(profissional.id);
       const disponibilidade = await buscarDisponibilidade(profissional.id);
       
       const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -467,7 +437,7 @@
         </div>`;
       }
 
-      // Mapeamento dos campos (prioriza perfilExtra)
+      // PEGA OS DADOS DO PERFIL COMPLETO (prioriza localStorage)
       const nome = perfilExtra.nome || profissional.nome;
       const email = perfilExtra.email || profissional.email;
       const telefone = perfilExtra.telefone || profissional.telefone || '';
@@ -475,10 +445,10 @@
       const titulo = perfilExtra.titulo || '';
       const localizacao = perfilExtra.localizacao || profissional.endereco || '';
       const setor = perfilExtra.setor || '';
-      const avatar = perfilExtra.avatar || profissional.avatar || `https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(nome)}`;
+      const avatar = perfilExtra.avatar || profissional.avatar;
       const coverPhoto = perfilExtra.coverPhoto || '';
       
-      // Dados estruturados do perfil
+      // DADOS ESTRUTURADOS DO PERFIL
       const experiencias = perfilExtra.experiencias || [];
       const formacoes = perfilExtra.formacoes || [];
       const habilidades = perfilExtra.habilidades || [];
@@ -488,17 +458,7 @@
       const servicos_ids = profissional.servicos_ids || [];
       const servicosOferecidos = servicosData.filter(s => servicos_ids.includes(s.id));
 
-      console.log('📋 DADOS CARREGADOS:');
-      console.log('  - Nome:', nome);
-      console.log('  - Título:', titulo);
-      console.log('  - Localização:', localizacao, '| Setor:', setor);
-      console.log('  - Experiências:', experiencias.length);
-      console.log('  - Formações:', formacoes.length);
-      console.log('  - Habilidades:', habilidades.length);
-      console.log('  - Idiomas:', idiomas.length);
-      console.log('  - Links:', links.length);
-      console.log('  - Fotos:', fotosServicos.length);
-      console.log('  - Disponibilidade:', disponibilidade);
+      console.log('📋 Dados carregados:', { nome, email, telefone, descricao, titulo, localizacao, setor, experiencias, formacoes, habilidades, idiomas, links });
 
       function calcularMedia() {
         if (!avaliacoes.length) return 0;
@@ -507,7 +467,6 @@
       }
       let mediaAtual = calcularMedia();
 
-      // ========== SEÇÕES DINÂMICAS ==========
       function secaoExperiencias() {
         if (!experiencias.length) return '';
         return `<hr class="section-divider"><div class="section-label"><i class="fas fa-briefcase"></i> Experiência profissional</div>
@@ -517,7 +476,7 @@
       function secaoFormacoes() {
         if (!formacoes.length) return '';
         return `<hr class="section-divider"><div class="section-label"><i class="fas fa-graduation-cap"></i> Formação acadêmica</div>
-          ${formacoes.map(f => `<div class="form-item"><strong>${escapeHtml(f.curso || '')}</strong> — ${escapeHtml(f.instituicao || '')}<div class="sub"><i class="fas fa-calendar-alt"></i> ${escapeHtml(f.anoConclusao || '')} ${f.descricao ? '· ' + escapeHtml(f.descricao) : ''}</div></div>`).join('')}`;
+          ${formacoes.map(f => `<div class="form-item"><strong>${escapeHtml(f.curso || '')}</strong> — ${escapeHtml(f.instituicao || '')}<div class="sub">${escapeHtml(f.anoConclusao || '')} ${f.descricao ? '· ' + escapeHtml(f.descricao) : ''}</div></div>`).join('')}`;
       }
       
       function secaoHabilidades() {
@@ -540,10 +499,9 @@
       function secaoFotos() {
         if (!fotosServicos.length) return '';
         return `<hr class="section-divider"><div class="section-label"><i class="fas fa-images"></i> Portfólio de trabalhos</div>
-          <div class="fotos-pub-grid">${fotosServicos.map((f, idx) => `<div class="foto-pub-item" onclick="abrirLightbox(${idx})"><img src="${escapeHtml(f.src)}" alt="${escapeHtml(f.legenda || 'Foto do serviço')}" loading="lazy">${f.legenda ? `<div class="foto-pub-label"><i class="fas fa-camera"></i> ${escapeHtml(f.legenda)}</div>` : ''}</div>`).join('')}</div>`;
+          <div class="fotos-pub-grid">${fotosServicos.map((f, idx) => `<div class="foto-pub-item"><img src="${escapeHtml(f.src)}" alt="${escapeHtml(f.legenda || 'Foto do serviço')}" loading="lazy" onclick="abrirLightbox(${idx})">${f.legenda ? `<div class="foto-pub-label"><i class="fas fa-camera"></i> ${escapeHtml(f.legenda)}</div>` : ''}</div>`).join('')}</div>`;
       }
 
-      // ========== SEÇÃO DE AVALIAÇÕES ==========
       async function secaoAvaliacoes() {
         const sess = obterSessao();
         let clienteLogado = null;
@@ -554,7 +512,6 @@
         const jaAvaliou = clienteLogado ? avaliacoes.some(a => a.clienteEmail === clienteLogado) : false;
 
         let html = `<hr class="section-divider"><div class="section-label"><i class="fas fa-star-half-alt"></i> Avaliações dos clientes (${avaliacoes.length})</div>`;
-        
         if (avaliacoes.length === 0) {
           html += `<p class="small-text"><i class="fas fa-comment-dots"></i> Nenhuma avaliação ainda. Seja o primeiro a avaliar este profissional!</p>`;
         } else {
@@ -564,7 +521,7 @@
               <div class="avaliacao-header">
                 <div class="avaliacao-nome"><i class="fas fa-user-circle"></i> ${escapeHtml(a.clienteNome || 'Cliente')}</div>
                 <div class="avaliacao-estrelas">${estrelas(a.nota)}</div>
-                <div class="avaliacao-data"><i class="far fa-calendar-alt"></i> ${escapeHtml(a.data ? new Date(a.data).toLocaleDateString('pt-BR') : '-')}</div>
+                <div class="avaliacao-data"><i class="far fa-calendar-alt"></i> ${escapeHtml(a.data)}</div>
               </div>
               <div class="avaliacao-comentario">"${escapeHtml(a.comentario || 'Sem comentário adicional')}"</div>
             </div>`;
@@ -586,14 +543,13 @@
             <button class="btn-avaliar" id="btnEnviarAvaliacao"><i class="fas fa-paper-plane"></i> Enviar avaliação</button>
           </div>`;
         } else if (clienteLogado && jaAvaliou) {
-          html += `<p class="small-text" style="margin-top:16px; padding:12px; background:#eef2ff; border-radius:20px;"><i class="fas fa-check-circle"></i> ✅ Você já avaliou este profissional. Obrigado pelo feedback!</p>`;
+          html += `<p class="small-text" style="margin-top:16px; padding:12px; background:#eef2ff; border-radius:20px;"><i class="fas fa-check-circle"></i> ✅ Você já avaliou este profissional. Obrigado!</p>`;
         } else {
           html += `<p class="small-text" style="margin-top:16px;"><i class="fas fa-sign-in-alt"></i> 📝 <a href="marido_aluguel.html" style="color:#2b4c7c; font-weight:600;">Faça login</a> para avaliar este profissional.</p>`;
         }
         return html;
       }
 
-      // ========== HTML PRINCIPAL ==========
       const htmlPerfil = `
         <div class="profile-card">
           ${coverPhoto ? `<img class="cover-banner" src="${escapeHtml(coverPhoto)}" alt="Foto de capa" loading="lazy">` : `<div class="cover-banner"></div>`}
@@ -603,7 +559,7 @@
               <div class="profile-name">${escapeHtml(nome)}</div>
               ${titulo ? `<div class="headline-tag"><i class="fas fa-briefcase"></i> ${escapeHtml(titulo)}</div>` : ''}
               ${(localizacao || setor) ? `<div class="loc-setor"><i class="fas fa-map-marker-alt"></i> ${escapeHtml([localizacao, setor].filter(Boolean).join(' · '))}</div>` : ''}
-              <div class="profile-rating">${estrelas(mediaAtual)} <span style="opacity:0.8;font-size:0.8rem;">(${avaliacoes.length} ${avaliacoes.length === 1 ? 'avaliação' : 'avaliações'})</span></div>
+              <div class="profile-rating">${estrelas(mediaAtual)} <span>(${avaliacoes.length} avaliações)</span></div>
             </div>
           </div>
           <div class="profile-body">
@@ -632,11 +588,10 @@
       `;
       container.innerHTML = htmlPerfil;
 
-      // Insere seção de avaliações
       const avaliacoesHTML = await secaoAvaliacoes();
       document.getElementById('avaliacoesSection').innerHTML = avaliacoesHTML;
 
-      // ========== FUNÇÃO PARA CRIAR CHAT ==========
+      // Função criar chat (mantida igual)
       async function criarChatViaIntegracao(servicoId, servicoNome, quantidade, unidade, valorEstimado, tempoEstimado, diasEstimados) {
         const sess = obterSessao();
         if (!sess || sess.tipo !== 'cliente') {
@@ -663,7 +618,6 @@
         return chat.id;
       }
 
-      // ========== BOTÕES DE ORÇAMENTO ==========
       document.querySelectorAll('.btn-orcamento').forEach(btn => {
         btn.addEventListener('click', async () => {
           const servNome = btn.dataset.servNome;
@@ -699,14 +653,11 @@
         });
       });
 
-      // ========== LIGHTBOX DAS FOTOS ==========
       window.abrirLightbox = (idx) => {
         const f = fotosServicos[idx];
-        if (f) {
-          document.getElementById('lbImg').src = f.src;
-          document.getElementById('lbCaption').textContent = f.legenda || 'Trabalho realizado';
-          document.getElementById('lightbox').classList.add('open');
-        }
+        document.getElementById('lbImg').src = f.src;
+        document.getElementById('lbCaption').textContent = f.legenda || 'Trabalho realizado';
+        document.getElementById('lightbox').classList.add('open');
       };
       document.getElementById('lbClose').onclick = () => document.getElementById('lightbox').classList.remove('open');
       document.getElementById('lightbox').addEventListener('click', (e) => { 
@@ -714,7 +665,6 @@
           document.getElementById('lightbox').classList.remove('open'); 
       });
 
-      // ========== AVALIAÇÃO (ESTRELAS E ENVIO) ==========
       if (document.getElementById('estrelasInput')) {
         let notaSelecionada = 0;
         const estrelasEl = document.querySelectorAll('#estrelasInput i');
@@ -752,14 +702,14 @@
             const clienteNome = cliente ? cliente.nome : sess.email.split('@')[0];
             try {
               await salvarAvaliacao(profissional.id, sess.email, clienteNome, notaSelecionada, comentario);
-              alert('✅ Avaliação enviada com sucesso! Obrigado pelo feedback.');
+              alert('✅ Avaliação enviada com sucesso!');
               const novaSecao = await secaoAvaliacoes();
               document.getElementById('avaliacoesSection').innerHTML = novaSecao;
               avaliacoes = await obterAvaliacoesProfissional(profissional.id);
               mediaAtual = calcularMedia();
               const ratingSpan = document.querySelector('.profile-rating');
               if (ratingSpan) {
-                ratingSpan.innerHTML = `${estrelas(mediaAtual)} <span style="opacity:0.8;font-size:0.8rem;">(${avaliacoes.length} ${avaliacoes.length === 1 ? 'avaliação' : 'avaliações'})</span>`;
+                ratingSpan.innerHTML = `${estrelas(mediaAtual)} <span>(${avaliacoes.length} avaliações)</span>`;
               }
             } catch (err) {
               alert('Erro ao enviar avaliação: ' + err.message);
@@ -768,7 +718,6 @@
         }
       }
 
-      // Ajusta link voltar
       const backLink = document.getElementById('backLink');
       backLink.href = document.referrer?.includes('profissionais.html') ? document.referrer : 'profissionais.html';
 
@@ -776,7 +725,6 @@
       console.error('Erro ao carregar perfil:', error);
       container.innerHTML = `<div class="error-message">
         <i class="fas fa-exclamation-triangle"></i> Erro ao carregar perfil.<br>
-        Verifique sua conexão ou tente novamente mais tarde.<br>
         <small>${escapeHtml(error.message || 'Erro desconhecido')}</small>
       </div>`;
     }
