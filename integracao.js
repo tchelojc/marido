@@ -168,7 +168,6 @@ async function adicionarFotoServico(profissionalId, imagemBase64, legenda) {
 async function listarFotosServico(profissionalId) {
   try {
     const resultado = await callBackend("listar_fotos_servico", { profissionalId });
-    // doPost: { ok: true, id: <array_de_fotos> }
     if (resultado?.ok && Array.isArray(resultado.id)) return resultado.id;
     if (Array.isArray(resultado)) return resultado;
     return [];
@@ -210,7 +209,6 @@ async function uploadFotoPerfil(imagemBase64, tipo, profissionalId) {
 async function obterTodosClientes() {
   try {
     const resultado = await callBackend("listar_clientes", {}, 45);
-    // doPost retorna { ok: true, id: <array> }
     if (resultado?.ok && Array.isArray(resultado.id)) return resultado.id;
     if (Array.isArray(resultado)) return resultado;
     return [];
@@ -233,7 +231,6 @@ async function salvarNovoCliente(cliente) {
 async function buscarClientePorEmail(email) {
   try {
     const resultado = await callBackend("buscar_cliente_por_email", { email });
-    // doPost: { ok: true, id: <objeto_cliente> }
     if (resultado?.ok && resultado.id && typeof resultado.id === 'object') return resultado.id;
     return null;
   } catch (err) {
@@ -260,7 +257,6 @@ async function atualizarCliente(dados) {
 
 // ========== PROFISSIONAIS ==========
 async function obterTodosProfissionais() {
-  // Começa sempre com os profissionais estáticos (PROFISSIONAIS_DATA do profissionais.js)
   let fixos = [];
   if (typeof PROFISSIONAIS_DATA !== 'undefined' && Array.isArray(PROFISSIONAIS_DATA)) {
     fixos = PROFISSIONAIS_DATA;
@@ -269,7 +265,6 @@ async function obterTodosProfissionais() {
   let doBackend = [];
   try {
     const resultado = await callBackend("listar_profissionais", {}, 45);
-    // doPost retorna { ok: true, id: <array> } — o array está em .id
     if (resultado?.ok && Array.isArray(resultado.id)) {
       doBackend = resultado.id;
     } else if (Array.isArray(resultado)) {
@@ -279,7 +274,6 @@ async function obterTodosProfissionais() {
     console.error("Erro ao listar profissionais do backend:", err);
   }
 
-  // Mescla: backend tem prioridade sobre estáticos (mesmo email = backend vence)
   const emailsBackend = new Set(doBackend.map(p => (p.email || '').toLowerCase()));
   const fixosFiltrados = fixos.filter(f => !emailsBackend.has((f.email || '').toLowerCase()));
   return [...doBackend, ...fixosFiltrados];
@@ -302,7 +296,6 @@ async function buscarProfissionalPorEmail(email) {
   } catch (err) {
     console.error("Erro ao buscar profissional por email:", err);
   }
-  // Fallback: tenta nos estáticos
   if (typeof PROFISSIONAIS_DATA !== 'undefined') {
     return PROFISSIONAIS_DATA.find(p => (p.email || '').toLowerCase() === email.toLowerCase()) || null;
   }
@@ -316,7 +309,6 @@ async function buscarProfissionalPorId(id) {
   } catch (err) {
     console.error("Erro ao buscar profissional por ID:", err);
   }
-  // Fallback: tenta nos estáticos
   if (typeof PROFISSIONAIS_DATA !== 'undefined') {
     return PROFISSIONAIS_DATA.find(p => p.id === id) || null;
   }
@@ -406,7 +398,6 @@ async function autenticarUsuarioComSenha(email, senha) {
 async function getTokenBalance(userId, tipo = "cliente") {
   try {
     const resultado = await callBackend("obter_saldo", { usuarioId: userId, tipo }, 30);
-    // doPost: { ok: true, id: { saldo: N } }
     if (resultado?.ok && resultado.id?.saldo !== undefined) return resultado.id.saldo;
     if (resultado?.saldo !== undefined) return resultado.saldo;
     return 0;
@@ -436,10 +427,8 @@ async function salvarChat(chat) {
 
 async function criarChat(dados) {
   const resultado = await callBackend("criar_chat", dados, 45);
-  // doPost: { ok: true, id: <objeto_novoChat> }
-  // O objeto retornado é o chat completo (com .id, .clienteId, etc.)
   if (resultado?.ok && resultado.id && typeof resultado.id === 'object') {
-    return resultado.id;  // retorna o objeto chat diretamente
+    return resultado.id;
   }
   throw new Error(resultado?.erro || 'Erro ao criar chat');
 }
@@ -502,7 +491,6 @@ async function salvarPerfilExtra(profissionalId, dados) {
 async function obterPerfilExtra(profissionalId) {
   try {
     const resultado = await callBackend("obter_perfil_extra", { profissionalId });
-    // doPost: { ok: true, id: <objeto_perfil_ou_null> }
     if (resultado?.ok && resultado.id && typeof resultado.id === 'object') return resultado.id;
     return null;
   } catch (err) {
@@ -548,7 +536,6 @@ async function inicializarSistemaBackend() {
     const clientes = await obterTodosClientes();
     console.log("✅ Sistema backend OK. Clientes existentes:", clientes.length);
     
-    // Testa também a conexão com ImgBB
     const imgbbTest = await testarImgBB();
     if (imgbbTest.sucesso) {
       console.log("✅ ImgBB configurado corretamente!");
@@ -563,9 +550,7 @@ async function inicializarSistemaBackend() {
   }
 }
 
-// Adicionar ao final do integracao.js
 async function salvarDisponibilidadeBackend(profissionalId, dias) {
-    // Tenta salvar no perfil extra do backend
     try {
         const perfilAtual = await obterPerfilExtra(profissionalId) || {};
         perfilAtual.disponibilidade = dias;
@@ -578,6 +563,83 @@ async function salvarDisponibilidadeBackend(profissionalId, dias) {
         console.log('Backend não suporta salvar disponibilidade, apenas localStorage');
         return false;
     }
+}
+
+// ========== ADMIN ROOT (comunicação segura com AppScript) ==========
+
+// Função para login automático do admin (chama o backend)
+async function loginAdminRoot() {
+  try {
+    const resultado = await callBackend("admin_login_root", {}, 30);
+    
+    if (resultado?.ok && resultado.id) {
+      // Salva sessão do admin
+      salvarSessao(resultado.id.email, "cliente", resultado.id.id);
+      console.log("✅ Admin Root logado com sucesso!");
+      return { success: true, usuario: resultado.id };
+    }
+    
+    return { success: false, error: resultado?.erro || "Falha ao logar como admin" };
+  } catch (err) {
+    console.error("Erro ao logar admin root:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+// Função para verificar se o usuário logado é admin
+async function isAdminRoot() {
+  const sess = obterSessao();
+  if (!sess) return false;
+  
+  try {
+    const resultado = await callBackend("admin_verificar", { email: sess.email }, 15);
+    return resultado?.ok === true && resultado?.isAdmin === true;
+  } catch {
+    return false;
+  }
+}
+
+// Função para obter token de admin (para abrir chats)
+async function getAdminToken() {
+  try {
+    const resultado = await callBackend("admin_gerar_token", {}, 15);
+    if (resultado?.ok && resultado.token) {
+      return resultado.token;
+    }
+    return null;
+  } catch (err) {
+    console.error("Erro ao gerar token admin:", err);
+    return null;
+  }
+}
+
+// Função para validar token de admin
+async function validarAdminToken(token) {
+  try {
+    const resultado = await callBackend("admin_validar_token", { token }, 15);
+    return resultado?.ok === true;
+  } catch {
+    return false;
+  }
+}
+
+// Função para obter dados do admin (sem expor senha)
+async function getAdminInfo() {
+  try {
+    const resultado = await callBackend("admin_info", {}, 15);
+    if (resultado?.ok && resultado.id) {
+      return {
+        id: resultado.id.id,
+        nome: resultado.id.nome,
+        email: resultado.id.email,
+        root: true
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Erro ao obter info admin:", err);
+    return null;
+  }
 }
 
 console.log("✅ integracao.js — backend com ImgBB para imagens");
