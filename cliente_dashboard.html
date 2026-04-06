@@ -6,6 +6,7 @@
   <title>Painel do Cliente · Marido de Aluguel</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="dados.js"></script>
   <script src="integracao.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -36,7 +37,7 @@
       cursor: pointer;
       transition: 0.2s;
     }
-    .avatar-large:hover { opacity: 0.8; }
+    .avatar-large:hover { opacity: 0.8; transform: scale(1.02); }
     .client-name { font-size: 1.4rem; font-weight: 700; }
     .client-email { color: #5a6e8a; font-size: 0.8rem; }
     .btn-logout {
@@ -47,7 +48,9 @@
       cursor: pointer;
       color: #2b4c7c;
       font-weight: 500;
+      transition: 0.2s;
     }
+    .btn-logout:hover { background: #e2e8f0; }
     .dashboard-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -59,7 +62,9 @@
       border-radius: 24px;
       padding: 20px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      transition: 0.2s;
     }
+    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
     .card h3 {
       margin-bottom: 16px;
       font-size: 1.2rem;
@@ -74,7 +79,9 @@
       border-radius: 16px;
       padding: 12px;
       margin-bottom: 12px;
+      transition: 0.2s;
     }
+    .chat-item:hover { background: #eef2ff; transform: translateX(4px); }
     .status-badge {
       display: inline-block;
       padding: 2px 10px;
@@ -96,7 +103,9 @@
       font-size: 0.7rem;
       text-decoration: none;
       display: inline-block;
+      transition: 0.2s;
     }
+    .btn-sm:hover { background: #1e3c72; transform: translateY(-1px); }
     .btn-pagamento {
       background: #28a745;
       color: white;
@@ -120,7 +129,9 @@
       cursor: pointer;
       font-weight: 600;
       margin-top: 16px;
+      transition: 0.2s;
     }
+    .btn-salvar:hover { background: #1e3c72; transform: translateY(-1px); }
     .btn-secondary {
       background: #6c757d;
       color: white;
@@ -131,7 +142,9 @@
       cursor: pointer;
       font-weight: 600;
       margin-top: 8px;
+      transition: 0.2s;
     }
+    .btn-secondary:hover { background: #5a6268; transform: translateY(-1px); }
     .full-width { grid-column: span 2; }
     @media (max-width: 800px) {
       .dashboard-grid { grid-template-columns: 1fr; }
@@ -168,7 +181,9 @@
       border-radius: 30px;
       font-size: 0.7rem;
       cursor: pointer;
+      transition: 0.2s;
     }
+    .cover-upload-btn:hover { background: rgba(0,0,0,0.8); }
     .profile-avatar-editor {
       position: relative;
       display: inline-block;
@@ -197,7 +212,9 @@
       height: 28px;
       cursor: pointer;
       font-size: 0.7rem;
+      transition: 0.2s;
     }
+    .avatar-upload-btn:hover { background: #1e3c72; transform: scale(1.05); }
     .form-row {
       display: flex;
       gap: 16px;
@@ -213,12 +230,18 @@
       font-size: 0.8rem;
       margin-bottom: 4px;
     }
-    .form-group input, .form-group textarea {
+    .form-group input, .form-group textarea, .form-group select {
       width: 100%;
       padding: 8px 12px;
       border-radius: 16px;
       border: 1px solid #e2e8f0;
       font-family: inherit;
+      transition: 0.2s;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      outline: none;
+      border-color: #2b4c7c;
+      box-shadow: 0 0 0 2px rgba(43,76,124,0.1);
     }
     hr { margin: 16px 0; }
     .token-card {
@@ -255,6 +278,7 @@
     }
     #toast.show { opacity: 1; transform: translateY(0); }
     #toast.toast-error { background: #721c24; }
+    #toast.toast-info { background: #17a2b8; }
     
     /* Modal de alterar senha */
     .modal {
@@ -274,6 +298,11 @@
       border-radius: 32px;
       padding: 28px;
       position: relative;
+      animation: modalFadeIn 0.3s ease;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
     }
     .close-modal {
       position: absolute;
@@ -282,8 +311,9 @@
       font-size: 1.6rem;
       cursor: pointer;
       color: #5a6e8a;
+      transition: 0.2s;
     }
-    .close-modal:hover { color: #1a2634; }
+    .close-modal:hover { color: #1a2634; transform: scale(1.1); }
     .senha-info {
       background: #eef2ff;
       padding: 12px;
@@ -317,6 +347,16 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: #5a6e8a;
+    }
+    .empty-state i {
+      font-size: 2rem;
+      margin-bottom: 8px;
+      opacity: 0.5;
+    }
   </style>
 </head>
 <body>
@@ -338,7 +378,7 @@
     <!-- Último profissional contratado -->
     <div class="card">
       <h3><i class="fas fa-user-check"></i> Último profissional contratado</h3>
-      <div id="ultimoProfissionalContainer">Carregando...</div>
+      <div id="ultimoProfissionalContainer"><div class="loading-spinner" style="margin: 20px auto;"></div></div>
     </div>
 
     <!-- Saldo TOKEN-ALMA e recarga -->
@@ -365,19 +405,19 @@
     <!-- Serviços em andamento (chats ativos) -->
     <div class="card full-width">
       <h3><i class="fas fa-comments"></i> Serviços em andamento</h3>
-      <div id="chatsAtivosContainer">Carregando...</div>
+      <div id="chatsAtivosContainer"><div class="loading-spinner" style="margin: 20px auto;"></div></div>
     </div>
 
     <!-- Serviços finalizados -->
     <div class="card full-width">
       <h3><i class="fas fa-check-circle"></i> Serviços finalizados</h3>
-      <div id="chatsFinalizadosContainer">Carregando...</div>
+      <div id="chatsFinalizadosContainer"><div class="loading-spinner" style="margin: 20px auto;"></div></div>
     </div>
 
     <!-- Minhas avaliações -->
     <div class="card full-width">
       <h3><i class="fas fa-star-half-alt"></i> Minhas avaliações</h3>
-      <div id="avaliacoesContainer">Carregando...</div>
+      <div id="avaliacoesContainer"><div class="loading-spinner" style="margin: 20px auto;"></div></div>
     </div>
 
     <!-- Editar Perfil -->
@@ -405,7 +445,7 @@
         <button id="salvarPerfil" class="btn-salvar"><i class="fas fa-save"></i> Salvar alterações</button>
         <button id="btnAlterarSenha" class="btn-secondary"><i class="fas fa-key"></i> Alterar senha</button>
       </div>
-      <p class="small-text" style="margin-top: 12px;">As alterações serão salvas localmente e sincronizadas com seu perfil.</p>
+      <p class="small-text" style="margin-top: 12px;">As alterações serão salvas e sincronizadas com seu perfil.</p>
     </div>
   </div>
 </div>
@@ -440,9 +480,9 @@
     if (!el) { alert(msg); return; }
     const txt = document.getElementById('toastMsg');
     txt.textContent = msg;
-    el.className = `show ${tipo === 'error' ? 'toast-error' : ''}`;
+    el.className = `show ${tipo === 'error' ? 'toast-error' : tipo === 'info' ? 'toast-info' : ''}`;
     const icon = el.querySelector('i');
-    if (icon) icon.className = tipo === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+    if (icon) icon.className = tipo === 'error' ? 'fas fa-exclamation-circle' : tipo === 'info' ? 'fas fa-info-circle' : 'fas fa-check-circle';
     clearTimeout(el._t);
     el._t = setTimeout(() => { el.className = ''; }, 3200);
   }
@@ -462,6 +502,7 @@
   let clienteAtual = null;
   let tokenSaldo = 0;
   let senhaOriginal = '';
+  let updateInterval = null;
 
   async function carregarClienteLogado() {
     const sess = obterSessao();
@@ -486,37 +527,70 @@
       const chats = await obterChats();
       const chatsArray = Array.isArray(chats) ? chats : [];
       const meusChats = chatsArray.filter(chat => chat && chat.clienteId === clienteAtual.id);
-      const ativos = meusChats.filter(chat => chat.statusServico !== 'concluido');
+      const ativos = meusChats.filter(chat => chat.statusServico !== 'concluido' && chat.statusServico !== 'cancelado');
       const finalizados = meusChats.filter(chat => chat.statusServico === 'concluido');
       
       const ativosContainer = document.getElementById('chatsAtivosContainer');
       const finalizadosContainer = document.getElementById('chatsFinalizadosContainer');
       
       if (ativosContainer) {
-        ativosContainer.innerHTML = ativos.length ? ativos.map(chat => `
-          <div class="chat-item">
-            <strong>${escapeHtml(chat.profissionalNome || 'Profissional')}</strong> - ${escapeHtml(chat.servicoNome || 'Serviço')}<br>
-            Valor: R$ ${chat.valorCombinado?.toFixed(2) || 'a definir'}<br>
-            Status: ${chat.statusServico || 'negociacao'}<br>
-            <a href="chat.html?chat=${chat.id}" class="btn-sm">Abrir conversa</a>
-          </div>
-        `).join('') : '<p class="small-text">Nenhum serviço em andamento.</p>';
+        if (ativos.length === 0) {
+          ativosContainer.innerHTML = '<div class="empty-state"><i class="fas fa-comment-slash"></i><p>Nenhum serviço em andamento.</p></div>';
+        } else {
+          ativosContainer.innerHTML = ativos.map(chat => `
+            <div class="chat-item">
+              <strong>${escapeHtml(chat.profissionalNome || 'Profissional')}</strong> - ${escapeHtml(chat.servicoNome || 'Serviço')}<br>
+              Valor: R$ ${chat.valorCombinado?.toFixed(2) || 'a definir'}<br>
+              Status: <span class="status-badge ${getStatusClass(chat.statusServico)}">${getStatusText(chat.statusServico)}</span><br>
+              <a href="chat.html?chat=${chat.id}" class="btn-sm" style="display:inline-block; margin-top:8px;"><i class="fas fa-comments"></i> Abrir conversa</a>
+            </div>
+          `).join('');
+        }
       }
       
       if (finalizadosContainer) {
-        finalizadosContainer.innerHTML = finalizados.length ? finalizados.map(chat => `
-          <div class="chat-item">
-            <strong>${escapeHtml(chat.profissionalNome || 'Profissional')}</strong> - ${escapeHtml(chat.servicoNome || 'Serviço')}<br>
-            Valor: R$ ${chat.valorCombinado?.toFixed(2) || '0'}<br>
-            <a href="chat.html?chat=${chat.id}" class="btn-sm">Ver conversa</a>
-          </div>
-        `).join('') : '<p class="small-text">Nenhum serviço finalizado.</p>';
+        if (finalizados.length === 0) {
+          finalizadosContainer.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>Nenhum serviço finalizado.</p></div>';
+        } else {
+          finalizadosContainer.innerHTML = finalizados.map(chat => `
+            <div class="chat-item">
+              <strong>${escapeHtml(chat.profissionalNome || 'Profissional')}</strong> - ${escapeHtml(chat.servicoNome || 'Serviço')}<br>
+              Valor: R$ ${chat.valorCombinado?.toFixed(2) || '0'}<br>
+              Concluído: ${chat.dataConclusao || new Date().toLocaleDateString()}<br>
+              <a href="chat.html?chat=${chat.id}" class="btn-sm" style="display:inline-block; margin-top:8px;"><i class="fas fa-eye"></i> Ver detalhes</a>
+            </div>
+          `).join('');
+        }
       }
     } catch (err) {
       console.error('Erro ao carregar chats:', err);
-      document.getElementById('chatsAtivosContainer').innerHTML = '<p class="small-text">Erro ao carregar serviços.</p>';
-      document.getElementById('chatsFinalizadosContainer').innerHTML = '<p class="small-text">Erro ao carregar serviços.</p>';
+      document.getElementById('chatsAtivosContainer').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar serviços.</p></div>';
+      document.getElementById('chatsFinalizadosContainer').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar serviços.</p></div>';
     }
+  }
+
+  function getStatusClass(status) {
+    const classes = {
+      'negociacao': 'status-pendente',
+      'aprovado': 'status-aprovado',
+      'em_andamento': 'status-aprovado',
+      'pago_parcial': 'status-aprovado',
+      'concluido': 'status-concluido',
+      'cancelado': 'status-recusado'
+    };
+    return classes[status] || 'status-pendente';
+  }
+
+  function getStatusText(status) {
+    const texts = {
+      'negociacao': 'Em negociação',
+      'aprovado': 'Aprovado',
+      'em_andamento': 'Em andamento',
+      'pago_parcial': 'Pagamento parcial',
+      'concluido': 'Concluído',
+      'cancelado': 'Cancelado'
+    };
+    return texts[status] || status;
   }
 
   // ========== AVALIAÇÕES ==========
@@ -527,7 +601,7 @@
       const todasAvaliacoes = await obterAvaliacoesCliente(clienteAtual.email);
       const minhas = Array.isArray(todasAvaliacoes) ? todasAvaliacoes : [];
       if (!minhas.length) {
-        container.innerHTML = '<p class="small-text">Você ainda não avaliou nenhum profissional.</p>';
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-star"></i><p>Você ainda não avaliou nenhum profissional.</p></div>';
         return;
       }
       container.innerHTML = minhas.map(a => `
@@ -535,12 +609,12 @@
           <strong>${escapeHtml(a.clienteNome || clienteAtual.nome)}</strong> avaliou <strong>${escapeHtml(a.profissionalNome || 'um profissional')}</strong><br>
           Nota: ${'★'.repeat(a.nota)}${'☆'.repeat(5-a.nota)}<br>
           Comentário: "${escapeHtml(a.comentario || 'Sem comentário')}"<br>
-          <span class="small-text">${escapeHtml(a.data)}</span>
+          <span class="small-text"><i class="far fa-calendar-alt"></i> ${escapeHtml(a.data)}</span>
         </div>
       `).join('');
     } catch (err) {
       console.error('Erro ao carregar avaliações:', err);
-      container.innerHTML = '<p class="small-text">Erro ao carregar avaliações.</p>';
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar avaliações.</p></div>';
     }
   }
 
@@ -569,19 +643,19 @@
       const chatsArray = Array.isArray(chats) ? chats : [];
       const meusChats = chatsArray.filter(chat => chat && chat.clienteId === clienteAtual?.id && chat.statusServico === 'concluido');
       if (!meusChats.length) {
-        container.innerHTML = '<p class="small-text">Nenhum profissional contratado ainda.</p>';
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-user-friends"></i><p>Nenhum profissional contratado ainda.</p></div>';
         return;
       }
       const ultimo = meusChats[meusChats.length - 1];
       container.innerHTML = `<div class="solicitacao-item">
-        <strong>${escapeHtml(ultimo.profissionalNome || 'Profissional')}</strong><br>
-        Serviço: ${escapeHtml(ultimo.servicoNome || 'Serviço')}<br>
-        Valor: R$ ${ultimo.valorCombinado?.toFixed(2) || '0'}<br>
-        Concluído em: ${ultimo.dataConclusao || '—'}
+        <strong><i class="fas fa-user"></i> ${escapeHtml(ultimo.profissionalNome || 'Profissional')}</strong><br>
+        <i class="fas fa-tools"></i> Serviço: ${escapeHtml(ultimo.servicoNome || 'Serviço')}<br>
+        <i class="fas fa-dollar-sign"></i> Valor: R$ ${ultimo.valorCombinado?.toFixed(2) || '0'}<br>
+        <i class="far fa-calendar-check"></i> Concluído em: ${ultimo.dataConclusao || '—'}
       </div>`;
     } catch (err) {
       console.error('Erro ao carregar último profissional:', err);
-      container.innerHTML = '<p class="small-text">Erro ao carregar informações.</p>';
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar informações.</p></div>';
     }
   }
 
@@ -595,14 +669,12 @@
       
       const reader = new FileReader();
       reader.onload = (ev) => {
-        // Usa a função compressImage do integracao.js
         if (typeof compressImage === 'undefined') {
           reject(new Error('Função compressImage não encontrada. Verifique o integracao.js'));
           return;
         }
         compressImage(ev.target.result, maxWidth, 0.7, async (compressedBase64) => {
           try {
-            // Usa a função uploadParaImgBB do integracao.js
             if (typeof uploadParaImgBB === 'undefined') {
               reject(new Error('Função uploadParaImgBB não encontrada. Verifique o integracao.js'));
               return;
@@ -627,12 +699,12 @@
       let file = e.target.files[0];
       if (!file) return;
       
-      toast('Enviando imagem para servidor...', 'success');
+      toast('Enviando imagem...', 'info');
       
       try {
         const imageUrl = await uploadImageWithImgBB(file, maxWidth);
         callback(imageUrl);
-        toast(`${tipo} enviada com sucesso! Salve o perfil para confirmar.`, 'success');
+        toast(`${tipo} enviado com sucesso! Salve o perfil para confirmar.`, 'success');
       } catch (err) {
         console.error('Erro no upload:', err);
         toast('Erro ao enviar imagem: ' + err.message, 'error');
@@ -691,7 +763,7 @@
       });
       
       if (resultado && resultado.ok) {
-        toast('✅ Senha alterada com sucesso! Use a nova senha no próximo login.', 'success');
+        toast('✅ Senha alterada com sucesso!', 'success');
         fecharModalSenha();
         setTimeout(() => {
           if (confirm('Senha alterada! Deseja fazer login novamente com a nova senha?')) {
@@ -782,12 +854,19 @@
           avatar: document.getElementById('avatarPreview').src,
           coverPhoto: document.getElementById('coverImg').src
         };
+        
+        if (!dadosAtualizados.nome) {
+          toast('Por favor, informe seu nome.', 'error');
+          return;
+        }
+        
+        toast('Salvando alterações...', 'info');
         const sucesso = await atualizarCliente(dadosAtualizados);
         if (sucesso) {
           clienteAtual = { ...clienteAtual, ...dadosAtualizados };
           document.getElementById('clientNome').innerText = clienteAtual.nome;
           document.getElementById('clientAvatar').src = clienteAtual.avatar;
-          toast('✅ Perfil salvo com sucesso!');
+          toast('✅ Perfil salvo com sucesso!', 'success');
         } else {
           toast('Erro ao salvar perfil. Tente novamente.', 'error');
         }
@@ -797,22 +876,29 @@
       }
     };
 
-    document.getElementById('logoutBtn').onclick = () => { limparSessao(); window.location.href = 'marido_aluguel.html'; };
+    document.getElementById('logoutBtn').onclick = () => { 
+      if (updateInterval) clearInterval(updateInterval);
+      limparSessao(); 
+      window.location.href = 'marido_aluguel.html'; 
+    };
 
     // Atualização periódica
-    setInterval(async () => {
-      try {
-        const novoSaldo = await getTokenBalance(clienteAtual.id, "cliente");
-        if (novoSaldo !== tokenSaldo) {
-          tokenSaldo = novoSaldo;
-          document.getElementById('tokenSaldo').innerText = tokenSaldo;
+    updateInterval = setInterval(async () => {
+      if (clienteAtual) {
+        try {
+          const novoSaldo = await getTokenBalance(clienteAtual.id, "cliente");
+          if (novoSaldo !== tokenSaldo) {
+            tokenSaldo = novoSaldo;
+            document.getElementById('tokenSaldo').innerText = tokenSaldo;
+            toast(`Saldo atualizado: ${tokenSaldo} ALMA`, 'info');
+          }
+          await carregarChats();
+          await carregarUltimoProfissional();
+        } catch (err) {
+          console.error('Erro na atualização periódica:', err);
         }
-        await carregarChats();
-        await carregarUltimoProfissional();
-      } catch (err) {
-        console.error('Erro na atualização periódica:', err);
       }
-    }, 10000);
+    }, 15000);
   })();
 </script>
 </body>
