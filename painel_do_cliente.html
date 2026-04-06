@@ -357,12 +357,31 @@
       margin-bottom: 8px;
       opacity: 0.5;
     }
+    .btn-contratar {
+      background: linear-gradient(135deg, #28a745, #218838);
+      border: none;
+      padding: 8px 20px;
+      border-radius: 40px;
+      cursor: pointer;
+      color: white;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-contratar:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(40,167,69,0.3);
+    }
   </style>
 </head>
 <body>
 <div id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
 
 <div class="container">
+  <!-- CABEÇALHO ÚNICO E CORRETO -->
   <div class="dashboard-header">
     <div class="profile-info">
       <img id="clientAvatar" class="avatar-large" src="" alt="Avatar" title="Clique para alterar foto">
@@ -371,7 +390,12 @@
         <div class="client-email" id="clientEmail"></div>
       </div>
     </div>
-    <button class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sair</button>
+    <div style="display: flex; gap: 12px;">
+      <a href="marido_aluguel.html" class="btn-contratar" id="btnContratar">
+        <i class="fas fa-tools"></i> Contratar serviços
+      </a>
+      <button class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sair</button>
+    </div>
   </div>
 
   <div class="dashboard-grid">
@@ -786,7 +810,7 @@
     clienteAtual = await carregarClienteLogado();
     if (!clienteAtual) return;
 
-    // Preenche UI com dados do cliente
+    // Preenche UI com dados do cliente (apenas uma vez)
     document.getElementById('clientNome').innerText = clienteAtual.nome;
     document.getElementById('clientEmail').innerText = clienteAtual.email;
     const avatarUrl = clienteAtual.avatar || `https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(clienteAtual.nome)}`;
