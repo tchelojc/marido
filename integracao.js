@@ -1,5 +1,6 @@
 // ========== CONFIGURAÇÃO ==========
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbz9BF7Y7lvnbvFHeZshd57RN2WdNmFZDBQWz9rzei16o6vYLcudiv-2iY_6VByqFEMO2Q/exec";
+// NOVA URL DO APPSCRIPT - VERSÃO 12 (06/04/2026)
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbygPYoW1KQq9Sg8YF4l0qK6HUNzGXanLEBHJymsMt_j0smhD7gK3XtGQd1YDSF8W3X2ZA/exec";
 
 // ⚠️ SUA API KEY DO IMGBB ⚠️
 const IMGBB_API_KEY = "2597fbdd4014975ed01d56ee9a6b404d";
@@ -645,3 +646,4 @@ async function getAdminInfo() {
 console.log("✅ integracao.js — backend com ImgBB para imagens");
 console.log("📍 Backend URL:", BACKEND_URL);
 console.log("🖼️ ImgBB API Key configurada:", IMGBB_API_KEY ? "✅ Sim" : "❌ Não");
+console.log("👑 Admin Root configurado no backend (seguro)");
