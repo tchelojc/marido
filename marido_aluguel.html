@@ -2,261 +2,341 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel do Cliente · Marido de Aluguel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#0a0a1a">
+  <meta name="description" content="Marido de Aluguel - Encontre profissionais qualificados para serviços domésticos. Orçamento rápido, preço justo e profissionais verificados.">
+  <title>Marido de Aluguel · Profissionais de serviços</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Arquivos de dados e integração -->
   <script src="dados.js"></script>
   <script src="integracao.js"></script>
   <style>
+    /* ========== ESTILOS ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
       background: #f4f6fa;
       color: #1a2634;
-      padding: 24px;
+      line-height: 1.5;
     }
-    .container { max-width: 1200px; margin: 0 auto; }
-    .dashboard-header {
+    .top-bar {
       background: white;
-      border-radius: 24px;
-      padding: 20px 28px;
-      margin-bottom: 28px;
+      border-bottom: 1px solid #e0e5ec;
+      padding: 12px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px 24px;
+    }
+    .logo-area {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #1e3c72, #2b4c7c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.5px;
+    }
+    .tagline {
+      font-size: 0.75rem;
+      color: #5a6e8a;
+      font-weight: 400;
+    }
+    .btn-outline-light {
+      background: transparent;
+      border: 1px solid #cbd5e1;
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.85rem;
+    }
+    .btn-outline-light:hover { background: #f1f5f9; border-color: #2b4c7c; transform: translateY(-1px); }
+    .btn-primary {
+      background: #2b4c7c;
+      border: none;
+      color: white;
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-primary:hover { background: #1e3c72; transform: translateY(-1px); }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 28px;
+      margin-top: 20px;
+    }
+    .filters-card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      border: 1px solid #e9eef3;
+      position: sticky;
+      top: 90px;
+    }
+    .filter-group { margin-bottom: 24px; }
+    .filter-group h4 { font-size: 0.9rem; margin-bottom: 12px; font-weight: 600; color: #1e3c72; }
+    .filter-option { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.85rem; cursor: pointer; }
+    .filter-option input { width: 16px; height: 16px; cursor: pointer; }
+    .filter-option:hover { background: #f8fafc; }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 24px;
+      padding-bottom: 8px;
+    }
+    .tab {
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      transition: 0.2s;
+      color: #4a5b7a;
+    }
+    .tab:hover { background: #eef2ff; }
+    .tab.active {
+      background: #2b4c7c;
+      color: white;
+    }
+    .search-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-    }
-    .profile-info { display: flex; align-items: center; gap: 20px; }
-    .avatar-large {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      object-fit: cover;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .avatar-large:hover { opacity: 0.8; transform: scale(1.02); }
-    .client-name { font-size: 1.4rem; font-weight: 700; }
-    .client-email { color: #5a6e8a; font-size: 0.8rem; }
-    .btn-logout {
-      background: #eef2ff;
-      border: none;
-      padding: 8px 20px;
-      border-radius: 40px;
-      cursor: pointer;
-      color: #2b4c7c;
-      font-weight: 500;
-      transition: 0.2s;
-    }
-    .btn-logout:hover { background: #e2e8f0; }
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      gap: 16px;
       margin-bottom: 24px;
     }
-    .card {
-      background: white;
-      border-radius: 24px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      transition: 0.2s;
-    }
-    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
-    .card h3 {
-      margin-bottom: 16px;
-      font-size: 1.2rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border-bottom: 1px solid #eef2ff;
-      padding-bottom: 8px;
-    }
-    .solicitacao-item, .orcamento-item, .avaliacao-item-cliente, .chat-item {
-      background: #f8fafc;
-      border-radius: 16px;
-      padding: 12px;
-      margin-bottom: 12px;
-      transition: 0.2s;
-    }
-    .chat-item:hover { background: #eef2ff; transform: translateX(4px); }
-    .status-badge {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 30px;
-      font-size: 0.7rem;
-      font-weight: 600;
-    }
-    .status-pendente { background: #fff3cd; color: #856404; }
-    .status-aprovado { background: #d4edda; color: #155724; }
-    .status-concluido { background: #cce5ff; color: #004085; }
-    .status-recusado { background: #f8d7da; color: #721c24; }
-    .btn-sm {
-      background: #2b4c7c;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 30px;
-      cursor: pointer;
-      font-size: 0.7rem;
-      text-decoration: none;
-      display: inline-block;
-      transition: 0.2s;
-    }
-    .btn-sm:hover { background: #1e3c72; transform: translateY(-1px); }
-    .btn-pagamento {
-      background: #28a745;
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 40px;
-      width: 100%;
-      cursor: pointer;
-      font-weight: 600;
-      margin-top: 8px;
-      transition: 0.2s;
-    }
-    .btn-pagamento:hover { background: #218838; transform: translateY(-1px); }
-    .btn-salvar {
-      background: #2b4c7c;
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 40px;
-      width: 100%;
-      cursor: pointer;
-      font-weight: 600;
-      margin-top: 16px;
-      transition: 0.2s;
-    }
-    .btn-salvar:hover { background: #1e3c72; transform: translateY(-1px); }
-    .btn-secondary {
-      background: #6c757d;
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 40px;
-      width: 100%;
-      cursor: pointer;
-      font-weight: 600;
-      margin-top: 8px;
-      transition: 0.2s;
-    }
-    .btn-secondary:hover { background: #5a6268; transform: translateY(-1px); }
-    .full-width { grid-column: span 2; }
-    @media (max-width: 800px) {
-      .dashboard-grid { grid-template-columns: 1fr; }
-      .full-width { grid-column: span 1; }
-    }
-    .small-text { font-size: 0.75rem; color: #5a6e8a; }
-    .profile-editor {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .cover-photo {
-      position: relative;
-      width: 100%;
-      height: 140px;
-      background: #eef2ff;
-      border-radius: 20px;
-      overflow: hidden;
-      margin-bottom: 50px;
-    }
-    .cover-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .cover-upload-btn {
-      position: absolute;
-      bottom: 8px;
-      right: 8px;
-      background: rgba(0,0,0,0.6);
-      color: white;
-      border: none;
-      padding: 4px 10px;
-      border-radius: 30px;
-      font-size: 0.7rem;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .cover-upload-btn:hover { background: rgba(0,0,0,0.8); }
-    .profile-avatar-editor {
-      position: relative;
-      display: inline-block;
-      margin-top: -50px;
-      margin-left: 20px;
-      margin-bottom: 10px;
-    }
-    .avatar-edit-img {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid white;
-      background: white;
-      cursor: pointer;
-    }
-    .avatar-upload-btn {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      background: #2b4c7c;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 28px;
-      height: 28px;
-      cursor: pointer;
-      font-size: 0.7rem;
-      transition: 0.2s;
-    }
-    .avatar-upload-btn:hover { background: #1e3c72; transform: scale(1.05); }
-    .form-row {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .form-group {
+    .search-box {
       flex: 1;
-      min-width: 180px;
+      max-width: 400px;
+      position: relative;
     }
-    .form-group label {
-      display: block;
-      font-weight: 600;
-      font-size: 0.8rem;
-      margin-bottom: 4px;
+    .search-box i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #8ba0bc;
     }
-    .form-group input, .form-group textarea, .form-group select {
+    .search-box input {
       width: 100%;
+      padding: 12px 12px 12px 42px;
+      border-radius: 50px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      font-size: 0.9rem;
+      outline: none;
+      transition: 0.2s;
+    }
+    .search-box input:focus { border-color: #2b4c7c; box-shadow: 0 0 0 2px rgba(43,76,124,0.1); }
+    .sort-select {
+      padding: 10px 16px;
+      border-radius: 40px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .sort-select:hover { border-color: #2b4c7c; }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .service-card {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid #e9eef3;
+      overflow: hidden;
+      transition: all 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+    .service-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-color: #cbddee; }
+    .card-content { padding: 18px; }
+    .card-badge {
+      display: inline-block;
+      background: #eef2ff;
+      color: #1e3c72;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 30px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .price {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #1e3c72;
+    }
+    .unit { font-size: 0.8rem; font-weight: normal; color: #5a6e8a; }
+    .prod-info {
+      display: flex;
+      justify-content: space-between;
+      margin: 12px 0;
+      font-size: 0.75rem;
+      background: #f8fafc;
       padding: 8px 12px;
       border-radius: 16px;
-      border: 1px solid #e2e8f0;
-      font-family: inherit;
+    }
+    .difficulty {
+      font-size: 0.7rem;
+      background: #eef2ff;
+      padding: 3px 8px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+    .difficulty.baixo { background: #d4edda; color: #155724; }
+    .difficulty.médio { background: #fff3cd; color: #856404; }
+    .difficulty.alto { background: #f8d7da; color: #721c24; }
+    .card-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .btn-sm {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #f1f5f9;
+      border: none;
       transition: 0.2s;
     }
-    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-      outline: none;
-      border-color: #2b4c7c;
-      box-shadow: 0 0 0 2px rgba(43,76,124,0.1);
+    .btn-sm-primary { background: #2b4c7c; color: white; }
+    .btn-sm-primary:hover { background: #1e3c72; transform: translateY(-1px); }
+    .btn-sm-outline { border: 1px solid #cbd5e1; background: white; }
+    .btn-sm-outline:hover { background: #eef2ff; transform: translateY(-1px); }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
     }
-    hr { margin: 16px 0; }
-    .token-card {
-      background: linear-gradient(135deg, #1e3c72, #2b4c7c);
-      color: white;
-      border-radius: 20px;
-      padding: 16px;
-      margin-top: 12px;
+    .modal-content {
+      background: white;
+      max-width: 500px;
+      width: 90%;
+      border-radius: 32px;
+      padding: 28px;
+      position: relative;
+      animation: modalFadeIn 0.3s ease;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .close-modal {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      font-size: 1.6rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .close-modal:hover { transform: scale(1.1); color: #1e3c72; }
+    /* FOOTER MELHORADO COM LINKS */
+    .footer {
       text-align: center;
+      margin-top: 50px;
+      padding: 24px 20px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 0.75rem;
+      color: #5a6e8a;
     }
-    .token-amount {
-      font-size: 1.8rem;
-      font-weight: 800;
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
     }
-    #toast {
+    .footer-links a {
+      color: #2b4c7c;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-links a:hover {
+      color: #1e3c72;
+      text-decoration: underline;
+    }
+    .footer-copyright {
+      font-size: 0.7rem;
+      opacity: 0.7;
+    }
+    .small-text { font-size: 0.75rem; color: #5a6e8a; }
+    .regulamento-link-modal {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 0.7rem;
+    }
+    .regulamento-link-modal a {
+      color: #2b4c7c;
+      text-decoration: none;
+    }
+    .regulamento-link-modal a:hover {
+      text-decoration: underline;
+    }
+    .loading-spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 3px solid #eef2ff;
+      border-top: 3px solid #2b4c7c;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .empty-state {
+      text-align: center;
+      padding: 60px;
+      color: #5a6e8a;
+    }
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    .toast {
       position: fixed;
       bottom: 28px;
       right: 28px;
@@ -276,200 +356,155 @@
       transition: opacity 0.3s, transform 0.3s;
       pointer-events: none;
     }
-    #toast.show { opacity: 1; transform: translateY(0); }
-    #toast.toast-error { background: #721c24; }
-    #toast.toast-info { background: #17a2b8; }
-    
-    /* Modal de alterar senha */
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(6px);
-      z-index: 2000;
-      justify-content: center;
-      align-items: center;
-    }
-    .modal-content {
-      background: white;
-      max-width: 450px;
-      width: 90%;
-      border-radius: 32px;
-      padding: 28px;
-      position: relative;
-      animation: modalFadeIn 0.3s ease;
-    }
-    @keyframes modalFadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    .close-modal {
-      position: absolute;
-      top: 18px;
-      right: 22px;
-      font-size: 1.6rem;
-      cursor: pointer;
-      color: #5a6e8a;
-      transition: 0.2s;
-    }
-    .close-modal:hover { color: #1a2634; transform: scale(1.1); }
-    .senha-info {
-      background: #eef2ff;
-      padding: 12px;
-      border-radius: 16px;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-    .senha-atual-display {
-      font-family: monospace;
-      font-size: 1.2rem;
-      font-weight: bold;
-      letter-spacing: 2px;
-      background: #2b4c7c;
-      color: white;
-      padding: 8px;
-      border-radius: 12px;
-      display: inline-block;
-      margin-top: 8px;
-    }
-    .error-message { color: #e74c3c; font-size: 0.8rem; margin-top: 8px; display: none; }
-    .loading-spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 2px solid #eef2ff;
-      border-top: 2px solid #2b4c7c;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .empty-state {
-      text-align: center;
-      padding: 30px;
-      color: #5a6e8a;
-    }
-    .empty-state i {
-      font-size: 2rem;
-      margin-bottom: 8px;
-      opacity: 0.5;
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: #721c24; }
+    .toast.info { background: #17a2b8; }
+    @media (max-width: 800px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .filters-card { position: static; margin-bottom: 20px; }
+      .services-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-<div id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
 
-<div class="container">
-  <div class="dashboard-header">
-    <div class="profile-info">
-      <img id="clientAvatar" class="avatar-large" src="" alt="Avatar" title="Clique para alterar foto">
-      <div>
-        <div class="client-name" id="clientNome">Carregando...</div>
-        <div class="client-email" id="clientEmail"></div>
-      </div>
+<div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+
+<div class="top-bar">
+  <div class="container" style="padding: 0; display: flex; justify-content: space-between; align-items: center;">
+    <div class="logo-area">
+      <div class="logo">🛠️ Marido de Aluguel</div>
+      <div class="tagline">Profissionais verificados · Preço justo</div>
     </div>
-    <button class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sair</button>
-  </div>
-
-  <div class="dashboard-grid">
-    <!-- Último profissional contratado -->
-    <div class="card">
-      <h3><i class="fas fa-user-check"></i> Último profissional contratado</h3>
-      <div id="ultimoProfissionalContainer"><div class="loading-spinner" style="margin: 20px auto;"></div></div>
-    </div>
-
-    <!-- Saldo TOKEN-ALMA e recarga -->
-    <div class="card">
-      <h3><i class="fas fa-coins"></i> TOKEN-ALMA</h3>
-      <div id="tokenContainer" class="token-card">
-        <div>Seu saldo</div>
-        <div class="token-amount" id="tokenSaldo">0</div>
-        <div>ALMA</div>
-      </div>
-      <div class="form-group" style="margin-top: 12px;">
-        <label for="recargaValor">Valor da recarga (R$)</label>
-        <select id="recargaValor" class="form-control" style="width:100%; padding:8px; border-radius:30px;">
-          <option value="10">R$ 10,00 (10 ALMA)</option>
-          <option value="20">R$ 20,00 (20 ALMA)</option>
-          <option value="50" selected>R$ 50,00 (50 ALMA)</option>
-          <option value="100">R$ 100,00 (100 ALMA)</option>
-        </select>
-      </div>
-      <button class="btn-pagamento" id="btnRecarregar"><i class="fas fa-plus-circle"></i> Recarregar TOKEN-ALMA</button>
-      <p class="small-text" style="margin-top: 8px;">1 ALMA = R$ 1,00 · Use para pagar serviços</p>
-    </div>
-
-    <!-- Serviços em andamento (chats ativos) -->
-    <div class="card full-width">
-      <h3><i class="fas fa-comments"></i> Serviços em andamento</h3>
-      <div id="chatsAtivosContainer"><div class="loading-spinner" style="margin: 20px auto;"></div></div>
-    </div>
-
-    <!-- Serviços finalizados -->
-    <div class="card full-width">
-      <h3><i class="fas fa-check-circle"></i> Serviços finalizados</h3>
-      <div id="chatsFinalizadosContainer"><div class="loading-spinner" style="margin: 20px auto;"></div></div>
-    </div>
-
-    <!-- Minhas avaliações -->
-    <div class="card full-width">
-      <h3><i class="fas fa-star-half-alt"></i> Minhas avaliações</h3>
-      <div id="avaliacoesContainer"><div class="loading-spinner" style="margin: 20px auto;"></div></div>
-    </div>
-
-    <!-- Editar Perfil -->
-    <div class="card full-width">
-      <h3><i class="fas fa-user-edit"></i> Editar Perfil</h3>
-      <div class="profile-editor">
-        <div class="cover-photo">
-          <img id="coverImg" class="cover-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='200' viewBox='0 0 1200 200'%3E%3Crect width='1200' height='200' fill='%23eef2ff'/%3E%3Ctext x='50%25' y='50%25' font-size='20' fill='%236b7280' text-anchor='middle' dy='.3em'%3EFoto de capa%3C/text%3E%3C/svg%3E" alt="Capa">
-          <button class="cover-upload-btn" id="uploadCoverBtn"><i class="fas fa-camera"></i> Alterar capa</button>
-        </div>
-        <div class="profile-avatar-editor">
-          <img id="avatarPreview" class="avatar-edit-img" src="" alt="Avatar">
-          <button class="avatar-upload-btn" id="uploadAvatarBtn"><i class="fas fa-camera"></i></button>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Nome completo</label><input type="text" id="editNome" placeholder="Nome completo"></div>
-          <div class="form-group"><label>E-mail (login)</label><input type="email" id="editEmail" readonly style="background:#f1f5f9;"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Telefone</label><input type="tel" id="editTelefone" placeholder="(00) 00000-0000"></div>
-          <div class="form-group"><label>Endereço</label><input type="text" id="editEndereco" placeholder="Rua, número, bairro, cidade"></div>
-        </div>
-        <div class="form-group"><label>Complemento (opcional)</label><input type="text" id="editComplemento" placeholder="Apto, bloco, referência"></div>
-        <hr>
-        <button id="salvarPerfil" class="btn-salvar"><i class="fas fa-save"></i> Salvar alterações</button>
-        <button id="btnAlterarSenha" class="btn-secondary"><i class="fas fa-key"></i> Alterar senha</button>
-      </div>
-      <p class="small-text" style="margin-top: 12px;">As alterações serão salvas e sincronizadas com seu perfil.</p>
+    <div>
+      <button id="loginBtnHeader" class="btn-outline-light"><i class="fas fa-user-circle"></i> Entrar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL DE ALTERAR SENHA -->
-<div id="senhaModal" class="modal">
+<div class="container">
+  <div class="main-grid">
+    <!-- SIDEBAR FILTROS -->
+    <aside class="filters-card">
+      <h3 style="margin-bottom: 20px;"><i class="fas fa-sliders-h"></i> Filtros</h3>
+      <div class="filter-group">
+        <h4>Categoria</h4>
+        <div id="categoriaFilterList"></div>
+      </div>
+      <div class="filter-group">
+        <h4>Dificuldade</h4>
+        <div id="dificuldadeFilterList">
+          <label class="filter-option"><input type="checkbox" value="baixo"> Baixo</label>
+          <label class="filter-option"><input type="checkbox" value="médio"> Médio</label>
+          <label class="filter-option"><input type="checkbox" value="alto"> Alto</label>
+        </div>
+      </div>
+      <div class="filter-group">
+        <h4>Equipamento próprio</h4>
+        <label class="filter-option"><input type="checkbox" id="equipamentoFilter"> Apenas com equipamento</label>
+      </div>
+      <button id="limparFiltros" class="btn-sm" style="width:100%; margin-top: 8px;"><i class="fas fa-eraser"></i> Limpar filtros</button>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div>
+      <div class="tabs">
+        <div class="tab active" data-tab="todos">📋 Todos os serviços</div>
+        <div class="tab" data-tab="rapidos">⚡ Mais rápidos (produtividade)</div>
+        <div class="tab" data-tab="lucro">💰 Maior lucro/hora</div>
+      </div>
+
+      <div class="search-header">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Buscar serviço, palavra-chave...">
+        </div>
+        <select id="sortSelect" class="sort-select">
+          <option value="relevancia">Relevância</option>
+          <option value="preco_asc">Menor preço</option>
+          <option value="preco_desc">Maior preço</option>
+          <option value="prod_asc">Menor produtividade</option>
+          <option value="prod_desc">Maior produtividade</option>
+        </select>
+      </div>
+
+      <div id="servicesContainer" class="services-grid"><div class="empty-state"><div class="loading-spinner"></div><p>Carregando serviços...</p></div></div>
+    </div>
+  </div>
+  
+  <!-- FOOTER COM LINK PARA REGULAMENTO -->
+  <div class="footer">
+    <div class="footer-links">
+      <a href="regulamento.html" target="_blank" rel="noopener noreferrer">
+        <i class="fas fa-file-alt"></i> Regulamento
+      </a>
+      <a href="#" id="openPrivacyPolicy" style="cursor: pointer;">
+        <i class="fas fa-lock"></i> Política de Privacidade
+      </a>
+      <a href="mailto:almafluxo@almafluxo.uk">
+        <i class="fas fa-envelope"></i> Contato
+      </a>
+    </div>
+    <div class="footer-copyright">
+      © 2026 Marido de Aluguel · Preços baseados em produtividade real (R$300/dia referencial)
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE ORÇAMENTO -->
+<div id="calcModal" class="modal">
   <div class="modal-content">
-    <span class="close-modal" id="closeSenhaModal">&times;</span>
-    <h3><i class="fas fa-key"></i> Alterar senha</h3>
-    <div class="senha-info">
-      <p>Sua senha atual é gerada pelo sistema.</p>
-      <div class="senha-atual-display" id="senhaAtualDisplay">******</div>
+    <span class="close-modal" id="closeCalcModal">&times;</span>
+    <h3 id="modalTitle">Calcular orçamento</h3>
+    <div style="margin: 20px 0;">
+      <label><strong>Quantidade (unidades):</strong></label>
+      <input type="number" id="calcQtd" value="1" step="0.5" min="0.1" style="width:100%; margin-top: 6px; padding: 10px; border-radius: 20px; border:1px solid #ccc;">
+      <div style="margin-top: 18px;">
+        <p><strong>💰 Valor total:</strong> R$ <span id="calcTotal">0,00</span></p>
+        <p><strong>⏱️ Tempo estimado:</strong> <span id="calcTempo">0</span> horas</p>
+        <p><strong>📅 Dias de trabalho:</strong> <span id="calcDias">0</span> dias</p>
+        <p class="small-text" id="calcObs"></p>
+      </div>
+      <button class="btn-primary" id="copyOrcamento" style="width:100%; margin-top: 16px;">📋 Copiar orçamento</button>
     </div>
-    <div class="form-group">
-      <label>Nova senha *</label>
-      <input type="password" id="novaSenha" placeholder="Digite a nova senha" autocomplete="new-password">
-      <div class="small-text">Mínimo 4 caracteres</div>
+  </div>
+</div>
+
+<!-- MODAL DE AUTENTICAÇÃO -->
+<div id="authModal" class="modal">
+  <div class="modal-content" style="max-width: 400px;">
+    <span class="close-modal" id="closeAuthModal">&times;</span>
+    <h3><i class="fas fa-sign-in-alt"></i> Acesso restrito</h3>
+    <p style="margin-bottom: 16px;">Digite seu e-mail e senha cadastrados.</p>
+    <input type="email" id="authEmail" placeholder="Seu e-mail" style="width:100%; padding:12px; border-radius: 30px; border:1px solid #ccc; margin-bottom: 12px;">
+    <input type="password" id="authSenha" placeholder="Sua senha" style="width:100%; padding:12px; border-radius: 30px; border:1px solid #ccc; margin-bottom: 12px;">
+    <button id="btnAuth" class="btn-primary" style="width:100%">Entrar</button>
+    <div id="authMsg" style="margin-top: 12px; font-size:0.8rem; color:#e74c3c;"></div>
+    <div style="text-align: center; margin-top: 16px;">
+      <a href="cadastro.html" style="color: #2b4c7c; text-decoration: none;">Não tem conta? Cadastre-se</a>
     </div>
-    <div class="form-group">
-      <label>Confirmar nova senha *</label>
-      <input type="password" id="confirmarSenha" placeholder="Confirme a nova senha">
+    <div class="regulamento-link-modal">
+      <i class="fas fa-gavel"></i> Ao continuar, você concorda com nosso 
+      <a href="regulamento.html" target="_blank" rel="noopener noreferrer">Regulamento</a>
     </div>
-    <div id="senhaError" class="error-message"></div>
-    <button id="confirmarAlteracaoSenha" class="btn-salvar" style="margin-top:16px;">Confirmar alteração</button>
+  </div>
+</div>
+
+<!-- MODAL POLÍTICA DE PRIVACIDADE -->
+<div id="privacyModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closePrivacyModal">&times;</span>
+    <h3><i class="fas fa-lock"></i> Política de Privacidade (Resumo)</h3>
+    <div style="margin: 20px 0; font-size: 0.85rem; line-height: 1.6;">
+      <p><strong>Coleta de dados:</strong> Nome, e-mail, telefone, endereço, fotos e histórico de serviços.</p>
+      <p><strong>Uso:</strong> Exclusivamente para viabilizar a intermediação entre cliente e profissional.</p>
+      <p><strong>Compartilhamento:</strong> Seus dados são compartilhados apenas com o profissional que você contratar.</p>
+      <p><strong>Direitos (LGPD):</strong> Você pode solicitar correção, exclusão ou portabilidade dos seus dados pelo e-mail <strong>tchelojc@gmail.com</strong>.</p>
+      <p><strong>Armazenamento:</strong> Por até 6 meses após o término da conta para fins legais.</p>
+      <hr style="margin: 16px 0;">
+      <p class="small-text">Para a versão completa, consulte o <a href="regulamento.html" target="_blank">Regulamento completo</a> (Seção 12).</p>
+    </div>
+    <button class="btn-primary" id="closePrivacyBtn" style="width:100%;">Entendi</button>
   </div>
 </div>
 
@@ -480,14 +515,244 @@
     if (!el) { alert(msg); return; }
     const txt = document.getElementById('toastMsg');
     txt.textContent = msg;
-    el.className = `show ${tipo === 'error' ? 'toast-error' : tipo === 'info' ? 'toast-info' : ''}`;
+    el.className = `toast show ${tipo === 'error' ? 'error' : tipo === 'info' ? 'info' : ''}`;
     const icon = el.querySelector('i');
     if (icon) icon.className = tipo === 'error' ? 'fas fa-exclamation-circle' : tipo === 'info' ? 'fas fa-info-circle' : 'fas fa-check-circle';
     clearTimeout(el._t);
-    el._t = setTimeout(() => { el.className = ''; }, 3200);
+    el._t = setTimeout(() => { el.className = 'toast'; }, 3200);
   }
 
-  // ========== ESCAPE HTML ==========
+  // ========== AUTENTICAÇÃO COM SUPORTE A DUPLA CONTA ==========
+  const authModal = document.getElementById('authModal');
+  const authEmailInput = document.getElementById('authEmail');
+  const authSenhaInput = document.getElementById('authSenha');
+  const btnAuth = document.getElementById('btnAuth');
+  const authMsg = document.getElementById('authMsg');
+
+  function closeAuthModal() { authModal.style.display = 'none'; authMsg.innerText = ''; }
+  function openAuthModal() { authModal.style.display = 'flex'; authEmailInput.value = ''; authSenhaInput.value = ''; authMsg.innerText = ''; }
+
+  document.getElementById('loginBtnHeader').onclick = () => openAuthModal();
+  document.getElementById('closeAuthModal').onclick = () => closeAuthModal();
+  window.addEventListener('click', (e) => { if (e.target === authModal) closeAuthModal(); });
+
+  // Modal de Política de Privacidade
+  const privacyModal = document.getElementById('privacyModal');
+  function openPrivacyModal() { privacyModal.style.display = 'flex'; }
+  function closePrivacyModal() { privacyModal.style.display = 'none'; }
+  document.getElementById('openPrivacyPolicy').onclick = (e) => { e.preventDefault(); openPrivacyModal(); };
+  document.getElementById('closePrivacyModal').onclick = closePrivacyModal;
+  document.getElementById('closePrivacyBtn').onclick = closePrivacyModal;
+  window.addEventListener('click', (e) => { if (e.target === privacyModal) closePrivacyModal(); });
+
+  function mostrarModalEscolha(email, clienteData, profissionalData) {
+    const oldModal = document.getElementById('modalEscolhaPerfil');
+    if (oldModal) oldModal.remove();
+
+    const modalEscolha = document.createElement('div');
+    modalEscolha.id = 'modalEscolhaPerfil';
+    modalEscolha.className = 'modal';
+    modalEscolha.style.display = 'flex';
+    modalEscolha.innerHTML = `
+      <div class="modal-content" style="max-width: 350px; text-align: center;">
+        <h3><i class="fas fa-users"></i> Escolha o perfil de acesso</h3>
+        <p style="margin: 16px 0;">Este e-mail está cadastrado como <strong>cliente</strong> e como <strong>profissional</strong>.<br>Selecione qual perfil deseja acessar agora:</p>
+        <button id="escolherCliente" class="btn-primary" style="width: 100%; margin-bottom: 12px;">👤 Acessar como Cliente</button>
+        <button id="escolherProfissional" class="btn-primary" style="width: 100%; background: #4a5b7a;">🔧 Acessar como Profissional</button>
+        <button id="fecharModalEscolha" class="btn-sm" style="margin-top: 16px;">Cancelar</button>
+      </div>
+    `;
+    document.body.appendChild(modalEscolha);
+
+    document.getElementById('escolherCliente').onclick = () => {
+      if (clienteData && clienteData.id) {
+        salvarSessao(email, 'cliente', clienteData.id);
+        window.location.href = 'painel_do_cliente.html';
+      } else {
+        toast('Erro: dados de cliente não disponíveis.', 'error');
+      }
+    };
+    document.getElementById('escolherProfissional').onclick = () => {
+      if (profissionalData && profissionalData.id) {
+        salvarSessao(email, 'profissional', profissionalData.id);
+        window.location.href = 'painel_profissional.html';
+      } else {
+        toast('Erro: dados de profissional não disponíveis.', 'error');
+      }
+    };
+    document.getElementById('fecharModalEscolha').onclick = () => {
+      modalEscolha.remove();
+      openAuthModal();
+    };
+  }
+
+  btnAuth.onclick = async () => {
+    const email = authEmailInput.value.trim().toLowerCase();
+    const senha = authSenhaInput.value;
+    if (!email || !senha) {
+      authMsg.innerText = 'Preencha e-mail e senha.';
+      return;
+    }
+    try {
+      toast('Autenticando...', 'info');
+      const result = await autenticarUsuarioComSenha(email, senha);
+      if (!result.success) {
+        authMsg.innerText = result.error;
+        toast(result.error, 'error');
+        return;
+      }
+
+      closeAuthModal();
+
+      if (result.precisaEscolher === true && result.cliente && result.profissional) {
+        mostrarModalEscolha(email, result.cliente, result.profissional);
+        return;
+      }
+
+      if (result.tipo === 'profissional') {
+        toast('Bem-vindo, profissional!', 'success');
+        window.location.href = 'painel_profissional.html';
+      } else {
+        toast('Bem-vindo, cliente!', 'success');
+        window.location.href = 'painel_do_cliente.html';
+      }
+    } catch (err) {
+      console.error(err);
+      authMsg.innerText = 'Erro na autenticação. Tente novamente.';
+      toast('Erro na autenticação. Tente novamente.', 'error');
+    }
+  };
+
+  // ========== APP DE SERVIÇOS (cards dinâmicos) ==========
+  let servicosData = [];
+  let categoriasSet = new Set();
+  let currentTab = 'todos';
+  let filtrosCategorias = new Set();
+  let filtrosDificuldade = new Set();
+  let equipamentoOnly = false;
+
+  function carregarServicos() {
+    try {
+      if (typeof PROFISSOES_DATA === 'undefined') {
+        document.getElementById('servicesContainer').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Arquivo dados.js não encontrado.</p></div>';
+        return;
+      }
+      servicosData = PROFISSOES_DATA.filter(s => s.ativo !== false).map(s => ({
+        ...s,
+        preco_unitario: (s.diaria_base / s.producao_dia).toFixed(2),
+        ganho_mes_base: (s.diaria_base * 22).toFixed(2),
+        tempo_por_unidade_h: s.tempo_por_unidade_h || (8 / s.producao_dia),
+        lucro_hora: ((s.diaria_base / s.producao_dia) / (s.tempo_por_unidade_h || 1)).toFixed(2)
+      }));
+      servicosData.forEach(s => categoriasSet.add(s.categoria));
+      renderFiltrosCategorias();
+      aplicarFiltrosEOrdenacao();
+    } catch (err) {
+      console.error(err);
+      document.getElementById('servicesContainer').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao processar os dados.</p></div>';
+    }
+  }
+
+  function renderFiltrosCategorias() {
+    const container = document.getElementById('categoriaFilterList');
+    const cats = Array.from(categoriasSet).sort();
+    container.innerHTML = cats.map(cat => `
+      <label class="filter-option"><input type="checkbox" value="${cat}" class="cat-filter"> ${cat}</label>
+    `).join('');
+    document.querySelectorAll('.cat-filter').forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        if (e.target.checked) filtrosCategorias.add(e.target.value);
+        else filtrosCategorias.delete(e.target.value);
+        aplicarFiltrosEOrdenacao();
+      });
+    });
+  }
+
+  function aplicarFiltrosEOrdenacao() {
+    let filtered = [...servicosData];
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    if (searchTerm) {
+      filtered = filtered.filter(s => s.nome.toLowerCase().includes(searchTerm) || (s.tags && s.tags.some(t => t.toLowerCase().includes(searchTerm))));
+    }
+    if (filtrosCategorias.size > 0) {
+      filtered = filtered.filter(s => filtrosCategorias.has(s.categoria));
+    }
+    if (filtrosDificuldade.size > 0) {
+      filtered = filtered.filter(s => filtrosDificuldade.has(s.nivel_dificuldade?.toLowerCase()));
+    }
+    if (equipamentoOnly) {
+      filtered = filtered.filter(s => s.requer_equipamento === true);
+    }
+    if (currentTab === 'rapidos') {
+      filtered.sort((a,b) => b.producao_dia - a.producao_dia);
+    } else if (currentTab === 'lucro') {
+      filtered.sort((a,b) => parseFloat(b.lucro_hora) - parseFloat(a.lucro_hora));
+    } else {
+      const sortBy = document.getElementById('sortSelect').value;
+      if (sortBy === 'preco_asc') filtered.sort((a,b) => parseFloat(a.preco_unitario) - parseFloat(b.preco_unitario));
+      else if (sortBy === 'preco_desc') filtered.sort((a,b) => parseFloat(b.preco_unitario) - parseFloat(a.preco_unitario));
+      else if (sortBy === 'prod_asc') filtered.sort((a,b) => a.producao_dia - b.producao_dia);
+      else if (sortBy === 'prod_desc') filtered.sort((a,b) => b.producao_dia - a.producao_dia);
+    }
+    renderCards(filtered);
+  }
+
+  function getDifficultyClass(nivel) {
+    const classes = {
+      'baixo': 'baixo',
+      'médio': 'médio',
+      'alto': 'alto'
+    };
+    return classes[nivel?.toLowerCase()] || 'médio';
+  }
+
+  function renderCards(lista) {
+    const container = document.getElementById('servicesContainer');
+    if (!lista.length) { 
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>Nenhum serviço encontrado.</p></div>'; 
+      return; 
+    }
+    container.innerHTML = lista.map(serv => `
+      <div class="service-card">
+        <div class="card-content">
+          <span class="card-badge">${escapeHtml(serv.categoria)}</span>
+          <div class="card-title">${escapeHtml(serv.nome)}</div>
+          <div><span class="price">R$ ${serv.preco_unitario}</span> <span class="unit">/ ${escapeHtml(serv.unidade)}</span></div>
+          <div class="prod-info">
+            <span><i class="fas fa-tachometer-alt"></i> ${serv.producao_dia} ${escapeHtml(serv.unidade)}/dia</span>
+            <span><i class="far fa-clock"></i> ${serv.tempo_por_unidade_h}h/unid</span>
+          </div>
+          <div><span class="difficulty ${getDifficultyClass(serv.nivel_dificuldade)}">${serv.nivel_dificuldade || 'médio'}</span></div>
+          <div class="card-actions">
+            <button class="btn-sm btn-sm-primary btn-orcamento" data-serv-id="${serv.id}"><i class="fas fa-calculator"></i> Orçamento</button>
+            <button class="btn-sm btn-sm-outline btn-profissionais" data-serv-id="${serv.id}" data-serv-nome="${escapeHtml(serv.nome)}"><i class="fas fa-users"></i> Ver profissionais</button>
+            <button class="btn-sm btn-sm-outline btn-detalhes" data-serv-detalhe='${JSON.stringify(serv).replace(/'/g, "\\'")}'><i class="fas fa-info-circle"></i> Detalhes</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.btn-orcamento').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.servId;
+        const serv = servicosData.find(s => s.id == id);
+        if (serv) abrirCalculadora(serv);
+      });
+    });
+    document.querySelectorAll('.btn-profissionais').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const servId = btn.dataset.servId;
+        window.location.href = `profissionais.html?id=${servId}`;
+      });
+    });
+    document.querySelectorAll('.btn-detalhes').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const serv = JSON.parse(btn.dataset.servDetalhe);
+        alert(`${serv.nome}\n💰 R$ ${serv.preco_unitario}/${serv.unidade}\n⏱️ ${serv.tempo_por_unidade_h}h por unidade\n🧰 Equipamentos: ${serv.equipamentos?.join(', ') || 'Não listado'}\n📝 Obs: ${serv.obs || '-'}`);
+      });
+    });
+  }
+
   function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, function(m) {
@@ -498,407 +763,84 @@
     });
   }
 
-  // ========== SESSÃO E CARREGAMENTO DO CLIENTE ==========
-  let clienteAtual = null;
-  let tokenSaldo = 0;
-  let senhaOriginal = '';
-  let updateInterval = null;
-
-  async function carregarClienteLogado() {
-    const sess = obterSessao();
-    if (!sess || sess.tipo !== 'cliente') {
-      toast('Sessão expirada. Faça login novamente.', 'error');
-      setTimeout(() => window.location.href = 'marido_aluguel.html', 1500);
-      return null;
+  function abrirCalculadora(servico) {
+    const modal = document.getElementById('calcModal');
+    document.getElementById('modalTitle').innerText = `Orçamento: ${servico.nome}`;
+    const qtdInput = document.getElementById('calcQtd');
+    const totalSpan = document.getElementById('calcTotal');
+    const tempoSpan = document.getElementById('calcTempo');
+    const diasSpan = document.getElementById('calcDias');
+    const obsSpan = document.getElementById('calcObs');
+    
+    function update() {
+      let qtd = parseFloat(qtdInput.value) || 0;
+      let total = qtd * parseFloat(servico.preco_unitario);
+      let tempo = qtd * servico.tempo_por_unidade_h;
+      let dias = qtd / servico.producao_dia;
+      totalSpan.innerText = total.toFixed(2);
+      tempoSpan.innerText = tempo.toFixed(1);
+      diasSpan.innerText = dias.toFixed(1);
+      obsSpan.innerText = servico.obs ? `📌 ${servico.obs.substring(0, 100)}` : '';
     }
-    const cliente = await buscarClientePorEmail(sess.email);
-    if (!cliente) {
-      toast('Cliente não encontrado. Faça login novamente.', 'error');
-      window.location.href = 'marido_aluguel.html';
-      return null;
-    }
-    return cliente;
-  }
-
-  // ========== FUNÇÕES DE CHATS ==========
-  async function carregarChats() {
-    if (!clienteAtual) return;
-    try {
-      const chats = await obterChats();
-      const chatsArray = Array.isArray(chats) ? chats : [];
-      const meusChats = chatsArray.filter(chat => chat && chat.clienteId === clienteAtual.id);
-      const ativos = meusChats.filter(chat => chat.statusServico !== 'concluido' && chat.statusServico !== 'cancelado');
-      const finalizados = meusChats.filter(chat => chat.statusServico === 'concluido');
-      
-      const ativosContainer = document.getElementById('chatsAtivosContainer');
-      const finalizadosContainer = document.getElementById('chatsFinalizadosContainer');
-      
-      if (ativosContainer) {
-        if (ativos.length === 0) {
-          ativosContainer.innerHTML = '<div class="empty-state"><i class="fas fa-comment-slash"></i><p>Nenhum serviço em andamento.</p></div>';
-        } else {
-          ativosContainer.innerHTML = ativos.map(chat => `
-            <div class="chat-item">
-              <strong>${escapeHtml(chat.profissionalNome || 'Profissional')}</strong> - ${escapeHtml(chat.servicoNome || 'Serviço')}<br>
-              Valor: R$ ${chat.valorCombinado?.toFixed(2) || 'a definir'}<br>
-              Status: <span class="status-badge ${getStatusClass(chat.statusServico)}">${getStatusText(chat.statusServico)}</span><br>
-              <a href="chat.html?chat=${chat.id}" class="btn-sm" style="display:inline-block; margin-top:8px;"><i class="fas fa-comments"></i> Abrir conversa</a>
-            </div>
-          `).join('');
-        }
-      }
-      
-      if (finalizadosContainer) {
-        if (finalizados.length === 0) {
-          finalizadosContainer.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>Nenhum serviço finalizado.</p></div>';
-        } else {
-          finalizadosContainer.innerHTML = finalizados.map(chat => `
-            <div class="chat-item">
-              <strong>${escapeHtml(chat.profissionalNome || 'Profissional')}</strong> - ${escapeHtml(chat.servicoNome || 'Serviço')}<br>
-              Valor: R$ ${chat.valorCombinado?.toFixed(2) || '0'}<br>
-              Concluído: ${chat.dataConclusao || new Date().toLocaleDateString()}<br>
-              <a href="chat.html?chat=${chat.id}" class="btn-sm" style="display:inline-block; margin-top:8px;"><i class="fas fa-eye"></i> Ver detalhes</a>
-            </div>
-          `).join('');
-        }
-      }
-    } catch (err) {
-      console.error('Erro ao carregar chats:', err);
-      document.getElementById('chatsAtivosContainer').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar serviços.</p></div>';
-      document.getElementById('chatsFinalizadosContainer').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar serviços.</p></div>';
-    }
-  }
-
-  function getStatusClass(status) {
-    const classes = {
-      'negociacao': 'status-pendente',
-      'aprovado': 'status-aprovado',
-      'em_andamento': 'status-aprovado',
-      'pago_parcial': 'status-aprovado',
-      'concluido': 'status-concluido',
-      'cancelado': 'status-recusado'
+    qtdInput.oninput = update;
+    update();
+    modal.style.display = 'flex';
+    
+    document.getElementById('copyOrcamento').onclick = () => {
+      let qtd = parseFloat(qtdInput.value) || 0;
+      let texto = `${servico.nome} - ${qtd} ${servico.unidade}(s): Total R$ ${totalSpan.innerText}, Tempo ${tempoSpan.innerText}h, Dias ${diasSpan.innerText}`;
+      navigator.clipboard.writeText(texto);
+      toast('Orçamento copiado!', 'success');
     };
-    return classes[status] || 'status-pendente';
   }
 
-  function getStatusText(status) {
-    const texts = {
-      'negociacao': 'Em negociação',
-      'aprovado': 'Aprovado',
-      'em_andamento': 'Em andamento',
-      'pago_parcial': 'Pagamento parcial',
-      'concluido': 'Concluído',
-      'cancelado': 'Cancelado'
-    };
-    return texts[status] || status;
-  }
-
-  // ========== AVALIAÇÕES ==========
-  async function carregarMinhasAvaliacoes() {
-    if (!clienteAtual) return;
-    const container = document.getElementById('avaliacoesContainer');
-    try {
-      const todasAvaliacoes = await obterAvaliacoesCliente(clienteAtual.email);
-      const minhas = Array.isArray(todasAvaliacoes) ? todasAvaliacoes : [];
-      if (!minhas.length) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-star"></i><p>Você ainda não avaliou nenhum profissional.</p></div>';
-        return;
-      }
-      container.innerHTML = minhas.map(a => `
-        <div class="avaliacao-item-cliente">
-          <strong>${escapeHtml(a.clienteNome || clienteAtual.nome)}</strong> avaliou <strong>${escapeHtml(a.profissionalNome || 'um profissional')}</strong><br>
-          Nota: ${'★'.repeat(a.nota)}${'☆'.repeat(5-a.nota)}<br>
-          Comentário: "${escapeHtml(a.comentario || 'Sem comentário')}"<br>
-          <span class="small-text"><i class="far fa-calendar-alt"></i> ${escapeHtml(a.data)}</span>
-        </div>
-      `).join('');
-    } catch (err) {
-      console.error('Erro ao carregar avaliações:', err);
-      container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar avaliações.</p></div>';
-    }
-  }
-
-  async function obterAvaliacoesCliente(email) {
-    try {
-      const avaliacoes = await obterAvaliacoes();
-      return Array.isArray(avaliacoes) ? avaliacoes.filter(a => a.clienteEmail === email) : [];
-    } catch (err) {
-      return [];
-    }
-  }
-
-  async function obterAvaliacoes() {
-    try {
-      return await callBackend("listar_avaliacoes", {}, 30);
-    } catch (err) {
-      return [];
-    }
-  }
-
-  // ========== ÚLTIMO PROFISSIONAL CONTRATADO ==========
-  async function carregarUltimoProfissional() {
-    const container = document.getElementById('ultimoProfissionalContainer');
-    try {
-      const chats = await obterChats();
-      const chatsArray = Array.isArray(chats) ? chats : [];
-      const meusChats = chatsArray.filter(chat => chat && chat.clienteId === clienteAtual?.id && chat.statusServico === 'concluido');
-      if (!meusChats.length) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-user-friends"></i><p>Nenhum profissional contratado ainda.</p></div>';
-        return;
-      }
-      const ultimo = meusChats[meusChats.length - 1];
-      container.innerHTML = `<div class="solicitacao-item">
-        <strong><i class="fas fa-user"></i> ${escapeHtml(ultimo.profissionalNome || 'Profissional')}</strong><br>
-        <i class="fas fa-tools"></i> Serviço: ${escapeHtml(ultimo.servicoNome || 'Serviço')}<br>
-        <i class="fas fa-dollar-sign"></i> Valor: R$ ${ultimo.valorCombinado?.toFixed(2) || '0'}<br>
-        <i class="far fa-calendar-check"></i> Concluído em: ${ultimo.dataConclusao || '—'}
-      </div>`;
-    } catch (err) {
-      console.error('Erro ao carregar último profissional:', err);
-      container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar informações.</p></div>';
-    }
-  }
-
-  // ========== UPLOAD DE IMAGEM COM IMGBB ==========
-  async function uploadImageWithImgBB(file, maxWidth = 800) {
-    return new Promise((resolve, reject) => {
-      if (file.size > 5 * 1024 * 1024) {
-        reject(new Error('Imagem muito grande. Máximo 5MB.'));
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        if (typeof compressImage === 'undefined') {
-          reject(new Error('Função compressImage não encontrada. Verifique o integracao.js'));
-          return;
-        }
-        compressImage(ev.target.result, maxWidth, 0.7, async (compressedBase64) => {
-          try {
-            if (typeof uploadParaImgBB === 'undefined') {
-              reject(new Error('Função uploadParaImgBB não encontrada. Verifique o integracao.js'));
-              return;
-            }
-            const url = await uploadParaImgBB(compressedBase64);
-            resolve(url);
-          } catch (err) {
-            reject(err);
-          }
-        });
-      };
-      reader.onerror = () => reject(new Error('Erro ao ler o arquivo'));
-      reader.readAsDataURL(file);
+  // Event listeners dos filtros
+  document.querySelectorAll('#dificuldadeFilterList input').forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      if (e.target.checked) filtrosDificuldade.add(e.target.value);
+      else filtrosDificuldade.delete(e.target.value);
+      aplicarFiltrosEOrdenacao();
     });
-  }
+  });
+  document.getElementById('equipamentoFilter').addEventListener('change', (e) => {
+    equipamentoOnly = e.target.checked;
+    aplicarFiltrosEOrdenacao();
+  });
+  document.getElementById('limparFiltros').addEventListener('click', () => {
+    filtrosCategorias.clear();
+    filtrosDificuldade.clear();
+    equipamentoOnly = false;
+    document.querySelectorAll('.cat-filter').forEach(cb => cb.checked = false);
+    document.querySelectorAll('#dificuldadeFilterList input').forEach(cb => cb.checked = false);
+    document.getElementById('equipamentoFilter').checked = false;
+    aplicarFiltrosEOrdenacao();
+    toast('Filtros limpos!', 'info');
+  });
+  document.getElementById('searchInput').addEventListener('input', () => aplicarFiltrosEOrdenacao());
+  document.getElementById('sortSelect').addEventListener('change', () => aplicarFiltrosEOrdenacao());
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentTab = tab.dataset.tab;
+      aplicarFiltrosEOrdenacao();
+    });
+  });
 
-  function uploadImagemComImgBB(callback, maxWidth = 800, tipo = 'imagem') {
-    let input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async (e) => {
-      let file = e.target.files[0];
-      if (!file) return;
-      
-      toast('Enviando imagem...', 'info');
-      
-      try {
-        const imageUrl = await uploadImageWithImgBB(file, maxWidth);
-        callback(imageUrl);
-        toast(`${tipo} enviado com sucesso! Salve o perfil para confirmar.`, 'success');
-      } catch (err) {
-        console.error('Erro no upload:', err);
-        toast('Erro ao enviar imagem: ' + err.message, 'error');
-      }
-    };
-    input.click();
-  }
+  document.getElementById('closeCalcModal')?.addEventListener('click', () => document.getElementById('calcModal').style.display = 'none');
+  window.addEventListener('click', (e) => { if (e.target === document.getElementById('calcModal')) document.getElementById('calcModal').style.display = 'none'; });
 
-  // ========== ALTERAR SENHA ==========
-  let senhaModal = null;
-  
-  async function abrirModalSenha() {
-    try {
-      const cliente = await buscarClientePorEmail(clienteAtual.email);
-      if (cliente && cliente.senhaOriginal) {
-        senhaOriginal = cliente.senhaOriginal;
-        document.getElementById('senhaAtualDisplay').innerText = senhaOriginal;
-      } else {
-        document.getElementById('senhaAtualDisplay').innerText = '******';
-      }
-    } catch (err) {
-      console.error('Erro ao buscar senha:', err);
-    }
-    senhaModal.style.display = 'flex';
-  }
-  
-  function fecharModalSenha() {
-    senhaModal.style.display = 'none';
-    document.getElementById('novaSenha').value = '';
-    document.getElementById('confirmarSenha').value = '';
-    document.getElementById('senhaError').style.display = 'none';
-    document.getElementById('senhaError').innerText = '';
-  }
-  
-  async function alterarSenha() {
-    const novaSenha = document.getElementById('novaSenha').value;
-    const confirmarSenha = document.getElementById('confirmarSenha').value;
-    const errorDiv = document.getElementById('senhaError');
-    
-    if (!novaSenha || novaSenha.length < 4) {
-      errorDiv.innerText = 'A nova senha deve ter pelo menos 4 caracteres.';
-      errorDiv.style.display = 'block';
-      return;
-    }
-    
-    if (novaSenha !== confirmarSenha) {
-      errorDiv.innerText = 'As senhas não coincidem.';
-      errorDiv.style.display = 'block';
-      return;
-    }
-    
-    try {
-      const resultado = await callBackend("alterar_senha_cliente", {
-        id: clienteAtual.id,
-        novaSenha: novaSenha
-      });
-      
-      if (resultado && resultado.ok) {
-        toast('✅ Senha alterada com sucesso!', 'success');
-        fecharModalSenha();
-        setTimeout(() => {
-          if (confirm('Senha alterada! Deseja fazer login novamente com a nova senha?')) {
-            limparSessao();
-            window.location.href = 'marido_aluguel.html';
-          }
-        }, 1000);
-      } else {
-        throw new Error('Erro ao alterar senha');
-      }
-    } catch (err) {
-      console.error(err);
-      errorDiv.innerText = 'Erro ao alterar senha. Tente novamente.';
-      errorDiv.style.display = 'block';
-    }
-  }
+  // Inicialização
+  carregarServicos();
 
-  // ========== INICIALIZAÇÃO ==========
+  // Verificar se já está logado e redirecionar
   (async () => {
-    clienteAtual = await carregarClienteLogado();
-    if (!clienteAtual) return;
-
-    // Preenche UI com dados do cliente
-    document.getElementById('clientNome').innerText = clienteAtual.nome;
-    document.getElementById('clientEmail').innerText = clienteAtual.email;
-    const avatarUrl = clienteAtual.avatar || `https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(clienteAtual.nome)}`;
-    document.getElementById('clientAvatar').src = avatarUrl;
-    document.getElementById('avatarPreview').src = avatarUrl;
-    if (clienteAtual.coverPhoto) document.getElementById('coverImg').src = clienteAtual.coverPhoto;
-    document.getElementById('editNome').value = clienteAtual.nome;
-    document.getElementById('editEmail').value = clienteAtual.email;
-    document.getElementById('editTelefone').value = clienteAtual.telefone || '';
-    document.getElementById('editEndereco').value = clienteAtual.endereco || '';
-    document.getElementById('editComplemento').value = clienteAtual.complemento || '';
-
-    // Carrega saldo do token
-    tokenSaldo = await getTokenBalance(clienteAtual.id, "cliente");
-    document.getElementById('tokenSaldo').innerText = tokenSaldo;
-
-    // Carrega dados
-    await carregarChats();
-    await carregarMinhasAvaliacoes();
-    await carregarUltimoProfissional();
-
-    // Modal de senha
-    senhaModal = document.getElementById('senhaModal');
-    document.getElementById('closeSenhaModal').onclick = fecharModalSenha;
-    window.addEventListener('click', (e) => { if (e.target === senhaModal) fecharModalSenha(); });
-    document.getElementById('btnAlterarSenha').onclick = abrirModalSenha;
-    document.getElementById('confirmarAlteracaoSenha').onclick = alterarSenha;
-
-    // Recarga
-    document.getElementById('btnRecarregar').onclick = () => {
-      const valor = document.getElementById('recargaValor').value;
-      window.location.href = `pagamento.html?cliente=${encodeURIComponent(clienteAtual.id)}&nome=${encodeURIComponent(clienteAtual.nome)}&email=${encodeURIComponent(clienteAtual.email)}&valor=${valor}`;
-    };
-
-    // Upload de imagens usando ImgBB
-    document.getElementById('uploadAvatarBtn').onclick = () => {
-      uploadImagemComImgBB((imgUrl) => {
-        document.getElementById('avatarPreview').src = imgUrl;
-        document.getElementById('clientAvatar').src = imgUrl;
-      }, 300, 'Avatar');
-    };
-    
-    document.getElementById('uploadCoverBtn').onclick = () => {
-      uploadImagemComImgBB((imgUrl) => {
-        document.getElementById('coverImg').src = imgUrl;
-      }, 1200, 'Capa');
-    };
-    
-    document.getElementById('clientAvatar').onclick = () => {
-      uploadImagemComImgBB((imgUrl) => {
-        document.getElementById('avatarPreview').src = imgUrl;
-        document.getElementById('clientAvatar').src = imgUrl;
-      }, 300, 'Avatar');
-    };
-
-    // Salvar perfil
-    document.getElementById('salvarPerfil').onclick = async () => {
-      try {
-        const dadosAtualizados = {
-          id: clienteAtual.id,
-          nome: document.getElementById('editNome').value.trim(),
-          telefone: document.getElementById('editTelefone').value.trim(),
-          endereco: document.getElementById('editEndereco').value.trim(),
-          complemento: document.getElementById('editComplemento').value.trim(),
-          avatar: document.getElementById('avatarPreview').src,
-          coverPhoto: document.getElementById('coverImg').src
-        };
-        
-        if (!dadosAtualizados.nome) {
-          toast('Por favor, informe seu nome.', 'error');
-          return;
-        }
-        
-        toast('Salvando alterações...', 'info');
-        const sucesso = await atualizarCliente(dadosAtualizados);
-        if (sucesso) {
-          clienteAtual = { ...clienteAtual, ...dadosAtualizados };
-          document.getElementById('clientNome').innerText = clienteAtual.nome;
-          document.getElementById('clientAvatar').src = clienteAtual.avatar;
-          toast('✅ Perfil salvo com sucesso!', 'success');
-        } else {
-          toast('Erro ao salvar perfil. Tente novamente.', 'error');
-        }
-      } catch (err) {
-        console.error(err);
-        toast('Erro de comunicação. Tente novamente.', 'error');
-      }
-    };
-
-    document.getElementById('logoutBtn').onclick = () => { 
-      if (updateInterval) clearInterval(updateInterval);
-      limparSessao(); 
-      window.location.href = 'marido_aluguel.html'; 
-    };
-
-    // Atualização periódica
-    updateInterval = setInterval(async () => {
-      if (clienteAtual) {
-        try {
-          const novoSaldo = await getTokenBalance(clienteAtual.id, "cliente");
-          if (novoSaldo !== tokenSaldo) {
-            tokenSaldo = novoSaldo;
-            document.getElementById('tokenSaldo').innerText = tokenSaldo;
-            toast(`Saldo atualizado: ${tokenSaldo} ALMA`, 'info');
-          }
-          await carregarChats();
-          await carregarUltimoProfissional();
-        } catch (err) {
-          console.error('Erro na atualização periódica:', err);
-        }
-      }
-    }, 15000);
+    const sess = obterSessao();
+    if (sess && sess.autenticado && sess.expira > Date.now()) {
+      // Usuário já está logado, mas está na página inicial
+      // Não redireciona automaticamente para não quebrar a experiência
+      console.log('Usuário já logado:', sess.tipo);
+    }
   })();
 </script>
 </body>
