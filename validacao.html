@@ -1,1 +1,1061 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Validação de Conta · Marido de Aluguel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="integracao.js"></script>
+  <style>
+    :root {
+      --bg:       #0b0f19;
+      --surface:  #111827;
+      --card:     #1a2235;
+      --border:   #1e3a5f;
+      --accent:   #0ea5e9;
+      --accent2:  #22d3ee;
+      --gold:     #f59e0b;
+      --green:    #10b981;
+      --red:      #ef4444;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --success-bg: rgba(16,185,129,0.1);
+      --error-bg:   rgba(239,68,68,0.1);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
+    /* ── Background particles ───────────────────────────── */
+    body::before {
+      content:'';
+      position:fixed; inset:0; z-index:0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 20%, rgba(14,165,233,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 80% 80%, rgba(34,211,238,0.04) 0%, transparent 60%);
+      pointer-events:none;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+      position: relative; z-index:1;
+    }
+
+    /* ── Header ─────────────────────────────────────────── */
+    .page-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .page-header .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .page-header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .page-header h1 span { color: var(--accent); }
+    .page-header p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+
+    /* ── Progress steps ─────────────────────────────────── */
+    .progress-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 40px;
+    }
+    .step-dot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+    }
+    .step-dot .dot {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700;
+      color: var(--muted);
+      transition: all 0.3s;
+      position: relative; z-index: 1;
+    }
+    .step-dot .dot-label {
+      font-size: 0.6rem; color: var(--muted);
+      text-align: center; max-width: 60px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .step-dot.active .dot {
+      background: var(--accent); border-color: var(--accent);
+      color: white; box-shadow: 0 0 20px rgba(14,165,233,0.5);
+    }
+    .step-dot.active .dot-label { color: var(--accent); }
+    .step-dot.done .dot {
+      background: var(--green); border-color: var(--green); color: white;
+    }
+    .step-dot.done .dot-label { color: var(--green); }
+    .step-line {
+      width: 48px; height: 2px;
+      background: var(--border);
+      margin: 0 4px; margin-bottom: 22px;
+      transition: background 0.3s;
+    }
+    .step-line.done { background: var(--green); }
+
+    /* ── Cards ──────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+      margin-bottom: 20px;
+      display: none;
+      animation: fadeUp 0.4s ease both;
+    }
+    .card.active { display: block; }
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(16px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.15rem; font-weight: 700;
+      margin-bottom: 6px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-title i { color: var(--accent); }
+    .card-subtitle { color: var(--muted); font-size: 0.82rem; margin-bottom: 24px; line-height: 1.5; }
+
+    /* ── Upload area ─────────────────────────────────────── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 20px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      background: rgba(14,165,233,0.02);
+      position: relative;
+    }
+    .upload-zone:hover { border-color: var(--accent); background: rgba(14,165,233,0.05); }
+    .upload-zone.dragover { border-color: var(--accent2); background: rgba(34,211,238,0.08); }
+    .upload-zone input[type=file] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width:100%; height:100%;
+    }
+    .upload-zone .icon { font-size: 2.5rem; color: var(--accent); margin-bottom: 12px; }
+    .upload-zone .title { font-weight: 600; margin-bottom: 6px; }
+    .upload-zone .hint { font-size: 0.78rem; color: var(--muted); }
+    .preview-img {
+      max-width: 100%; border-radius: 16px;
+      border: 2px solid var(--green);
+      box-shadow: 0 0 24px rgba(16,185,129,0.2);
+      display: none; margin: 12px auto 0;
+    }
+    .preview-img.show { display: block; }
+
+    /* ── Camera ──────────────────────────────────────────── */
+    .camera-container {
+      border-radius: 20px; overflow: hidden;
+      background: #000; position: relative;
+      aspect-ratio: 4/3; max-height: 320px;
+    }
+    .camera-container video,
+    .camera-container canvas {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .face-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .face-oval {
+      width: 140px; height: 185px;
+      border: 3px solid rgba(14,165,233,0.7);
+      border-radius: 50%;
+      box-shadow: 0 0 0 4000px rgba(0,0,0,0.35);
+      animation: pulse-oval 2s ease-in-out infinite;
+    }
+    @keyframes pulse-oval {
+      0%,100% { border-color: rgba(14,165,233,0.7); }
+      50%      { border-color: rgba(34,211,238,1); box-shadow: 0 0 0 4000px rgba(0,0,0,0.35), 0 0 30px rgba(34,211,238,0.4); }
+    }
+    .camera-status {
+      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+      padding: 6px 16px; border-radius: 40px;
+      font-size: 0.75rem; color: var(--accent2);
+    }
+
+    /* ── Form fields ─────────────────────────────────────── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .form-grid.full { grid-template-columns: 1fr; }
+    @media(max-width: 500px) { .form-grid { grid-template-columns: 1fr; } }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .field input, .field select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: inherit; font-size: 0.9rem;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    .field input:focus, .field select:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(14,165,233,0.1);
+    }
+    .field input[readonly] { opacity: 0.7; cursor: default; }
+    .field select option { background: var(--surface); }
+
+    /* ── Pix key type selector ───────────────────────────── */
+    .pix-type-tabs {
+      display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .pix-type-tab {
+      padding: 7px 16px; border-radius: 40px;
+      border: 1px solid var(--border);
+      background: var(--surface); color: var(--muted);
+      font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .pix-type-tab.active {
+      background: var(--accent); border-color: var(--accent); color: white;
+    }
+
+    /* ── Buttons ─────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 13px 24px; border-radius: 50px;
+      font-family: inherit; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; border: none; transition: all 0.22s;
+      width: 100%;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #0b0f19;
+      box-shadow: 0 4px 20px rgba(14,165,233,0.35);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(14,165,233,0.5); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-outline {
+      background: transparent; border: 1px solid var(--border); color: var(--muted);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-success {
+      background: linear-gradient(135deg, var(--green), #34d399);
+      color: #0b0f19;
+      box-shadow: 0 4px 20px rgba(16,185,129,0.35);
+    }
+    .btn-success:hover { transform: translateY(-2px); }
+    .btn-row { display: flex; gap: 12px; margin-top: 20px; }
+    .btn-row .btn { flex: 1; }
+
+    /* ── Info box ────────────────────────────────────────── */
+    .info-box {
+      background: rgba(14,165,233,0.06);
+      border: 1px solid rgba(14,165,233,0.2);
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 0.82rem;
+      color: var(--text);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .info-box i { color: var(--accent); margin-right: 6px; }
+    .info-box.warning {
+      background: rgba(245,158,11,0.06);
+      border-color: rgba(245,158,11,0.2);
+    }
+    .info-box.warning i { color: var(--gold); }
+    .info-box.success {
+      background: rgba(16,185,129,0.08);
+      border-color: rgba(16,185,129,0.25);
+    }
+    .info-box.success i { color: var(--green); }
+
+    /* ── Status badge ────────────────────────────────────── */
+    .status-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border-radius: 40px;
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .chip-pending { background: rgba(245,158,11,0.15); color: var(--gold); border: 1px solid rgba(245,158,11,0.3); }
+    .chip-ok      { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+    .chip-missing { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+
+    /* ── Toast ───────────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 28px; right: 24px; z-index: 9999;
+      padding: 13px 22px; border-radius: 50px;
+      font-size: 0.85rem; font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      opacity: 0; transform: translateY(12px);
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+      display: flex; align-items: center; gap: 8px;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.ok  { background: var(--green); color: #0b0f19; }
+    #toast.err { background: var(--red);   color: white; }
+    #toast.inf { background: var(--accent); color: #0b0f19; }
+
+    /* ── Loading spinner ─────────────────────────────────── */
+    .spinner {
+      width: 22px; height: 22px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Validation summary (step 5) ─────────────────────── */
+    .summary-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-label { color: var(--muted); }
+    .summary-val { font-weight: 600; text-align: right; }
+    .masked { font-family: monospace; letter-spacing: 1px; }
+
+    /* ── Small ───────────────────────────────────────────── */
+    .small { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  </style>
+</head>
+<body>
+<div id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="logo"><i class="fas fa-shield-alt"></i> Marido de Aluguel</div>
+    <h1>Validação de <span>Conta</span></h1>
+    <p>Configure seus dados de recebimento via PIX com segurança.<br>Este processo é exigido uma única vez.</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-bar" id="progressBar">
+    <div class="step-dot active" id="stepDot1">
+      <div class="dot">1</div>
+      <div class="dot-label">Documento</div>
+    </div>
+    <div class="step-line" id="stepLine1"></div>
+    <div class="step-dot" id="stepDot2">
+      <div class="dot">2</div>
+      <div class="dot-label">Facial</div>
+    </div>
+    <div class="step-line" id="stepLine2"></div>
+    <div class="step-dot" id="stepDot3">
+      <div class="dot">3</div>
+      <div class="dot-label">PIX</div>
+    </div>
+    <div class="step-line" id="stepLine3"></div>
+    <div class="step-dot" id="stepDot4">
+      <div class="dot">4</div>
+      <div class="dot-label">Revisão</div>
+    </div>
+    <div class="step-line" id="stepLine4"></div>
+    <div class="step-dot" id="stepDot5">
+      <div class="dot"><i class="fas fa-check" style="font-size:0.7rem;"></i></div>
+      <div class="dot-label">Enviado</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ STEP 1 — DOCUMENTO ═══════════ -->
+  <div class="card active" id="step1">
+    <div class="card-title"><i class="fas fa-id-card"></i> Documento com foto</div>
+    <div class="card-subtitle">
+      Envie uma foto clara e legível do seu RG, CNH ou passaporte — frente e verso visíveis.
+      Esta imagem ficará salva com segurança e será usada para comparação futura.
+    </div>
+    <div class="info-box warning">
+      <i class="fas fa-exclamation-triangle"></i>
+      <strong>Importante:</strong> o documento deve ser o original físico, bem iluminado, sem reflexo.
+      Todos os dados precisam estar legíveis.
+    </div>
+    <div class="upload-zone" id="docUploadZone">
+      <input type="file" id="docInput" accept="image/*">
+      <div class="icon"><i class="fas fa-id-card"></i></div>
+      <div class="title">Toque para enviar o documento</div>
+      <div class="hint">JPG, PNG · máx. 5MB · câmera ou galeria</div>
+    </div>
+    <img class="preview-img" id="docPreview" alt="Preview documento">
+    <div id="docStatus" class="small" style="text-align:center; margin-top:10px;"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btnDoc" disabled>
+        <i class="fas fa-arrow-right"></i> Continuar
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════ STEP 2 — FACIAL ═══════════ -->
+  <div class="card" id="step2">
+    <div class="card-title"><i class="fas fa-user-circle"></i> Reconhecimento facial</div>
+    <div class="card-subtitle">
+      Posicione seu rosto dentro da moldura oval. Quando estiver pronto, clique em
+      <strong>Capturar selfie</strong>. Essa foto será comparada ao seu documento.
+    </div>
+    <div class="info-box">
+      <i class="fas fa-lightbulb"></i> Fique em local bem iluminado, olhe diretamente para a câmera
+      e remova óculos escuros ou chapéus.
+    </div>
+    <div class="camera-container" id="cameraContainer">
+      <video id="cameraVideo" autoplay muted playsinline></video>
+      <canvas id="cameraCanvas" style="display:none;"></canvas>
+      <div class="face-overlay"><div class="face-oval"></div></div>
+      <div class="camera-status" id="cameraStatus">⏳ Iniciando câmera...</div>
+    </div>
+    <img class="preview-img" id="selfiePreview" alt="Selfie capturada">
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn btn-outline" id="btnVoltar1" onclick="goStep(1)">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </button>
+      <button class="btn btn-primary" id="btnCapturar">
+        <i class="fas fa-camera"></i> Capturar selfie
+      </button>
+    </div>
+    <div class="btn-row" style="margin-top:8px;">
+      <button class="btn btn-primary" id="btnProximoFacial" style="display:none;">
+        <i class="fas fa-arrow-right"></i> Continuar
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════ STEP 3 — PIX ═══════════ -->
+  <div class="card" id="step3">
+    <div class="card-title"><i class="fas fa-qrcode"></i> Dados de recebimento PIX</div>
+    <div class="card-subtitle">
+      Estes dados serão usados para realizar os pagamentos dos seus serviços.
+      Confira com atenção — os campos com seu nome e CPF já foram preenchidos automaticamente.
+    </div>
+
+    <div class="form-grid">
+      <div class="field" style="grid-column: span 2;">
+        <label>Nome completo</label>
+        <input type="text" id="pixNome" readonly placeholder="Carregando...">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>CPF / Data de nascimento</label>
+        <input type="text" id="pixCpf" placeholder="000.000.000-00" maxlength="14" id="cpfInput">
+      </div>
+      <div class="field">
+        <label>Data de nascimento</label>
+        <input type="date" id="pixNascimento">
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div style="font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; margin-bottom:12px;">
+      Tipo de chave PIX
+    </div>
+    <div class="pix-type-tabs" id="pixTypeTabs">
+      <div class="pix-type-tab active" data-type="cpf">CPF</div>
+      <div class="pix-type-tab" data-type="telefone">Telefone</div>
+      <div class="pix-type-tab" data-type="email">E-mail</div>
+      <div class="pix-type-tab" data-type="aleatoria">Aleatória</div>
+    </div>
+    <div class="field" style="margin-bottom:14px;">
+      <label>Chave PIX</label>
+      <input type="text" id="pixChave" placeholder="Sua chave PIX">
+    </div>
+    <div class="field" style="margin-bottom:14px;">
+      <label>Banco</label>
+      <input type="text" id="pixBanco" placeholder="Ex: Nubank, Itaú, Bradesco...">
+    </div>
+
+    <div class="info-box warning">
+      <i class="fas fa-lock"></i> Seus dados bancários são armazenados com segurança e usados
+      apenas para processar pagamentos pelo administrador da plataforma.
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goStep(2)">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </button>
+      <button class="btn btn-primary" id="btnPix">
+        <i class="fas fa-arrow-right"></i> Continuar
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════ STEP 4 — REVISÃO ═══════════ -->
+  <div class="card" id="step4">
+    <div class="card-title"><i class="fas fa-clipboard-check"></i> Revisão final</div>
+    <div class="card-subtitle">
+      Confirme todos os dados antes de enviar. Após o envio, a equipe ALMAFLUXO
+      analisará as fotos e dados para liberar seus recebimentos.
+    </div>
+
+    <!-- Fotos lado a lado -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+      <div style="text-align:center;">
+        <div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">📄 Documento</div>
+        <img id="revDocImg" style="width:100%; border-radius:12px; border:1px solid var(--border);" alt="Documento">
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">🤳 Selfie</div>
+        <img id="revSelfieImg" style="width:100%; border-radius:12px; border:1px solid var(--border);" alt="Selfie">
+      </div>
+    </div>
+
+    <!-- Dados PIX -->
+    <div id="revDados"></div>
+
+    <div class="info-box" style="margin-top:16px;">
+      <i class="fas fa-info-circle"></i>
+      Ao confirmar, seus dados e fotos serão enviados ao painel administrativo
+      e ao e-mail da equipe ALMAFLUXO para validação manual.
+      <strong>O pagamento só será realizado após aprovação humana.</strong>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goStep(3)">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </button>
+      <button class="btn btn-success" id="btnEnviar">
+        <i class="fas fa-paper-plane"></i> Enviar para validação
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════ STEP 5 — CONCLUÍDO ═══════════ -->
+  <div class="card" id="step5">
+    <div style="text-align:center; padding: 20px 0;">
+      <div style="font-size:3.5rem; margin-bottom:16px;">✅</div>
+      <div class="card-title" style="justify-content:center; font-size:1.4rem; margin-bottom:8px;">
+        Solicitação enviada!
+      </div>
+      <p style="color:var(--muted); font-size:0.88rem; line-height:1.7; max-width:420px; margin:0 auto 24px;">
+        Seus dados e documentos foram enviados com segurança.<br>
+        A equipe <strong>ALMAFLUXO</strong> irá analisar as fotos, comparar o documento com a selfie
+        e liberar o recebimento via PIX em até <strong>48 horas úteis</strong>.
+      </p>
+      <div class="info-box success" style="text-align:left; margin-bottom:20px;">
+        <i class="fas fa-check-circle"></i>
+        <strong>O que acontece agora:</strong><br>
+        1. Equipe recebe notificação por e-mail<br>
+        2. Fotos são comparadas (documento vs. selfie)<br>
+        3. Dados PIX são verificados<br>
+        4. Pagamentos são liberados após aprovação
+      </div>
+      <div id="solicitacaoIdDisplay" class="small" style="margin-bottom:20px;"></div>
+      <a href="painel_profissional.html" class="btn btn-primary" style="max-width:300px; margin:0 auto; text-decoration:none;">
+        <i class="fas fa-arrow-left"></i> Voltar ao painel
+      </a>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// =============================================================
+// ESTADO GLOBAL
+// =============================================================
+const state = {
+  profissional: null,
+  docUrl: null,       // URL ImgBB do documento
+  selfieUrl: null,    // URL ImgBB da selfie
+  selfieBlob: null,   // DataURL local para preview
+  docBlob: null,      // DataURL local para preview
+  pixTipo: 'cpf',
+  step: 1
+};
+
+// =============================================================
+// UTILS
+// =============================================================
+function toast(msg, tipo = 'ok') {
+  const el = document.getElementById('toast');
+  const icons = { ok: 'fa-check-circle', err: 'fa-exclamation-circle', inf: 'fa-info-circle' };
+  el.querySelector('i').className = `fas ${icons[tipo] || 'fa-info-circle'}`;
+  document.getElementById('toastMsg').textContent = msg;
+  el.className = `show ${tipo}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = '', 3800);
+}
+
+function escapeHtml(s) {
+  if (!s) return '';
+  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function mascaraCpf(v) {
+  return v.replace(/\D/g,'').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
+}
+
+// =============================================================
+// PROGRESS
+// =============================================================
+function goStep(n) {
+  // Esconder atual, mostrar novo
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  document.getElementById(`step${n}`).classList.add('active');
+  state.step = n;
+
+  // Atualizar dots
+  for (let i = 1; i <= 5; i++) {
+    const dot = document.getElementById(`stepDot${i}`);
+    if (!dot) continue;
+    dot.classList.remove('active','done');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+  }
+  for (let i = 1; i <= 4; i++) {
+    const line = document.getElementById(`stepLine${i}`);
+    if (line) line.classList.toggle('done', i < n);
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// =============================================================
+// STEP 1 — DOCUMENTO
+// =============================================================
+const docInput = document.getElementById('docInput');
+const docPreview = document.getElementById('docPreview');
+const btnDoc = document.getElementById('btnDoc');
+const docStatus = document.getElementById('docStatus');
+const docZone = document.getElementById('docUploadZone');
+
+docZone.addEventListener('dragover', e => { e.preventDefault(); docZone.classList.add('dragover'); });
+docZone.addEventListener('dragleave', () => docZone.classList.remove('dragover'));
+docZone.addEventListener('drop', e => {
+  e.preventDefault(); docZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) processDocFile(e.dataTransfer.files[0]);
+});
+
+docInput.addEventListener('change', () => {
+  if (docInput.files[0]) processDocFile(docInput.files[0]);
+});
+
+function processDocFile(file) {
+  if (file.size > 5 * 1024 * 1024) { toast('Arquivo muito grande. Máximo 5MB.', 'err'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.docBlob = e.target.result;
+    docPreview.src = state.docBlob;
+    docPreview.classList.add('show');
+    docStatus.innerHTML = `<span style="color:var(--green);">✅ Imagem carregada. Verifique se todos os dados estão legíveis.</span>`;
+    btnDoc.disabled = false;
+    docZone.querySelector('.title').textContent = 'Toque para trocar o documento';
+  };
+  reader.readAsDataURL(file);
+}
+
+btnDoc.addEventListener('click', async () => {
+  if (!state.docBlob) return;
+  btnDoc.disabled = true;
+  btnDoc.innerHTML = '<span class="spinner"></span> Enviando...';
+  docStatus.innerHTML = '⏳ Fazendo upload para armazenamento seguro...';
+  try {
+    // Upload para ImgBB (mesmo mecanismo do painel profissional)
+    state.docUrl = await uploadParaImgBB(state.docBlob);
+    docStatus.innerHTML = `<span style="color:var(--green);">✅ Documento salvo com segurança!</span>`;
+    toast('Documento enviado!', 'ok');
+    goStep(2);
+    iniciarCamera();
+  } catch (err) {
+    docStatus.innerHTML = `<span style="color:var(--red);">❌ Erro no upload: ${escapeHtml(err.message)}</span>`;
+    toast('Erro ao enviar documento.', 'err');
+    btnDoc.disabled = false;
+    btnDoc.innerHTML = '<i class="fas fa-arrow-right"></i> Continuar';
+  }
+});
+
+// =============================================================
+// STEP 2 — CÂMERA / SELFIE
+// =============================================================
+let stream = null;
+
+async function iniciarCamera() {
+  const video = document.getElementById('cameraVideo');
+  const status = document.getElementById('cameraStatus');
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+      audio: false
+    });
+    video.srcObject = stream;
+    video.onloadedmetadata = () => {
+      video.play();
+      status.textContent = '🟢 Câmera ativa — Encaixe seu rosto na moldura';
+    };
+  } catch (err) {
+    status.textContent = `❌ Câmera indisponível: ${err.message}`;
+    toast('Não foi possível acessar a câmera.', 'err');
+  }
+}
+
+function pararCamera() {
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+}
+
+document.getElementById('btnCapturar').addEventListener('click', async () => {
+  const video = document.getElementById('cameraVideo');
+  const canvas = document.getElementById('cameraCanvas');
+  const btnCapturar = document.getElementById('btnCapturar');
+  const btnProx = document.getElementById('btnProximoFacial');
+  const selfiePreview = document.getElementById('selfiePreview');
+
+  if (!stream) { toast('Câmera não iniciada.', 'err'); return; }
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  state.selfieBlob = canvas.toDataURL('image/jpeg', 0.85);
+
+  selfiePreview.src = state.selfieBlob;
+  selfiePreview.classList.add('show');
+
+  btnCapturar.innerHTML = '<i class="fas fa-redo"></i> Refazer selfie';
+  btnProx.style.display = 'flex';
+
+  pararCamera();
+  document.getElementById('cameraStatus').textContent = '📸 Selfie capturada!';
+  toast('Selfie capturada!', 'ok');
+});
+
+document.getElementById('btnProximoFacial').addEventListener('click', async () => {
+  if (!state.selfieBlob) return;
+  const btn = document.getElementById('btnProximoFacial');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Enviando selfie...';
+  try {
+    state.selfieUrl = await uploadParaImgBB(state.selfieBlob);
+    toast('Selfie enviada!', 'ok');
+    goStep(3);
+    preencherDadosProfissional();
+  } catch (err) {
+    toast('Erro ao enviar selfie: ' + err.message, 'err');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-arrow-right"></i> Continuar';
+  }
+});
+
+document.getElementById('btnVoltar1').addEventListener('click', () => {
+  pararCamera();
+  goStep(1);
+});
+
+// =============================================================
+// STEP 3 — PIX — Preencher dados automaticamente
+// =============================================================
+async function preencherDadosProfissional() {
+  const sess = obterSessao();
+  if (!sess || sess.tipo !== 'profissional') { toast('Sessão inválida.', 'err'); return; }
+
+  try {
+    const prof = await buscarProfissionalPorId(sess.usuarioId);
+    if (prof) {
+      state.profissional = prof;
+      document.getElementById('pixNome').value = prof.nome || '';
+      // Tenta preencher e-mail como chave pix padrão
+      document.getElementById('pixChave').value = prof.email || '';
+      // Se tiver CPF salvo no perfil extra
+      const extra = await obterPerfilExtra(prof.id);
+      if (extra) {
+        if (extra.cpf) document.getElementById('pixCpf').value = extra.cpf;
+        if (extra.nascimento) document.getElementById('pixNascimento').value = extra.nascimento;
+        if (extra.pixChave) document.getElementById('pixChave').value = extra.pixChave;
+        if (extra.pixBanco) document.getElementById('pixBanco').value = extra.pixBanco;
+        if (extra.pixTipo) {
+          state.pixTipo = extra.pixTipo;
+          document.querySelectorAll('.pix-type-tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.type === extra.pixTipo);
+          });
+        }
+      }
+    }
+  } catch(e) { console.warn('Erro ao buscar dados:', e); }
+}
+
+// CPF mask
+document.getElementById('pixCpf').addEventListener('input', function() {
+  this.value = this.value.replace(/\D/g,'').substring(0,11);
+  if (this.value.length === 11) this.value = mascaraCpf(this.value);
+});
+
+// PIX type tabs
+document.querySelectorAll('.pix-type-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.pix-type-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    state.pixTipo = tab.dataset.type;
+    // Sugerir placeholder
+    const placeholders = {
+      cpf: '000.000.000-00',
+      telefone: '+55 (11) 90000-0000',
+      email: 'seu@email.com',
+      aleatoria: 'Chave aleatória do banco'
+    };
+    document.getElementById('pixChave').placeholder = placeholders[state.pixTipo] || '';
+    // Se CPF selecionado, auto-preenche com o CPF digitado
+    if (state.pixTipo === 'cpf') {
+      document.getElementById('pixChave').value = document.getElementById('pixCpf').value;
+    }
+    // Se email, preenche com email do profissional
+    if (state.pixTipo === 'email' && state.profissional) {
+      document.getElementById('pixChave').value = state.profissional.email || '';
+    }
+  });
+});
+
+document.getElementById('btnPix').addEventListener('click', () => {
+  const cpf  = document.getElementById('pixCpf').value.trim();
+  const nasc = document.getElementById('pixNascimento').value;
+  const chave= document.getElementById('pixChave').value.trim();
+  const banco= document.getElementById('pixBanco').value.trim();
+
+  if (!cpf)   { toast('Informe o CPF.', 'err'); return; }
+  if (!nasc)  { toast('Informe a data de nascimento.', 'err'); return; }
+  if (!chave) { toast('Informe a chave PIX.', 'err'); return; }
+  if (!banco) { toast('Informe o banco.', 'err'); return; }
+
+  // Preencher revisão
+  preencherRevisao({ cpf, nasc, chave, banco });
+  goStep(4);
+});
+
+// =============================================================
+// STEP 4 — REVISÃO
+// =============================================================
+function preencherRevisao({ cpf, nasc, chave, banco }) {
+  document.getElementById('revDocImg').src    = state.docBlob;
+  document.getElementById('revSelfieImg').src = state.selfieBlob;
+
+  const nome = document.getElementById('pixNome').value;
+  const dataNasc = nasc ? new Date(nasc + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+
+  document.getElementById('revDados').innerHTML = `
+    <div class="summary-row">
+      <span class="summary-label">👤 Nome</span>
+      <span class="summary-val">${escapeHtml(nome)}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">🪪 CPF</span>
+      <span class="summary-val masked">${escapeHtml(cpf)}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">🎂 Nascimento</span>
+      <span class="summary-val">${dataNasc}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">🏦 Banco</span>
+      <span class="summary-val">${escapeHtml(banco)}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">🔑 Tipo da chave</span>
+      <span class="summary-val">${escapeHtml(state.pixTipo.toUpperCase())}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">💸 Chave PIX</span>
+      <span class="summary-val masked">${escapeHtml(chave)}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">📄 Doc. URL</span>
+      <span class="summary-val" style="font-size:0.7rem; word-break:break-all; color:var(--muted);">${escapeHtml((state.docUrl||'').substring(0,40))}...</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">🤳 Selfie URL</span>
+      <span class="summary-val" style="font-size:0.7rem; word-break:break-all; color:var(--muted);">${escapeHtml((state.selfieUrl||'').substring(0,40))}...</span>
+    </div>
+  `;
+}
+
+// =============================================================
+// STEP 4 → ENVIAR
+// =============================================================
+document.getElementById('btnEnviar').addEventListener('click', async () => {
+  const btn = document.getElementById('btnEnviar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Enviando...';
+
+  const cpf   = document.getElementById('pixCpf').value.trim();
+  const nasc  = document.getElementById('pixNascimento').value;
+  const chave = document.getElementById('pixChave').value.trim();
+  const banco = document.getElementById('pixBanco').value.trim();
+  const nome  = document.getElementById('pixNome').value;
+
+  const solId = 'val_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+
+  // ── 1. Salvar dados no perfil extra do profissional ─────────
+  try {
+    if (state.profissional) {
+      const extraAtual = await obterPerfilExtra(state.profissional.id) || {};
+      const novoExtra = {
+        ...extraAtual,
+        cpf, nascimento: nasc,
+        pixChave: chave, pixBanco: banco, pixTipo: state.pixTipo,
+        docUrl: state.docUrl, selfieUrl: state.selfieUrl,
+        validacaoStatus: 'pendente',
+        validacaoId: solId,
+        validacaoData: new Date().toISOString()
+      };
+      await salvarPerfilExtra(state.profissional.id, novoExtra);
+    }
+  } catch(e) { console.warn('Erro ao salvar perfil extra:', e); }
+
+  // ── 2. Salvar foto do documento no backend (mesmo que o painel) ──
+  try {
+    if (state.profissional && state.docUrl) {
+      await callBackend("adicionar_foto_servico", {
+        profissionalId: state.profissional.id,
+        src: state.docUrl,
+        legenda: `[VALIDAÇÃO ${solId}] Documento de identidade — ${new Date().toLocaleDateString('pt-BR')}`
+      });
+    }
+  } catch(e) { console.warn('Erro ao salvar foto documento:', e); }
+
+  // ── 3. Salvar selfie no backend ──────────────────────────────
+  try {
+    if (state.profissional && state.selfieUrl) {
+      await callBackend("adicionar_foto_servico", {
+        profissionalId: state.profissional.id,
+        src: state.selfieUrl,
+        legenda: `[SELFIE ${solId}] Foto facial para validação`
+      });
+    }
+  } catch(e) { console.warn('Erro ao salvar selfie:', e); }
+
+  // ── 4. Registrar solicitação de validação/saque ──────────────
+  try {
+    await callBackend("salvar_transacao", {
+      transacao: {
+        id: solId,
+        usuarioId: state.profissional?.id || '',
+        tipoUsuario: 'profissional',
+        tipo: 'solicitacao_validacao',
+        valor: state.profissional?.saldoALMA || 0,
+        descricao: `Solicitação de validação e recebimento PIX — ${nome} — Chave: ${chave} (${state.pixTipo.toUpperCase()}) — Banco: ${banco}`,
+        docUrl: state.docUrl,
+        selfieUrl: state.selfieUrl,
+        cpf, nascimento: nasc, pixChave: chave, pixBanco: banco, pixTipo: state.pixTipo,
+        data: new Date().toISOString()
+      }
+    });
+  } catch(e) { console.warn('Erro ao registrar transação:', e); }
+
+  // ── 5. Enviar e-mail de notificação para ALMAFLUXO ───────────
+  const saldoAlma = state.profissional?.saldoALMA || 0;
+  const dataStr = new Date().toLocaleString('pt-BR');
+  const corpoEmail =
+`🔐 SOLICITAÇÃO DE VALIDAÇÃO E PAGAMENTO PIX
+════════════════════════════════════════════
+PROFISSIONAL: ${nome}
+EMAIL: ${state.profissional?.email || '-'}
+ID: ${state.profissional?.id || '-'}
+SALDO ALMA: ${saldoAlma} TOKEN ALMA
+
+📋 DADOS PESSOAIS:
+• CPF: ${cpf}
+• Data de nascimento: ${nasc ? new Date(nasc+'T00:00:00').toLocaleDateString('pt-BR') : '-'}
+
+💸 DADOS PIX:
+• Banco: ${banco}
+• Tipo da chave: ${state.pixTipo.toUpperCase()}
+• Chave PIX: ${chave}
+
+🖼️ DOCUMENTOS PARA VALIDAÇÃO:
+• Foto do documento: ${state.docUrl || 'NÃO ENVIADA'}
+• Foto selfie: ${state.selfieUrl || 'NÃO ENVIADA'}
+
+📌 INSTRUÇÃO PARA A EQUIPE ALMAFLUXO:
+1. Abrir as duas URLs acima (documento e selfie)
+2. Enviar ambas as fotos como prompt para IA de comparação facial
+3. Validar que CPF e nome conferem com o documento
+4. Após validação, realizar pagamento PIX no valor de ${saldoAlma} ALMA
+5. Registrar pagamento no painel administrativo
+
+🆔 ID da solicitação: ${solId}
+📅 Data/Hora: ${dataStr}
+════════════════════════════════════════════
+Status: AGUARDANDO VALIDAÇÃO MANUAL`;
+
+  try {
+    const fd = new FormData();
+    fd.append('access_key', 'eb4edc0c-b94c-4287-83bf-6f2e05f65774');
+    fd.append('subject', `🔐 VALIDAÇÃO PIX — ${nome} — ${saldoAlma} ALMA`);
+    fd.append('message', corpoEmail);
+    fd.append('from_name', 'Marido de Aluguel · Validação');
+    fd.append('email', state.profissional?.email || 'noreply@maridodealuguel.com');
+    fd.append('reply_to', 'almafluxo@almafluxo.uk');
+    await fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd });
+  } catch(e) { console.warn('Erro ao enviar e-mail:', e); }
+
+  // ── 6. Mostrar conclusão ─────────────────────────────────────
+  document.getElementById('solicitacaoIdDisplay').innerHTML =
+    `🆔 ID da solicitação: <strong style="color:var(--accent);">${solId}</strong>`;
+
+  toast('Solicitação enviada com sucesso!', 'ok');
+  goStep(5);
+});
+
+// =============================================================
+// INICIALIZAÇÃO — verificar sessão e dados já salvos
+// =============================================================
+(async () => {
+  const sess = obterSessao();
+  if (!sess || sess.tipo !== 'profissional') {
+    toast('Acesso restrito a profissionais. Faça login.', 'err');
+    setTimeout(() => window.location.href = 'marido_aluguel.html', 2500);
+    return;
+  }
+
+  try {
+    const prof = await buscarProfissionalPorId(sess.usuarioId);
+    if (prof) {
+      state.profissional = prof;
+      // Verificar se já tem validação pendente/aprovada
+      const extra = await obterPerfilExtra(prof.id);
+      if (extra?.validacaoStatus === 'pendente') {
+        document.querySelector('#step1 .card-subtitle').innerHTML =
+          `<div class="info-box warning" style="margin-bottom:0;">
+            <i class="fas fa-clock"></i>
+            <strong>Validação já enviada!</strong> Sua solicitação (ID: <code>${extra.validacaoId || '-'}</code>)
+            está aguardando análise da equipe ALMAFLUXO. Você pode reenviar se necessário.
+          </div>`;
+      }
+    }
+  } catch(e) { console.warn('Erro na inicialização:', e); }
+})();
+</script>
+</body>
+</html>
