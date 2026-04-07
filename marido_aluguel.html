@@ -497,8 +497,8 @@
     <h3><i class="fas fa-lock"></i> Política de Privacidade (Resumo)</h3>
     <div style="margin: 20px 0; font-size: 0.85rem; line-height: 1.6;">
       <p><strong>Coleta de dados:</strong> Nome, e-mail, telefone, endereço, fotos e histórico de serviços.</p>
-      <p><strong>Uso:</strong> Exclusivamente para viabilizar a intermediação entre cliente e profissional.</p>
-      <p><strong>Compartilhamento:</strong> Seus dados são compartilhados apenas com o profissional que você contratar.</p>
+      <p><strong>Uso:</strong> Exclusivamente para viabilizar a intermediação entre cliente e .</p>
+      <p><strong>Compartilhamento:</strong> Seus dados são compartilhados apenas com o  que você contratar.</p>
       <p><strong>Direitos (LGPD):</strong> Você pode solicitar correção, exclusão ou portabilidade dos seus dados pelo e-mail <strong>tchelojc@gmail.com</strong>.</p>
       <p><strong>Armazenamento:</strong> Por até 6 meses após o término da conta para fins legais.</p>
       <hr style="margin: 16px 0;">
@@ -545,7 +545,7 @@
   document.getElementById('closePrivacyBtn').onclick = closePrivacyModal;
   window.addEventListener('click', (e) => { if (e.target === privacyModal) closePrivacyModal(); });
 
-  function mostrarModalEscolha(email, clienteData, profissionalData) {
+  function mostrarModalEscolha(email, clienteData, Data) {
     const oldModal = document.getElementById('modalEscolhaPerfil');
     if (oldModal) oldModal.remove();
 
@@ -556,9 +556,9 @@
     modalEscolha.innerHTML = `
       <div class="modal-content" style="max-width: 350px; text-align: center;">
         <h3><i class="fas fa-users"></i> Escolha o perfil de acesso</h3>
-        <p style="margin: 16px 0;">Este e-mail está cadastrado como <strong>cliente</strong> e como <strong>profissional</strong>.<br>Selecione qual perfil deseja acessar agora:</p>
+        <p style="margin: 16px 0;">Este e-mail está cadastrado como <strong>cliente</strong> e como <strong></strong>.<br>Selecione qual perfil deseja acessar agora:</p>
         <button id="escolherCliente" class="btn-primary" style="width: 100%; margin-bottom: 12px;">👤 Acessar como Cliente</button>
-        <button id="escolherProfissional" class="btn-primary" style="width: 100%; background: #4a5b7a;">🔧 Acessar como Profissional</button>
+        <button id="escolher" class="btn-primary" style="width: 100%; background: #4a5b7a;">🔧 Acessar como </button>
         <button id="fecharModalEscolha" class="btn-sm" style="margin-top: 16px;">Cancelar</button>
       </div>
     `;
@@ -572,9 +572,9 @@
         toast('Erro: dados de cliente não disponíveis.', 'error');
       }
     };
-    document.getElementById('escolherProfissional').onclick = () => {
-      if (profissionalData && profissionalData.id) {
-        salvarSessao(email, 'profissional', profissionalData.id);
+    document.getElementById('escolher').onclick = () => {
+      if (Data && Data.id) {
+        salvarSessao(email, '', Data.id);
         window.location.href = 'painel_profissional.html';
       } else {
         toast('Erro: dados de profissional não disponíveis.', 'error');
