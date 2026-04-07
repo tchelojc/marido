@@ -6,6 +6,8 @@
   <title>Validação de Conta · Marido de Aluguel</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="integracao.js"></script>
+  <script src="dados.js"></script>
   <style>
     :root {
       --bg:       #0b0f19;
@@ -19,8 +21,6 @@
       --red:      #ef4444;
       --text:     #e2e8f0;
       --muted:    #64748b;
-      --success-bg: rgba(16,185,129,0.1);
-      --error-bg:   rgba(239,68,68,0.1);
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
@@ -28,29 +28,20 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      overflow-x: hidden;
     }
-
     body::before {
       content:'';
       position:fixed; inset:0; z-index:0;
-      background:
-        radial-gradient(ellipse 60% 40% at 20% 20%, rgba(14,165,233,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 60% at 80% 80%, rgba(34,211,238,0.04) 0%, transparent 60%);
+      background: radial-gradient(ellipse 60% 40% at 20% 20%, rgba(14,165,233,0.06) 0%, transparent 60%);
       pointer-events:none;
     }
-
     .container {
       max-width: 680px;
       margin: 0 auto;
       padding: 32px 20px 60px;
       position: relative; z-index:1;
     }
-
-    .page-header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
+    .page-header { text-align: center; margin-bottom: 40px; }
     .page-header .logo {
       font-family: 'Syne', sans-serif;
       font-size: 1.2rem;
@@ -228,7 +219,6 @@
       box-shadow: 0 0 0 3px rgba(14,165,233,0.1);
     }
     .field input[readonly] { opacity: 0.7; cursor: default; }
-    .field select option { background: var(--surface); }
 
     .pix-type-tabs {
       display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
@@ -293,30 +283,17 @@
     }
     .info-box.success i { color: var(--green); }
 
-    .status-chip {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 5px 14px; border-radius: 40px;
-      font-size: 0.72rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .chip-pending { background: rgba(245,158,11,0.15); color: var(--gold); border: 1px solid rgba(245,158,11,0.3); }
-    .chip-ok      { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
-    .chip-missing { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
-
     #toast {
-      position: fixed; bottom: 28px; right: 24px; z-index: 9999;
-      padding: 13px 22px; border-radius: 50px;
-      font-size: 0.85rem; font-weight: 600;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-      opacity: 0; transform: translateY(12px);
-      transition: opacity 0.3s, transform 0.3s;
+      position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+      background: #1e3c72; color: white; padding: 14px 22px; border-radius: 40px;
+      font-size: 0.9rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      display: flex; align-items: center; gap: 10px;
+      opacity: 0; transform: translateY(16px); transition: opacity 0.3s, transform 0.3s;
       pointer-events: none;
-      display: flex; align-items: center; gap: 8px;
     }
     #toast.show { opacity: 1; transform: translateY(0); }
-    #toast.ok  { background: var(--green); color: #0b0f19; }
-    #toast.err { background: var(--red);   color: white; }
-    #toast.inf { background: var(--accent); color: #0b0f19; }
+    #toast.toast-success { background: #155724; }
+    #toast.toast-error   { background: #721c24; }
 
     .spinner {
       width: 22px; height: 22px;
@@ -362,10 +339,9 @@
   </style>
 </head>
 <body>
-<div id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+<div id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
 
 <div class="container">
-
   <div class="page-header">
     <div class="logo"><i class="fas fa-shield-alt"></i> Marido de Aluguel</div>
     <h1>Validação de <span>Conta</span></h1>
@@ -461,7 +437,7 @@
       </div>
     </div>
     <div class="btn-row" style="margin-top:16px;">
-      <button class="btn btn-outline" onclick="goStep(1)">
+      <button class="btn btn-outline" id="btnVoltarStep2">
         <i class="fas fa-arrow-left"></i> Voltar
       </button>
       <button class="btn btn-primary" id="btnValidarCodigo" disabled>
@@ -490,7 +466,7 @@
     <img class="preview-img" id="selfiePreview" alt="Selfie capturada">
     <div id="faceComparisonResult" style="display:none;" class="similarity-result"></div>
     <div class="btn-row" style="margin-top:16px;">
-      <button class="btn btn-outline" onclick="goStep(2)">
+      <button class="btn btn-outline" id="btnVoltarStep3">
         <i class="fas fa-arrow-left"></i> Voltar
       </button>
       <button class="btn btn-primary" id="btnCapturar">
@@ -554,7 +530,7 @@
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-outline" onclick="goStep(3)">
+      <button class="btn btn-outline" id="btnVoltarStep4">
         <i class="fas fa-arrow-left"></i> Voltar
       </button>
       <button class="btn btn-primary" id="btnPix">
@@ -592,7 +568,7 @@
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-outline" onclick="goStep(4)">
+      <button class="btn btn-outline" id="btnVoltarStep5">
         <i class="fas fa-arrow-left"></i> Voltar
       </button>
       <button class="btn btn-success" id="btnEnviar">
@@ -616,7 +592,7 @@
       <div class="info-box success" style="text-align:left; margin-bottom:20px;">
         <i class="fas fa-check-circle"></i>
         <strong>O que acontece agora:</strong><br>
-        1. Dados salvos no Google Drive (saida.json)<br>
+        1. Dados salvos no perfil do profissional<br>
         2. Equipe recebe notificação por e-mail com prompt para IA<br>
         3. Fotos são comparadas (documento vs. selfie)<br>
         4. Dados PIX são verificados<br>
@@ -628,20 +604,43 @@
       </a>
     </div>
   </div>
-
 </div>
 
 <script>
 // =============================================================
-// CONFIGURAÇÃO
+// TOAST
 // =============================================================
-const IMBBC_API_KEY = 'YOUR_IMGBB_API_KEY'; // Substitua pela sua API key do ImgBB
+function toast(msg, tipo = 'success') {
+  const el = document.getElementById('toast');
+  if (!el) { alert(msg); return; }
+  const txt = document.getElementById('toastMsg');
+  txt.textContent = msg;
+  el.className = `show toast-${tipo}`;
+  const icon = el.querySelector('i');
+  if (icon) icon.className = tipo === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 3500);
+}
+
+function escapeHtml(s) {
+  if (!s) return '';
+  return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m] || m));
+}
+
+function mascaraCpf(v) {
+  return v.replace(/\D/g,'').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
+}
+
+function gerarCodigo() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 // =============================================================
 // ESTADO GLOBAL
 // =============================================================
-const state = {
-  profissional: null,
+let profissionalAtual = null;
+let perfilExtra = null;
+let state = {
   docUrl: null,
   selfieUrl: null,
   selfieBlob: null,
@@ -655,37 +654,12 @@ const state = {
 };
 
 // =============================================================
-// UTILS
-// =============================================================
-function toast(msg, tipo = 'ok') {
-  const el = document.getElementById('toast');
-  const icons = { ok: 'fa-check-circle', err: 'fa-exclamation-circle', inf: 'fa-info-circle' };
-  el.querySelector('i').className = `fas ${icons[tipo] || 'fa-info-circle'}`;
-  document.getElementById('toastMsg').textContent = msg;
-  el.className = `show ${tipo}`;
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.className = '', 3800);
-}
-
-function escapeHtml(s) {
-  if (!s) return '';
-  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-
-function mascaraCpf(v) {
-  return v.replace(/\D/g,'').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
-}
-
-function gerarCodigo() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-// =============================================================
 // PROGRESS
 // =============================================================
 function goStep(n) {
   document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-  document.getElementById(`step${n}`).classList.add('active');
+  const stepEl = document.getElementById(`step${n}`);
+  if (stepEl) stepEl.classList.add('active');
   state.step = n;
 
   for (let i = 1; i <= 6; i++) {
@@ -704,35 +678,48 @@ function goStep(n) {
 }
 
 // =============================================================
-// UPLOAD PARA IMGBB
+// UPLOAD PARA IMGBB (usando integracao.js)
 // =============================================================
-async function uploadParaImgBB(dataUrl) {
-  const blob = await fetch(dataUrl).then(r => r.blob());
-  const formData = new FormData();
-  formData.append('image', blob, 'upload.jpg');
-  formData.append('key', IMBBC_API_KEY);
-  
-  const response = await fetch('https://api.imgbb.com/1/upload', {
-    method: 'POST',
-    body: formData
+async function uploadImageToHost(file, maxWidth = 800, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = async function() {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        
+        try {
+          const result = await uploadParaImgBB(dataUrl);
+          resolve(result);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = () => reject(new Error('Erro ao processar imagem'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+    reader.readAsDataURL(file);
   });
-  
-  const result = await response.json();
-  if (!result.success) {
-    throw new Error(result.error?.message || 'Falha no upload');
-  }
-  return result.data.url;
 }
 
 // =============================================================
-// COMPARAÇÃO FACIAL (simulada - substituir por API real)
+// COMPARAÇÃO FACIAL (simulada - integração futura com API real)
 // =============================================================
 async function compararFaces(documentoUrl, selfieUrl) {
-  // Simulação de comparação facial
-  // Em produção, usar Face++ (https://console.faceplusplus.com) ou Azure Face API
   return new Promise((resolve) => {
     setTimeout(() => {
-      // Simula 85% de similaridade para demonstração
       const similaridade = 0.85;
       resolve({
         similaridade: similaridade,
@@ -744,70 +731,144 @@ async function compararFaces(documentoUrl, selfieUrl) {
 }
 
 // =============================================================
-// SALVAR NO GOOGLE DRIVE (saida.json)
+// CARREGAR DADOS DO PROFISSIONAL LOGADO (USANDO integracao.js)
 // =============================================================
-async function salvarNoDrive(dados) {
+async function carregarProfissionalLogado() {
   try {
-    // Recuperar dados existentes
-    let existingData = [];
-    const driveData = localStorage.getItem('saida_json_data');
-    if (driveData) {
-      existingData = JSON.parse(driveData);
+    const sess = obterSessao();
+    if (!sess || sess.tipo !== 'profissional') {
+      toast('Sessão expirada. Faça login novamente.', 'error');
+      setTimeout(() => window.location.href = 'marido_aluguel.html', 1500);
+      return null;
     }
     
-    existingData.push({
-      ...dados,
-      timestamp: new Date().toISOString()
-    });
+    const profissional = await buscarProfissionalPorEmail(sess.email);
+    if (!profissional) {
+      toast('Profissional não encontrado. Faça login novamente.', 'error');
+      window.location.href = 'marido_aluguel.html';
+      return null;
+    }
     
-    localStorage.setItem('saida_json_data', JSON.stringify(existingData));
-    console.log('Dados salvos no saida.json (simulado):', dados);
+    return profissional;
+  } catch (err) {
+    console.error('Erro ao carregar profissional:', err);
+    toast('Erro ao carregar dados do profissional', 'error');
+    return null;
+  }
+}
+
+// =============================================================
+// CARREGAR PERFIL EXTRA
+// =============================================================
+async function carregarPerfilExtra(profissionalId) {
+  try {
+    const extra = await obterPerfilExtra(profissionalId);
+    if (extra && extra.cpf) {
+      document.getElementById('pixCpf').value = extra.cpf;
+      document.getElementById('pixNascimento').value = extra.nascimento || '';
+      document.getElementById('pixChave').value = extra.pixChave || '';
+      document.getElementById('pixBanco').value = extra.pixBanco || '';
+      if (extra.pixTipo) {
+        state.pixTipo = extra.pixTipo;
+        document.querySelectorAll('.pix-type-tab').forEach(t => {
+          t.classList.toggle('active', t.dataset.type === extra.pixTipo);
+        });
+      }
+    }
+    return extra;
+  } catch (err) {
+    console.warn('Erro ao carregar perfil extra:', err);
+    return null;
+  }
+}
+
+// =============================================================
+// SALVAR PERFIL EXTRA
+// =============================================================
+async function salvarPerfilExtraCompleto(profissionalId, dados) {
+  try {
+    await salvarPerfilExtra(profissionalId, dados);
     return true;
-  } catch (e) {
-    console.warn('Erro ao salvar no Drive:', e);
+  } catch (err) {
+    console.error('Erro ao salvar perfil extra:', err);
     return false;
   }
 }
 
 // =============================================================
-// FUNÇÕES DE BACKEND (integracao.js)
+// ENVIAR EMAIL DE NOTIFICAÇÃO
 // =============================================================
-function obterSessao() {
-  const sessao = localStorage.getItem('sessao_almafluxo');
-  if (sessao) {
-    try {
-      return JSON.parse(sessao);
-    } catch(e) { return null; }
+async function enviarEmailNotificacao(nome, email, cpf, nasc, chave, banco, docUrl, selfieUrl, saldoAlma, solId, similaridade) {
+  const promptIA = `
+INSTRUÇÕES PARA IA DE COMPARAÇÃO FACIAL:
+
+IMAGEM 1 (DOCUMENTO - FOTO ROOT): ${docUrl}
+IMAGEM 2 (SELFIE): ${selfieUrl}
+
+TAREFAS:
+1. Extraia o CPF e nome do documento
+2. Compare se a pessoa da selfie é a mesma do documento
+3. Valide os dados PIX fornecidos
+
+DADOS FORNECIDOS PELO PROFISSIONAL:
+- Nome: ${nome}
+- CPF: ${cpf}
+- Data nascimento: ${nasc}
+- Banco: ${banco}
+- Chave PIX: ${chave} (${state.pixTipo.toUpperCase()})
+
+RESULTADO DA COMPARAÇÃO AUTOMÁTICA:
+- Similaridade calculada: ${(similaridade * 100).toFixed(1)}%
+- Validação por código: ${state.codigoValidado ? 'APROVADA' : 'PENDENTE'}
+
+RETORNE APENAS EM JSON COM O SEGUINTE FORMATO:
+{
+  "similaridade_ia": 0.XX,
+  "dados_extraidos": { "nome": "", "cpf": "", "data_nascimento": "" },
+  "veredito": "aprovado" ou "reprovado",
+  "motivo": "motivo da decisão"
+}
+`;
+
+  const corpoEmail = `🔐 SOLICITAÇÃO DE VALIDAÇÃO E PAGAMENTO PIX
+
+PROFISSIONAL: ${nome}
+EMAIL: ${email}
+ID: ${profissionalAtual?.id || '-'}
+SALDO ALMA: ${saldoAlma} ALMA
+
+📋 DADOS PESSOAIS:
+• CPF: ${cpf}
+• Data de nascimento: ${nasc}
+
+💸 DADOS PIX:
+• Banco: ${banco}
+• Tipo da chave: ${state.pixTipo.toUpperCase()}
+• Chave PIX: ${chave}
+
+🖼️ DOCUMENTOS PARA VALIDAÇÃO:
+• Foto do documento: ${docUrl}
+• Foto selfie: ${selfieUrl}
+
+🤖 RESULTADO COMPARAÇÃO AUTOMÁTICA:
+• Similaridade: ${(similaridade * 100).toFixed(1)}%
+
+🆔 ID da solicitação: ${solId}
+
+${promptIA}`;
+
+  try {
+    const fd = new FormData();
+    fd.append('access_key', 'eb4edc0c-b94c-4287-83bf-6f2e05f65774');
+    fd.append('subject', `🔐 VALIDAÇÃO PIX — ${nome} — ${saldoAlma} ALMA`);
+    fd.append('message', corpoEmail);
+    fd.append('from_name', 'Marido de Aluguel · Validação');
+    fd.append('reply_to', 'almafluxo@almafluxo.uk');
+    await fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd });
+    console.log('Email enviado com sucesso');
+  } catch (err) {
+    console.warn('Erro ao enviar e-mail:', err);
   }
-  return null;
-}
-
-async function buscarProfissionalPorId(id) {
-  const profissionais = localStorage.getItem('profissionais_almafluxo');
-  if (profissionais) {
-    const lista = JSON.parse(profissionais);
-    return lista.find(p => p.id === id) || null;
-  }
-  return null;
-}
-
-async function obterPerfilExtra(profissionalId) {
-  const extra = localStorage.getItem(`perfil_extra_${profissionalId}`);
-  if (extra) {
-    return JSON.parse(extra);
-  }
-  return null;
-}
-
-async function salvarPerfilExtra(profissionalId, dados) {
-  localStorage.setItem(`perfil_extra_${profissionalId}`, JSON.stringify(dados));
-  return true;
-}
-
-async function callBackend(acao, params) {
-  console.log(`Backend call: ${acao}`, params);
-  // Simulação - em produção, faria fetch para backend real
-  return { success: true };
 }
 
 // =============================================================
@@ -831,7 +892,7 @@ docInput.addEventListener('change', () => {
 });
 
 function processDocFile(file) {
-  if (file.size > 5 * 1024 * 1024) { toast('Arquivo muito grande. Máximo 5MB.', 'err'); return; }
+  if (file.size > 5 * 1024 * 1024) { toast('Arquivo muito grande. Máximo 5MB.', 'error'); return; }
   const reader = new FileReader();
   reader.onload = e => {
     state.docBlob = e.target.result;
@@ -850,21 +911,15 @@ btnDoc.addEventListener('click', async () => {
   btnDoc.innerHTML = '<span class="spinner"></span> Enviando...';
   docStatus.innerHTML = '⏳ Fazendo upload para armazenamento seguro...';
   try {
-    state.docUrl = await uploadParaImgBB(state.docBlob);
+    const blob = await fetch(state.docBlob).then(r => r.blob());
+    state.docUrl = await uploadImageToHost(blob, 800, 0.8);
     
-    // Salvar como foto root
-    await callBackend("definir_foto_root", {
-      profissionalId: state.profissional?.id,
-      fotoUrl: state.docUrl,
-      tipo: "documento_root"
-    });
-    
-    docStatus.innerHTML = `<span style="color:var(--green);">✅ Documento salvo como foto root!</span>`;
-    toast('Documento enviado!', 'ok');
+    docStatus.innerHTML = `<span style="color:var(--green);">✅ Documento salvo com sucesso!</span>`;
+    toast('Documento enviado!', 'success');
     goStep(2);
   } catch (err) {
     docStatus.innerHTML = `<span style="color:var(--red);">❌ Erro no upload: ${escapeHtml(err.message)}</span>`;
-    toast('Erro ao enviar documento.', 'err');
+    toast('Erro ao enviar documento.', 'error');
     btnDoc.disabled = false;
     btnDoc.innerHTML = '<i class="fas fa-arrow-right"></i> Continuar';
   }
@@ -881,7 +936,7 @@ document.getElementById('btnEnviarCodigo').addEventListener('click', async () =>
   const statusDiv = document.getElementById('codigoStatus');
   
   if (!destino) {
-    toast('Informe o destino (telefone ou email)', 'err');
+    toast('Informe o destino (telefone ou email)', 'error');
     return;
   }
   
@@ -890,7 +945,7 @@ document.getElementById('btnEnviarCodigo').addEventListener('click', async () =>
   state.codigoEnviado = codigo;
   
   statusDiv.innerHTML = `📨 Código ${codigo} enviado para ${destino} (simulação)`;
-  toast(`Código enviado para ${destino}`, 'ok');
+  toast(`Código enviado para ${destino}`, 'success');
   
   document.getElementById('btnValidarCodigo').disabled = false;
 });
@@ -899,17 +954,17 @@ document.getElementById('btnValidarCodigo').addEventListener('click', () => {
   const codigoDigitado = document.getElementById('codigoValidacao').value.trim();
   
   if (!codigoEnviado) {
-    toast('Solicite o envio do código primeiro', 'err');
+    toast('Solicite o envio do código primeiro', 'error');
     return;
   }
   
   if (codigoDigitado === codigoEnviado) {
     state.codigoValidado = true;
-    toast('Código validado com sucesso!', 'ok');
+    toast('Código validado com sucesso!', 'success');
     goStep(3);
     iniciarCamera();
   } else {
-    toast('Código inválido. Tente novamente.', 'err');
+    toast('Código inválido. Tente novamente.', 'error');
   }
 });
 
@@ -933,7 +988,7 @@ async function iniciarCamera() {
     };
   } catch (err) {
     status.textContent = `❌ Câmera indisponível: ${err.message}`;
-    toast('Não foi possível acessar a câmera.', 'err');
+    toast('Não foi possível acessar a câmera.', 'error');
   }
 }
 
@@ -949,7 +1004,7 @@ document.getElementById('btnCapturar').addEventListener('click', async () => {
   const selfiePreview = document.getElementById('selfiePreview');
   const comparisonDiv = document.getElementById('faceComparisonResult');
 
-  if (!stream) { toast('Câmera não iniciada.', 'err'); return; }
+  if (!stream) { toast('Câmera não iniciada.', 'error'); return; }
 
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -961,15 +1016,13 @@ document.getElementById('btnCapturar').addEventListener('click', async () => {
   
   btnCapturar.innerHTML = '<i class="fas fa-redo"></i> Refazer selfie';
   
-  // Realizar comparação facial
   comparisonDiv.style.display = 'block';
-  comparisonDiv.innerHTML = '<div class="spinner"></div> Analisando相似idade facial...';
+  comparisonDiv.innerHTML = '<div class="spinner"></div> Analisando similaridade facial...';
   
   try {
-    // Primeiro faz upload da selfie
-    state.selfieUrl = await uploadParaImgBB(state.selfieBlob);
+    const blob = await fetch(state.selfieBlob).then(r => r.blob());
+    state.selfieUrl = await uploadImageToHost(blob, 800, 0.8);
     
-    // Compara com o documento
     const resultado = await compararFaces(state.docUrl, state.selfieUrl);
     state.faceSimilaridade = resultado.similaridade;
     state.faceAprovada = resultado.aprovado;
@@ -978,16 +1031,16 @@ document.getElementById('btnCapturar').addEventListener('click', async () => {
       comparisonDiv.className = 'similarity-result similarity-high';
       comparisonDiv.innerHTML = `✅ ${resultado.mensagem}<br>Similaridade: ${(resultado.similaridade * 100).toFixed(1)}%`;
       btnProx.style.display = 'flex';
-      toast('Face validada! Continue o cadastro.', 'ok');
+      toast('Face validada! Continue o cadastro.', 'success');
     } else {
       comparisonDiv.className = 'similarity-result similarity-low';
       comparisonDiv.innerHTML = `❌ ${resultado.mensagem}<br>Similaridade: ${(resultado.similaridade * 100).toFixed(1)}%<br>Tente novamente com melhor iluminação.`;
       btnProx.style.display = 'none';
-      toast('Similaridade baixa. Tente outra selfie.', 'err');
+      toast('Similaridade baixa. Tente outra selfie.', 'error');
     }
   } catch (err) {
     comparisonDiv.innerHTML = `❌ Erro na comparação: ${err.message}`;
-    toast('Erro na comparação facial', 'err');
+    toast('Erro na comparação facial', 'error');
   }
 
   pararCamera();
@@ -996,48 +1049,19 @@ document.getElementById('btnCapturar').addEventListener('click', async () => {
 
 document.getElementById('btnProximoFacial').addEventListener('click', async () => {
   if (!state.faceAprovada) {
-    toast('A selfie precisa ser validada primeiro', 'err');
+    toast('A selfie precisa ser validada primeiro', 'error');
     return;
   }
-  
   goStep(4);
-  preencherDadosProfissional();
 });
 
 // =============================================================
 // STEP 4 — PIX
 // =============================================================
-async function preencherDadosProfissional() {
-  const sess = obterSessao();
-  if (!sess || sess.tipo !== 'profissional') { toast('Sessão inválida.', 'err'); return; }
-
-  try {
-    const prof = await buscarProfissionalPorId(sess.usuarioId);
-    if (prof) {
-      state.profissional = prof;
-      document.getElementById('pixNome').value = prof.nome || '';
-      document.getElementById('pixChave').value = prof.email || '';
-      
-      const extra = await obterPerfilExtra(prof.id);
-      if (extra) {
-        if (extra.cpf) document.getElementById('pixCpf').value = extra.cpf;
-        if (extra.nascimento) document.getElementById('pixNascimento').value = extra.nascimento;
-        if (extra.pixChave) document.getElementById('pixChave').value = extra.pixChave;
-        if (extra.pixBanco) document.getElementById('pixBanco').value = extra.pixBanco;
-        if (extra.pixTipo) {
-          state.pixTipo = extra.pixTipo;
-          document.querySelectorAll('.pix-type-tab').forEach(t => {
-            t.classList.toggle('active', t.dataset.type === extra.pixTipo);
-          });
-        }
-      }
-    }
-  } catch(e) { console.warn('Erro ao buscar dados:', e); }
-}
-
 document.getElementById('pixCpf').addEventListener('input', function() {
-  this.value = this.value.replace(/\D/g,'').substring(0,11);
-  if (this.value.length === 11) this.value = mascaraCpf(this.value);
+  let val = this.value.replace(/\D/g,'').substring(0,11);
+  if (val.length === 11) this.value = mascaraCpf(val);
+  else this.value = val;
 });
 
 document.querySelectorAll('.pix-type-tab').forEach(tab => {
@@ -1055,22 +1079,22 @@ document.querySelectorAll('.pix-type-tab').forEach(tab => {
     if (state.pixTipo === 'cpf') {
       document.getElementById('pixChave').value = document.getElementById('pixCpf').value;
     }
-    if (state.pixTipo === 'email' && state.profissional) {
-      document.getElementById('pixChave').value = state.profissional.email || '';
+    if (state.pixTipo === 'email' && profissionalAtual) {
+      document.getElementById('pixChave').value = profissionalAtual.email || '';
     }
   });
 });
 
 document.getElementById('btnPix').addEventListener('click', () => {
-  const cpf  = document.getElementById('pixCpf').value.trim();
+  const cpf = document.getElementById('pixCpf').value.trim();
   const nasc = document.getElementById('pixNascimento').value;
-  const chave= document.getElementById('pixChave').value.trim();
-  const banco= document.getElementById('pixBanco').value.trim();
+  const chave = document.getElementById('pixChave').value.trim();
+  const banco = document.getElementById('pixBanco').value.trim();
 
-  if (!cpf)   { toast('Informe o CPF.', 'err'); return; }
-  if (!nasc)  { toast('Informe a data de nascimento.', 'err'); return; }
-  if (!chave) { toast('Informe a chave PIX.', 'err'); return; }
-  if (!banco) { toast('Informe o banco.', 'err'); return; }
+  if (!cpf) { toast('Informe o CPF.', 'error'); return; }
+  if (!nasc) { toast('Informe a data de nascimento.', 'error'); return; }
+  if (!chave) { toast('Informe a chave PIX.', 'error'); return; }
+  if (!banco) { toast('Informe o banco.', 'error'); return; }
 
   preencherRevisao({ cpf, nasc, chave, banco });
   goStep(5);
@@ -1080,10 +1104,10 @@ document.getElementById('btnPix').addEventListener('click', () => {
 // STEP 5 — REVISÃO
 // =============================================================
 function preencherRevisao({ cpf, nasc, chave, banco }) {
-  document.getElementById('revDocImg').src    = state.docBlob;
+  document.getElementById('revDocImg').src = state.docBlob;
   document.getElementById('revSelfieImg').src = state.selfieBlob;
 
-  const nome = document.getElementById('pixNome').value;
+  const nome = profissionalAtual?.nome || document.getElementById('pixNome').value;
   const dataNasc = nasc ? new Date(nasc + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
 
   document.getElementById('revDados').innerHTML = `
@@ -1126,168 +1150,84 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Enviando...';
 
-  const cpf   = document.getElementById('pixCpf').value.trim();
-  const nasc  = document.getElementById('pixNascimento').value;
+  const cpf = document.getElementById('pixCpf').value.trim();
+  const nasc = document.getElementById('pixNascimento').value;
   const chave = document.getElementById('pixChave').value.trim();
   const banco = document.getElementById('pixBanco').value.trim();
-  const nome  = document.getElementById('pixNome').value;
-
+  const nome = profissionalAtual?.nome || '';
   const solId = 'val_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+  const saldoAlma = profissionalAtual?.saldoALMA || 0;
 
-  // 1. Salvar no perfil extra
+  // Salvar no perfil extra
+  const dadosExtra = {
+    cpf: cpf,
+    nascimento: nasc,
+    pixChave: chave,
+    pixBanco: banco,
+    pixTipo: state.pixTipo,
+    docUrl: state.docUrl,
+    selfieUrl: state.selfieUrl,
+    faceSimilaridade: state.faceSimilaridade,
+    faceAprovada: state.faceAprovada,
+    codigoValidado: state.codigoValidado,
+    validacaoStatus: 'pendente',
+    validacaoId: solId,
+    validacaoData: new Date().toISOString()
+  };
+
+  await salvarPerfilExtraCompleto(profissionalAtual.id, dadosExtra);
+
+  // Salvar fotos no histórico do profissional
   try {
-    if (state.profissional) {
-      const extraAtual = await obterPerfilExtra(state.profissional.id) || {};
-      const novoExtra = {
-        ...extraAtual,
-        cpf, nascimento: nasc,
-        pixChave: chave, pixBanco: banco, pixTipo: state.pixTipo,
-        docUrl: state.docUrl, selfieUrl: state.selfieUrl,
-        faceSimilaridade: state.faceSimilaridade,
-        faceAprovada: state.faceAprovada,
-        validacaoStatus: 'pendente',
-        validacaoId: solId,
-        validacaoData: new Date().toISOString()
-      };
-      await salvarPerfilExtra(state.profissional.id, novoExtra);
-    }
-  } catch(e) { console.warn('Erro ao salvar perfil extra:', e); }
+    await adicionarFotoServico(profissionalAtual.id, state.docUrl, `[VALIDAÇÃO ${solId}] Documento de identidade - Foto Root`);
+    await adicionarFotoServico(profissionalAtual.id, state.selfieUrl, `[VALIDAÇÃO ${solId}] Selfie para comparação facial - Similaridade: ${(state.faceSimilaridade * 100).toFixed(1)}%`);
+  } catch (err) {
+    console.warn('Erro ao salvar fotos:', err);
+  }
 
-  // 2. Salvar no Google Drive (saida.json)
-  await salvarNoDrive({
-    tipo: "solicitacao_validacao",
-    profissionalId: state.profissional?.id,
-    profissionalNome: nome,
-    dadosPix: { cpf, nasc, chave, banco, tipo: state.pixTipo },
-    documentos: { docUrl: state.docUrl, selfieUrl: state.selfieUrl },
-    validacao: {
-      faceSimilaridade: state.faceSimilaridade,
-      faceAprovada: state.faceAprovada,
-      codigoValidado: state.codigoValidado
-    },
-    idSolicitacao: solId
-  });
+  // Enviar email de notificação
+  await enviarEmailNotificacao(nome, profissionalAtual.email, cpf, nasc, chave, banco, state.docUrl, state.selfieUrl, saldoAlma, solId, state.faceSimilaridade);
 
-  // 3. Salvar fotos no backend
-  try {
-    if (state.profissional && state.docUrl) {
-      await callBackend("adicionar_foto_servico", {
-        profissionalId: state.profissional.id,
-        src: state.docUrl,
-        legenda: `[FOTO ROOT ${solId}] Documento de identidade`
-      });
-    }
-    if (state.profissional && state.selfieUrl) {
-      await callBackend("adicionar_foto_servico", {
-        profissionalId: state.profissional.id,
-        src: state.selfieUrl,
-        legenda: `[SELFIE ${solId}] Foto facial - Similaridade: ${(state.faceSimilaridade * 100).toFixed(1)}%`
-      });
-    }
-  } catch(e) { console.warn('Erro ao salvar fotos:', e); }
+  document.getElementById('solicitacaoIdDisplay').innerHTML = `
+    🆔 ID da solicitação: <strong style="color:var(--accent);">${solId}</strong><br>
+    🤖 Similaridade facial: <strong style="color:${state.faceAprovada ? 'var(--green)' : 'var(--gold)'}">${(state.faceSimilaridade * 100).toFixed(1)}%</strong>
+  `;
 
-  // 4. Registrar transação
-  const saldoAlma = state.profissional?.saldoALMA || 0;
-  try {
-    await callBackend("salvar_transacao", {
-      transacao: {
-        id: solId,
-        usuarioId: state.profissional?.id || '',
-        tipoUsuario: 'profissional',
-        tipo: 'solicitacao_validacao',
-        valor: saldoAlma,
-        descricao: `Validação PIX - ${nome} - Similaridade: ${(state.faceSimilaridade * 100).toFixed(1)}%`,
-        docUrl: state.docUrl,
-        selfieUrl: state.selfieUrl,
-        cpf, nascimento: nasc, pixChave: chave, pixBanco: banco, pixTipo: state.pixTipo,
-        data: new Date().toISOString()
-      }
-    });
-  } catch(e) { console.warn('Erro ao registrar transação:', e); }
-
-  // 5. Enviar e-mail com prompt para IA
-  const promptIA = `
-INSTRUÇÕES PARA IA DE COMPARAÇÃO FACIAL:
-
-IMAGEM 1 (DOCUMENTO - FOTO ROOT): ${state.docUrl}
-IMAGEM 2 (SELFIE): ${state.selfieUrl}
-
-TAREFAS:
-1. Extraia o CPF e nome do documento
-2. Compare se a pessoa da selfie é a mesma do documento
-3. Valide os dados PIX fornecidos
-
-DADOS FORNECIDOS PELO PROFISSIONAL:
-- Nome: ${nome}
-- CPF: ${cpf}
-- Data nascimento: ${nasc}
-- Banco: ${banco}
-- Chave PIX: ${chave} (${state.pixTipo.toUpperCase()})
-
-RESULTADO DA COMPARAÇÃO AUTOMÁTICA:
-- Similaridade calculada: ${(state.faceSimilaridade * 100).toFixed(1)}%
-- Validação por código: ${state.codigoValidado ? 'APROVADA' : 'PENDENTE'}
-
-RETORNE APENAS EM JSON COM O SEGUINTE FORMATO:
-{
-  "similaridade_ia": 0.XX,
-  "dados_extraidos": { "nome": "", "cpf": "", "data_nascimento": "" },
-  "veredito": "aprovado" ou "reprovado",
-  "motivo": "motivo da decisão"
-}
-`;
-
-  try {
-    const fd = new FormData();
-    fd.append('access_key', 'eb4edc0c-b94c-4287-83bf-6f2e05f65774');
-    fd.append('subject', `🔐 VALIDAÇÃO PIX — ${nome} — Similaridade: ${(state.faceSimilaridade * 100).toFixed(1)}%`);
-    fd.append('message', promptIA);
-    fd.append('from_name', 'Marido de Aluguel · Validação IA');
-    fd.append('email', state.profissional?.email || 'noreply@maridodealuguel.com');
-    fd.append('reply_to', 'almafluxo@almafluxo.uk');
-    await fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd });
-  } catch(e) { console.warn('Erro ao enviar e-mail:', e); }
-
-  document.getElementById('solicitacaoIdDisplay').innerHTML =
-    `🆔 ID da solicitação: <strong style="color:var(--accent);">${solId}</strong><br>
-     🤖 Similaridade facial: <strong style="color:${state.faceAprovada ? 'var(--green)' : 'var(--gold)'}">${(state.faceSimilaridade * 100).toFixed(1)}%</strong>`;
-
-  toast('Solicitação enviada com sucesso!', 'ok');
+  toast('Solicitação enviada com sucesso!', 'success');
   goStep(6);
 });
+
+// =============================================================
+// BOTÕES DE VOLTAR
+// =============================================================
+document.getElementById('btnVoltarStep2').addEventListener('click', () => goStep(1));
+document.getElementById('btnVoltarStep3').addEventListener('click', () => { pararCamera(); goStep(2); });
+document.getElementById('btnVoltarStep4').addEventListener('click', () => goStep(3));
+document.getElementById('btnVoltarStep5').addEventListener('click', () => goStep(4));
 
 // =============================================================
 // INICIALIZAÇÃO
 // =============================================================
 (async () => {
-  const sess = obterSessao();
-  if (!sess || sess.tipo !== 'profissional') {
-    toast('Acesso restrito a profissionais. Faça login.', 'err');
-    setTimeout(() => window.location.href = 'marido_aluguel.html', 2500);
-    return;
+  profissionalAtual = await carregarProfissionalLogado();
+  if (!profissionalAtual) return;
+  
+  document.getElementById('pixNome').value = profissionalAtual.nome || '';
+  
+  // Pré-preencher destino com email/telefone do profissional
+  if (profissionalAtual.email) {
+    document.getElementById('validacaoDestino').value = profissionalAtual.email;
+  } else if (profissionalAtual.telefone) {
+    document.getElementById('validacaoDestino').value = profissionalAtual.telefone;
   }
-
-  try {
-    const prof = await buscarProfissionalPorId(sess.usuarioId);
-    if (prof) {
-      state.profissional = prof;
-      const extra = await obterPerfilExtra(prof.id);
-      if (extra?.validacaoStatus === 'pendente') {
-        document.querySelector('#step1 .card-subtitle').innerHTML =
-          `<div class="info-box warning" style="margin-bottom:0;">
-            <i class="fas fa-clock"></i>
-            <strong>Validação já enviada!</strong> Sua solicitação (ID: <code>${extra.validacaoId || '-'}</code>)
-            está aguardando análise.
-          </div>`;
-      }
-      
-      // Pré-preencher destino com email do profissional
-      if (prof.email) {
-        document.getElementById('validacaoDestino').value = prof.email;
-        document.querySelector('[data-method="email"]').click();
-      }
-    }
-  } catch(e) { console.warn('Erro na inicialização:', e); }
+  
+  // Carregar dados já salvos
+  perfilExtra = await carregarPerfilExtra(profissionalAtual.id);
+  
+  // Verificar se já tem validação pendente
+  if (perfilExtra && perfilExtra.validacaoStatus === 'pendente') {
+    toast(`Você já possui uma validação pendente (ID: ${perfilExtra.validacaoId})`, 'success');
+  }
 })();
 </script>
 </body>
