@@ -1,6 +1,6 @@
 // ========== CONFIGURAÇÃO ==========
 // NOVA URL DO APPSCRIPT - VERSÃO 12 (06/04/2026)
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbw0mnyFBG2r710hW0vBDwPfZmZquHeIxdYy09logT4YCI276GzyxMB0oxA2e_g1PA5X7g/exec";
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycby40M8oUhZD4wjZOl2I-WR2EXVKgiWFJBLxxJlPypAQ6sg-0-TxtmxBdScNGpu05GkKWw/exec";
 
 // ⚠️ SUA API KEY DO IMGBB ⚠️
 const IMGBB_API_KEY = "2597fbdd4014975ed01d56ee9a6b404d";
@@ -437,7 +437,10 @@ async function criarChat(dados) {
 // ========== RECARGAS ==========
 async function obterSolicitacoesRecarga() {
   try {
-    return await callBackend("listar_solicitacoes_recarga", {}, 45);
+    const resultado = await callBackend("listar_solicitacoes_recarga", {}, 45);
+    if (resultado?.ok && Array.isArray(resultado.id)) return resultado.id;
+    if (Array.isArray(resultado)) return resultado;
+    return [];
   } catch (err) {
     console.error("Erro ao listar solicitações de recarga:", err);
     return [];
