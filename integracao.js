@@ -1,6 +1,6 @@
 // ========== CONFIGURAÇÃO ==========
 // NOVA URL DO APPSCRIPT - VERSÃO 12 (06/04/2026)
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzenDJ7ahRSmD2R3dY15bjBapjz3i7zsAXP-yVx0GvKf0ye7iJoRzU_kndN4nEXq6K76w/exec";
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbw0mnyFBG2r710hW0vBDwPfZmZquHeIxdYy09logT4YCI276GzyxMB0oxA2e_g1PA5X7g/exec";
 
 // ⚠️ SUA API KEY DO IMGBB ⚠️
 const IMGBB_API_KEY = "2597fbdd4014975ed01d56ee9a6b404d";
