@@ -465,32 +465,46 @@
     });
   };
 
-  // ========== REGISTRAR SOLICITAÇÃO DE RECARGA (SEM CREDITAR) ==========
+  // ========== REGISTRAR SOLICITAÇÃO DE RECARGA (VIA BACKEND) ==========
   async function registrarSolicitacaoRecarga(transacaoId, valorPago, valorSolicitado) {
-    const solicitacao = {
-      id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8),
-      clienteId: clienteId,
-      nome: nome,
-      email: email.toLowerCase(),
-      valorSolicitado: valorSolicitado,
-      valorPago: parseFloat(valorPago),
-      transacaoId: transacaoId,
-      deviceId: localStorage.getItem('alma_device_id') || navigator.userAgent.substring(0, 50),
-      status: 'pendente',
-      timestamp: new Date().toISOString()
-    };
-    
-    try {
-      await salvarSolicitacaoRecarga(solicitacao);
-      console.log('✅ Solicitação de recarga registrada:', solicitacao.id);
-      return solicitacao.id;
-    } catch (err) {
-      console.error('Erro ao salvar solicitação:', err);
-      let solicitacoes = JSON.parse(localStorage.getItem('solicitacoes_recarga') || '[]');
-      solicitacoes.push(solicitacao);
-      localStorage.setItem('solicitacoes_recarga', JSON.stringify(solicitacoes));
-      return solicitacao.id;
-    }
+      const solicitacao = {
+          id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8),
+          clienteId: clienteId,
+          nome: nome,
+          email: email.toLowerCase(),
+          valorSolicitado: valorSolicitado,
+          valorPago: parseFloat(valorPago),
+          transacaoId: transacaoId,
+          deviceId: localStorage.getItem('alma_device_id') || navigator.userAgent.substring(0, 50),
+          status: 'pendente',
+          timestamp: new Date().toISOString()
+      };
+      
+      console.log("📝 Enviando solicitação:", solicitacao);
+      
+      try {
+          // 🔥 FORMA CORRETA: chama callBackend com acao e dados
+          const resultado = await callBackend("salvar_solicitacao_recarga", { solicitacao: solicitacao });
+          
+          console.log("📥 Resposta do backend:", resultado);
+          
+          if (resultado && resultado.ok === true) {
+              console.log('✅ Solicitação salva no backend! ID:', solicitacao.id);
+              return solicitacao.id;
+          } else {
+              throw new Error('Resposta inválida do backend: ' + JSON.stringify(resultado));
+          }
+      } catch (err) {
+          console.error('❌ Erro ao salvar no backend:', err);
+          
+          // Fallback local
+          let solicitacoes = JSON.parse(localStorage.getItem('solicitacoes_recarga') || '[]');
+          solicitacoes.push(solicitacao);
+          localStorage.setItem('solicitacoes_recarga', JSON.stringify(solicitacoes));
+          
+          toast('⚠️ Solicitação salva localmente. O administrador será notificado.', 'error');
+          return solicitacao.id;
+      }
   }
 
   // ========== ENVIO DO COMPROVANTE (SÓ REGISTRA, NÃO CREDITA) ==========
