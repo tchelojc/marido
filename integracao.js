@@ -1,6 +1,6 @@
 // ========== CONFIGURAÇÃO ==========
 // URL DO APPSCRIPT - VERSÃO 13 (COM PROXY SEGURO IMGBB)
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwm0oBFCKmtfgR1YXQHNqnPiVTNAOZZCYN4s4RaM0NthfiqMk4KdvV0BiWGomfg4Rc/exec";
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxPbAak_nsIQGx9hfPMuAjKdVwDOYV4cSyoUDrrs4D58R---1NE5Nsfjpy0gPlXRhbr/exec";
 
 // ✅ CHAVE IMGBB PROTEGIDA NO APPS SCRIPT (NÃO EXPOSTA NO GITHUB)
 // O upload de imagens agora é feito via proxy seguro no backend
