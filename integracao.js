@@ -1,9 +1,9 @@
 // ========== CONFIGURAÇÃO ==========
-// NOVA URL DO APPSCRIPT - VERSÃO 12 (06/04/2026)
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycby40M8oUhZD4wjZOl2I-WR2EXVKgiWFJBLxxJlPypAQ6sg-0-TxtmxBdScNGpu05GkKWw/exec";
+// URL DO APPSCRIPT - VERSÃO 13 (COM PROXY SEGURO IMGBB)
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzb4wVB8u87twCH4s2e4Z55uMKi3FD8bWSWJn9fhs3joZD8oTMHkCORbFz14co5kK9m/exec";
 
-// ⚠️ SUA API KEY DO IMGBB ⚠️
-const IMGBB_API_KEY = "2597fbdd4014975ed01d56ee9a6b404d";
+// ✅ CHAVE IMGBB PROTEGIDA NO APPS SCRIPT (NÃO EXPOSTA NO GITHUB)
+// O upload de imagens agora é feito via proxy seguro no backend
 
 // ========== FUNÇÃO BASE COM POLLING E TIMEOUT ==========
 async function callBackend(acao, dados = {}, timeoutSegundos = 45) {
@@ -44,7 +44,7 @@ async function callBackend(acao, dados = {}, timeoutSegundos = 45) {
   }
 }
 
-// ========== FUNÇÕES DE IMAGEM (IMGBB) ==========
+// ========== FUNÇÕES DE IMAGEM (VIA PROXY SEGURO NO APPS SCRIPT) ==========
 
 /**
  * Compressão de imagem antes do upload
@@ -69,7 +69,7 @@ function compressImage(base64, maxWidth = 800, quality = 0.7, callback) {
 }
 
 /**
- * Faz upload de uma imagem para o ImgBB e retorna a URL pública
+ * Faz upload de uma imagem para o ImgBB através do proxy seguro no Apps Script
  */
 async function uploadParaImgBB(base64Image) {
     try {
@@ -78,22 +78,16 @@ async function uploadParaImgBB(base64Image) {
             imageData = base64Image.split(',')[1];
         }
         
-        const formData = new FormData();
-        formData.append('key', IMGBB_API_KEY);
-        formData.append('image', imageData);
+        // 🔒 Upload via proxy seguro no Apps Script (chave protegida)
+        const resultado = await callBackend("upload_imagem_imgbb", { 
+            imagem: imageData 
+        }, 45);
         
-        const response = await fetch('https://api.imgbb.com/1/upload', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            console.log('✅ Upload ImgBB realizado com sucesso:', result.data.url);
-            return result.data.url;
+        if (resultado?.ok && resultado.url) {
+            console.log('✅ Upload ImgBB realizado com sucesso:', resultado.url);
+            return resultado.url;
         } else {
-            throw new Error(result.error?.message || 'Falha no upload para ImgBB');
+            throw new Error(resultado?.erro || 'Falha no upload para ImgBB');
         }
     } catch (err) {
         console.error('❌ Erro no upload para ImgBB:', err);
@@ -102,7 +96,7 @@ async function uploadParaImgBB(base64Image) {
 }
 
 /**
- * Upload de arquivo com compressão e envio para ImgBB
+ * Upload de arquivo com compressão e envio via proxy seguro
  */
 async function uploadImageToHost(file, maxWidth = 800, quality = 0.7) {
     return new Promise((resolve, reject) => {
@@ -115,6 +109,7 @@ async function uploadImageToHost(file, maxWidth = 800, quality = 0.7) {
         reader.onload = (ev) => {
             compressImage(ev.target.result, maxWidth, quality, async (compressedBase64) => {
                 try {
+                    // 🔒 Upload via proxy seguro no Apps Script
                     const url = await uploadParaImgBB(compressedBase64);
                     resolve(url);
                 } catch (err) {
@@ -128,11 +123,12 @@ async function uploadImageToHost(file, maxWidth = 800, quality = 0.7) {
 }
 
 /**
- * Testa a conexão com o ImgBB
+ * Testa a conexão com o ImgBB via proxy seguro
  */
 async function testarImgBB() {
     try {
-        const testPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+        // Pixel de teste minúsculo em base64
+        const testPixel = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
         const url = await uploadParaImgBB(testPixel);
         console.log("✅ Teste ImgBB OK! URL:", url);
         return { sucesso: true, url: url };
@@ -142,10 +138,10 @@ async function testarImgBB() {
     }
 }
 
-// ========== FUNÇÕES DE FOTO (com ImgBB) ==========
+// ========== FUNÇÕES DE FOTO (via proxy seguro) ==========
 
 /**
- * Adiciona foto do serviço - faz upload para ImgBB e salva URL no backend
+ * Adiciona foto do serviço - upload via proxy seguro e salva URL no backend
  */
 async function adicionarFotoServico(profissionalId, imagemBase64, legenda) {
     try {
@@ -187,7 +183,7 @@ async function removerFotoServico(fotoId) {
 }
 
 /**
- * Upload de foto de perfil (avatar ou capa)
+ * Upload de foto de perfil (avatar ou capa) via proxy seguro
  */
 async function uploadFotoPerfil(imagemBase64, tipo, profissionalId) {
     try {
@@ -572,7 +568,7 @@ async function inicializarSistemaBackend() {
     
     const imgbbTest = await testarImgBB();
     if (imgbbTest.sucesso) {
-      console.log("✅ ImgBB configurado corretamente!");
+      console.log("✅ ImgBB configurado corretamente via proxy seguro!");
     } else {
       console.warn("⚠️ ImgBB com problemas:", imgbbTest.erro);
     }
@@ -601,13 +597,11 @@ async function salvarDisponibilidadeBackend(profissionalId, dias) {
 
 // ========== ADMIN ROOT (comunicação segura com AppScript) ==========
 
-// Função para login automático do admin (chama o backend)
 async function loginAdminRoot() {
   try {
     const resultado = await callBackend("admin_login_root", {}, 30);
     
     if (resultado?.ok && resultado.id) {
-      // Salva sessão do admin
       salvarSessao(resultado.id.email, "cliente", resultado.id.id);
       console.log("✅ Admin Root logado com sucesso!");
       return { success: true, usuario: resultado.id };
@@ -620,7 +614,6 @@ async function loginAdminRoot() {
   }
 }
 
-// Função para verificar se o usuário logado é admin
 async function isAdminRoot() {
   const sess = obterSessao();
   if (!sess) return false;
@@ -633,7 +626,6 @@ async function isAdminRoot() {
   }
 }
 
-// Função para obter token de admin (para abrir chats)
 async function getAdminToken() {
   try {
     const resultado = await callBackend("admin_gerar_token", {}, 15);
@@ -647,7 +639,6 @@ async function getAdminToken() {
   }
 }
 
-// Função para validar token de admin
 async function validarAdminToken(token) {
   try {
     const resultado = await callBackend("admin_validar_token", { token }, 15);
@@ -657,7 +648,6 @@ async function validarAdminToken(token) {
   }
 }
 
-// Função para obter dados do admin (sem expor senha)
 async function getAdminInfo() {
   try {
     const resultado = await callBackend("admin_info", {}, 15);
@@ -676,8 +666,8 @@ async function getAdminInfo() {
   }
 }
 
-console.log("✅ integracao.js — backend com ImgBB para imagens");
+console.log("✅ integracao.js — backend com proxy seguro para ImgBB");
 console.log("📍 Backend URL:", BACKEND_URL);
-console.log("🖼️ ImgBB API Key configurada:", IMGBB_API_KEY ? "✅ Sim" : "❌ Não");
+console.log("🔒 ImgBB API Key protegida no Apps Script (não exposta no GitHub)");
 console.log("👑 Admin Root configurado no backend (seguro)");
 console.log("📊 Com suporte a TRANSAÇÕES e APROVAÇÃO DE RECARGAS");
