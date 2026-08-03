@@ -465,17 +465,23 @@
       </div>
 
       <div class="search-header">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" id="searchInput" placeholder="Buscar serviço, palavra-chave...">
-        </div>
-        <select id="sortSelect" class="sort-select">
-          <option value="relevancia">Relevância</option>
-          <option value="preco_asc">Menor preço</option>
-          <option value="preco_desc">Maior preço</option>
-          <option value="prod_asc">Menor produtividade</option>
-          <option value="prod_desc">Maior produtividade</option>
-        </select>
+          <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" id="searchInput" 
+                    placeholder="Buscar serviço, palavra-chave..." 
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    name="search">
+          </div>
+          <select id="sortSelect" class="sort-select">
+              <option value="relevancia">Relevância</option>
+              <option value="preco_asc">Menor preço</option>
+              <option value="preco_desc">Maior preço</option>
+              <option value="prod_asc">Menor produtividade</option>
+              <option value="prod_desc">Maior produtividade</option>
+          </select>
       </div>
 
       <!-- CONTAINER DE SERVIÇOS -->
@@ -578,6 +584,52 @@
 </div>
 
 <script>
+  // ========== CORREÇÃO DO AUTOCOMPLETE NO CAMPO DE BUSCA ==========
+  (function() {
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+          // 🔥 Desabilita autocomplete
+          searchInput.setAttribute('autocomplete', 'off');
+          searchInput.setAttribute('autocorrect', 'off');
+          searchInput.setAttribute('autocapitalize', 'off');
+          
+          // 🔥 Limpa o campo ao carregar a página
+          searchInput.value = '';
+          
+          // 🔥 Se tiver @ (e-mail), limpa automaticamente
+          searchInput.addEventListener('focus', function() {
+              if (this.value.includes('@')) {
+                  this.value = '';
+                  this.dispatchEvent(new Event('input'));
+              }
+          });
+          
+          // 🔥 Limpa ao perder o foco se tiver @
+          searchInput.addEventListener('blur', function() {
+              if (this.value.includes('@')) {
+                  this.value = '';
+                  this.dispatchEvent(new Event('input'));
+              }
+          });
+      }
+      
+      // 🔥 Limpa ao carregar a página
+      window.addEventListener('load', function() {
+          if (searchInput) {
+              searchInput.value = '';
+              searchInput.dispatchEvent(new Event('input'));
+          }
+      });
+      
+      // 🔥 Limpa ao usar os botões de voltar/avançar
+      window.addEventListener('pageshow', function() {
+          if (searchInput) {
+              searchInput.value = '';
+              searchInput.dispatchEvent(new Event('input'));
+          }
+      });
+  })();
+  
   // ========== TOAST ==========
   function toast(msg, tipo = 'success') {
     const el = document.getElementById('toast');
