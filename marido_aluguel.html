@@ -433,6 +433,7 @@
   </div>
   
   <!-- FOOTER COM LINK PARA REGULAMENTO -->
+  <!-- FOOTER -->
   <div class="footer">
     <div class="footer-links">
       <a href="regulamento.html" target="_blank" rel="noopener noreferrer">
@@ -441,6 +442,12 @@
       <a href="#" id="openPrivacyPolicy" style="cursor: pointer;">
         <i class="fas fa-lock"></i> Política de Privacidade
       </a>
+      
+      <!-- 🔥 NOVO: Link para cadastro de empresa -->
+      <a href="cadastro_empresa.html" style="cursor: pointer;">
+        <i class="fas fa-building"></i> Cadastrar Empresa
+      </a>
+      
       <a href="mailto:almafluxo@almafluxo.uk">
         <i class="fas fa-envelope"></i> Contato
       </a>
@@ -480,9 +487,18 @@
     <input type="password" id="authSenha" placeholder="Sua senha" style="width:100%; padding:12px; border-radius: 30px; border:1px solid #ccc; margin-bottom: 12px;">
     <button id="btnAuth" class="btn-primary" style="width:100%">Entrar</button>
     <div id="authMsg" style="margin-top: 12px; font-size:0.8rem; color:#e74c3c;"></div>
+    
     <div style="text-align: center; margin-top: 16px;">
       <a href="cadastro.html" style="color: #2b4c7c; text-decoration: none;">Não tem conta? Cadastre-se</a>
     </div>
+    
+    <!-- 🔥 NOVO: Link para cadastro de empresa -->
+    <div style="text-align: center; margin-top: 8px;">
+      <a href="cadastro_empresa.html" style="color: #2b4c7c; text-decoration: none; font-size: 0.8rem;">
+        <i class="fas fa-building"></i> Sou uma empresa
+      </a>
+    </div>
+    
     <div class="regulamento-link-modal">
       <i class="fas fa-gavel"></i> Ao continuar, você concorda com nosso 
       <a href="regulamento.html" target="_blank" rel="noopener noreferrer">Regulamento</a>
@@ -497,8 +513,8 @@
     <h3><i class="fas fa-lock"></i> Política de Privacidade (Resumo)</h3>
     <div style="margin: 20px 0; font-size: 0.85rem; line-height: 1.6;">
       <p><strong>Coleta de dados:</strong> Nome, e-mail, telefone, endereço, fotos e histórico de serviços.</p>
-      <p><strong>Uso:</strong> Exclusivamente para viabilizar a intermediação entre cliente e .</p>
-      <p><strong>Compartilhamento:</strong> Seus dados são compartilhados apenas com o  que você contratar.</p>
+      <p><strong>Uso:</strong> Exclusivamente para viabilizar a intermediação entre cliente e profissional.</p>
+      <p><strong>Compartilhamento:</strong> Seus dados são compartilhados apenas com o profissional que você contratar.</p>
       <p><strong>Direitos (LGPD):</strong> Você pode solicitar correção, exclusão ou portabilidade dos seus dados pelo e-mail <strong>tchelojc@gmail.com</strong>.</p>
       <p><strong>Armazenamento:</strong> Por até 6 meses após o término da conta para fins legais.</p>
       <hr style="margin: 16px 0;">
@@ -545,7 +561,7 @@
   document.getElementById('closePrivacyBtn').onclick = closePrivacyModal;
   window.addEventListener('click', (e) => { if (e.target === privacyModal) closePrivacyModal(); });
 
-  function mostrarModalEscolha(email, clienteData, Data) {
+  function mostrarModalEscolha(email, clienteData, profissionalData) {
     const oldModal = document.getElementById('modalEscolhaPerfil');
     if (oldModal) oldModal.remove();
 
@@ -556,9 +572,9 @@
     modalEscolha.innerHTML = `
       <div class="modal-content" style="max-width: 350px; text-align: center;">
         <h3><i class="fas fa-users"></i> Escolha o perfil de acesso</h3>
-        <p style="margin: 16px 0;">Este e-mail está cadastrado como <strong>cliente</strong> e como <strong></strong>.<br>Selecione qual perfil deseja acessar agora:</p>
+        <p style="margin: 16px 0;">Este e-mail está cadastrado como <strong>cliente</strong> e como <strong>profissional</strong>.<br>Selecione qual perfil deseja acessar agora:</p>
         <button id="escolherCliente" class="btn-primary" style="width: 100%; margin-bottom: 12px;">👤 Acessar como Cliente</button>
-        <button id="escolher" class="btn-primary" style="width: 100%; background: #4a5b7a;">🔧 Acessar como </button>
+        <button id="escolherProfissional" class="btn-primary" style="width: 100%; background: #4a5b7a;">🔧 Acessar como Profissional</button>
         <button id="fecharModalEscolha" class="btn-sm" style="margin-top: 16px;">Cancelar</button>
       </div>
     `;
@@ -572,9 +588,9 @@
         toast('Erro: dados de cliente não disponíveis.', 'error');
       }
     };
-    document.getElementById('escolher').onclick = () => {
-      if (Data && Data.id) {
-        salvarSessao(email, '', Data.id);
+    document.getElementById('escolherProfissional').onclick = () => {
+      if (profissionalData && profissionalData.id) {
+        salvarSessao(email, 'profissional', profissionalData.id);
         window.location.href = 'painel_profissional.html';
       } else {
         toast('Erro: dados de profissional não disponíveis.', 'error');
@@ -587,40 +603,61 @@
   }
 
   btnAuth.onclick = async () => {
-    const email = authEmailInput.value.trim().toLowerCase();
-    const senha = authSenhaInput.value;
-    if (!email || !senha) {
-      authMsg.innerText = 'Preencha e-mail e senha.';
-      return;
-    }
-    try {
-      toast('Autenticando...', 'info');
-      const result = await autenticarUsuarioComSenha(email, senha);
-      if (!result.success) {
-        authMsg.innerText = result.error;
-        toast(result.error, 'error');
-        return;
+      const email = authEmailInput.value.trim().toLowerCase();
+      const senha = authSenhaInput.value;
+      if (!email || !senha) {
+          authMsg.innerText = 'Preencha e-mail e senha.';
+          return;
       }
+      try {
+          toast('Autenticando...', 'info');
+          
+          // 1. Tenta autenticar como cliente ou profissional
+          const result = await autenticarUsuarioComSenha(email, senha);
+          
+          if (result.success) {
+              closeAuthModal();
 
-      closeAuthModal();
+              if (result.precisaEscolher === true && result.cliente && result.profissional) {
+                  mostrarModalEscolha(email, result.cliente, result.profissional);
+                  return;
+              }
 
-      if (result.precisaEscolher === true && result.cliente && result.profissional) {
-        mostrarModalEscolha(email, result.cliente, result.profissional);
-        return;
+              if (result.tipo === 'profissional') {
+                  toast('Bem-vindo, profissional!', 'success');
+                  window.location.href = 'painel_profissional.html';
+              } else if (result.tipo === 'cliente') {
+                  toast('Bem-vindo, cliente!', 'success');
+                  window.location.href = 'painel_do_cliente.html';
+              }
+              return;
+          }
+          
+          // 2. Se não encontrou como cliente/profissional, tenta como empresa
+          try {
+              const empresaResult = await callBackend("autenticar_empresa", { email, senha });
+              if (empresaResult && empresaResult.tipo === 'empresa' && empresaResult.usuario) {
+                  salvarSessao(email, 'empresa', empresaResult.usuario.id);
+                  toast('Bem-vindo, empresa!', 'success');
+                  window.location.href = 'painel_empresa.html';
+                  return;
+              }
+          } catch (empErr) {
+              // Se erro for "Empresa não encontrada", mostra erro do cliente
+              if (!empErr.message.includes('não encontrada')) {
+                  throw empErr;
+              }
+          }
+          
+          // 3. Se chegou aqui, nenhum tipo de conta foi encontrado
+          authMsg.innerText = 'E-mail não cadastrado ou senha incorreta.';
+          toast('E-mail não cadastrado ou senha incorreta.', 'error');
+          
+      } catch (err) {
+          console.error(err);
+          authMsg.innerText = err.message || 'Erro na autenticação. Tente novamente.';
+          toast(err.message || 'Erro na autenticação.', 'error');
       }
-
-      if (result.tipo === 'profissional') {
-        toast('Bem-vindo, profissional!', 'success');
-        window.location.href = 'painel_profissional.html';
-      } else {
-        toast('Bem-vindo, cliente!', 'success');
-        window.location.href = 'painel_do_cliente.html';
-      }
-    } catch (err) {
-      console.error(err);
-      authMsg.innerText = 'Erro na autenticação. Tente novamente.';
-      toast('Erro na autenticação. Tente novamente.', 'error');
-    }
   };
 
   // ========== APP DE SERVIÇOS (cards dinâmicos) ==========
@@ -850,7 +887,7 @@
           loginBtn.onclick = (e) => {
             e.preventDefault();
             if (confirm(`Olá ${cliente.nome}!\n\nDeseja ir para seu painel de cliente?`)) {
-              window.location.href = 'painel_do_cliente.html';
+              window.location.href = 'cliente_dashboard.html';
             }
           };
         }
@@ -864,7 +901,7 @@
           
           loginBtn.onclick = (e) => {
             e.preventDefault();
-            window.location.href = 'painel_profissional.html';
+            window.location.href = 'profissional_dashboard.html';
           };
         }
       }
