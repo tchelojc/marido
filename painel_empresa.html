@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel da Empresa · Marido de Aluguel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="dados.js"></script>
+  <script src="integracao.js"></script>
+  <style>
+    /* ===== ESTILOS (mantidos os mesmos) ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6fa;
+      color: #1a2634;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .header {
+      background: white;
+      border-radius: 24px;
+      padding: 20px 28px;
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    .profile-info { display: flex; align-items: center; gap: 20px; }
+    .avatar-large { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
+    .emp-name { font-size: 1.4rem; font-weight: 700; }
+    .emp-email { color: #5a6e8a; font-size: 0.8rem; }
+    .btn-logout { background: #eef2ff; border: none; padding: 8px 20px; border-radius: 40px; cursor: pointer; color: #2b4c7c; font-weight: 500; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .card { background: white; border-radius: 24px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .card h3 { margin-bottom: 16px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #eef2ff; padding-bottom: 8px; }
+    .full { grid-column: span 2; }
+    .token-card {
+      background: linear-gradient(135deg, #1e3c72, #2b4c7c);
+      color: white;
+      border-radius: 20px;
+      padding: 16px;
+      text-align: center;
+      margin-top: 8px;
+    }
+    .token-amount { font-size: 2rem; font-weight: 800; }
+    .btn-primary { background: #2b4c7c; color: white; border: none; padding: 10px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-primary:hover { background: #1e3c72; }
+    .btn-success { background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-success:hover { background: #218838; }
+    .btn-danger { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-danger:hover { background: #c82333; }
+    .btn-sm { padding: 6px 12px; border-radius: 30px; font-size: 0.75rem; cursor: pointer; border: none; font-weight: 600; }
+    .linha-item { background: #f8fafc; border-radius: 16px; padding: 12px; margin-bottom: 10px; }
+    .linha-item .header { background: none; padding: 0; margin-bottom: 8px; }
+    .funcionario-tag { background: #eef2ff; padding: 4px 12px; border-radius: 30px; font-size: 0.75rem; display: inline-block; margin: 2px; }
+    .producao-item { background: #f8fafc; border-radius: 16px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+    .producao-item img { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      max-width: 500px;
+      width: 90%;
+      border-radius: 32px;
+      padding: 28px;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .close-modal { position: absolute; top: 18px; right: 22px; font-size: 1.6rem; cursor: pointer; color: #5a6e8a; }
+    .close-modal:hover { color: #1a2634; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.85rem; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border-radius: 16px; border: 1px solid #e2e8f0; font-family: inherit; }
+    .small-text { font-size: 0.75rem; color: #5a6e8a; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; flex-wrap: wrap; }
+    .tab { padding: 8px 16px; border-radius: 40px; cursor: pointer; background: transparent; font-weight: 500; color: #4a5b7a; transition: 0.2s; }
+    .tab:hover { background: #eef2ff; }
+    .tab.active { background: #2b4c7c; color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .empty-state { text-align: center; padding: 30px; color: #5a6e8a; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } .full { grid-column: span 1; } }
+    
+    #toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+      background: #1e3c72; color: white; padding: 14px 22px; border-radius: 40px;
+      font-size: 0.9rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      display: flex; align-items: center; gap: 10px;
+      opacity: 0; transform: translateY(16px); transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.success { background: #155724; }
+    #toast.error { background: #721c24; }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #eef2ff;
+      border-top: 2px solid #2b4c7c;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+
+<div class="container">
+  <div class="header">
+    <div class="profile-info">
+      <img id="empAvatar" class="avatar-large" src="" alt="Empresa">
+      <div>
+        <div class="emp-name" id="empNome">Carregando...</div>
+        <div class="emp-email" id="empEmail"></div>
+        <div class="small-text" id="empResponsavel"></div>
+      </div>
+    </div>
+    <div>
+      <button class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sair</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Saldo da Empresa -->
+    <div class="card">
+      <h3><i class="fas fa-coins"></i> Caixa da Empresa</h3>
+      <div class="token-card">
+        <div>Saldo disponível</div>
+        <div class="token-amount" id="empSaldo">0</div>
+        <div>TOKEN-ALMA</div>
+      </div>
+      <p class="small-text" style="margin-top: 8px;">1 ALMA = R$ 1,00 · Mantenha saldo suficiente para pagar os profissionais.</p>
+      <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn-success btn-sm" id="btnRecarregar"><i class="fas fa-plus"></i> Recarregar</button>
+        <button class="btn-primary btn-sm" id="btnVerExtrato"><i class="fas fa-file-invoice"></i> Extrato</button>
+      </div>
+    </div>
+
+    <!-- Resumo -->
+    <div class="card">
+      <h3><i class="fas fa-chart-bar"></i> Resumo</h3>
+      <div id="resumoContainer">
+        <p><strong>Funcionários:</strong> <span id="totalFuncionarios">0</span></p>
+        <p><strong>Linhas de produção:</strong> <span id="totalLinhas">0</span></p>
+        <p><strong>Serviços em andamento:</strong> <span id="totalServicos">0</span></p>
+        <p><strong>Produção total (m²):</strong> <span id="totalProducao">0</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="card full">
+    <div class="tabs">
+      <div class="tab active" data-tab="linhas">📋 Linhas de Produção</div>
+      <div class="tab" data-tab="funcionarios">👷 Funcionários</div>
+      <div class="tab" data-tab="producao">📊 Produção Diária</div>
+      <div class="tab" data-tab="servicos">📦 Serviços</div>
+    </div>
+
+    <!-- LINHAS DE PRODUÇÃO -->
+    <div id="tab-linhas" class="tab-content active">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+        <h3>Linhas de Produção</h3>
+        <button class="btn-primary btn-sm" id="btnNovaLinha"><i class="fas fa-plus"></i> Nova Linha</button>
+      </div>
+      <div id="linhasContainer"></div>
+    </div>
+
+    <!-- FUNCIONÁRIOS -->
+    <div id="tab-funcionarios" class="tab-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+        <h3>Funcionários Vinculados</h3>
+        <button class="btn-primary btn-sm" id="btnAdicionarFuncionario"><i class="fas fa-user-plus"></i> Adicionar Funcionário</button>
+      </div>
+      <div id="funcionariosContainer"></div>
+    </div>
+
+    <!-- PRODUÇÃO DIÁRIA -->
+    <div id="tab-producao" class="tab-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+        <h3>Registros de Produção</h3>
+        <button class="btn-success btn-sm" id="btnRegistrarProducao"><i class="fas fa-plus"></i> Registrar Produção</button>
+      </div>
+      <div id="producaoContainer"></div>
+    </div>
+
+    <!-- SERVIÇOS -->
+    <div id="tab-servicos" class="tab-content">
+      <h3>Serviços em Andamento</h3>
+      <div id="servicosContainer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVA LINHA -->
+<div id="modalLinha" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeLinhaModal">&times;</span>
+    <h3><i class="fas fa-industry"></i> Nova Linha de Produção</h3>
+    <div class="form-group">
+      <label>Nome da Linha *</label>
+      <input type="text" id="linhaNome" placeholder="Ex: Pintura, Alvenaria...">
+    </div>
+    <div class="form-group">
+      <label>Descrição</label>
+      <textarea id="linhaDescricao" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Supervisor da Linha *</label>
+      <select id="linhaSupervisor">
+        <option value="">Selecione um supervisor</option>
+      </select>
+      <p class="small-text">O supervisor deve ser um profissional cadastrado na plataforma.</p>
+    </div>
+    <button class="btn-primary" id="btnSalvarLinha" style="width:100%;">Criar Linha</button>
+  </div>
+</div>
+
+<!-- MODAL ADICIONAR FUNCIONÁRIO -->
+<div id="modalFuncionario" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeFuncionarioModal">&times;</span>
+    <h3><i class="fas fa-user-plus"></i> Adicionar Funcionário</h3>
+    <p class="small-text">Busque um profissional pelo nome ou e-mail para vinculá-lo à empresa.</p>
+    <div class="form-group">
+      <label>E-mail do Profissional *</label>
+      <input type="email" id="funcEmail" placeholder="email@profissional.com">
+    </div>
+    <div class="form-group">
+      <label>Linha de Produção</label>
+      <select id="funcLinha"><option value="">Selecione uma linha</option></select>
+    </div>
+    <div class="form-group">
+      <label>Observação</label>
+      <input type="text" id="funcObservacao" placeholder="Ex: Funcionário terceirizado">
+    </div>
+    <button class="btn-primary" id="btnSalvarFuncionario" style="width:100%;">Vincular Funcionário</button>
+  </div>
+</div>
+
+<!-- MODAL REGISTRAR PRODUÇÃO -->
+<div id="modalProducao" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeProducaoModal">&times;</span>
+    <h3><i class="fas fa-clipboard-list"></i> Registrar Produção</h3>
+    <div class="form-group">
+      <label>Profissional *</label>
+      <select id="prodProfissional"><option value="">Selecione</option></select>
+    </div>
+    <div class="form-group">
+      <label>Linha de Produção</label>
+      <select id="prodLinha"><option value="">Selecione</option></select>
+    </div>
+    <div class="form-group">
+      <label>Quantidade (m² ou unidade) *</label>
+      <input type="number" id="prodQuantidade" step="0.01" placeholder="0.00">
+    </div>
+    <div class="form-group">
+      <label>Valor Unitário (R$)</label>
+      <input type="number" id="prodValorUnitario" step="0.01" placeholder="0.00">
+    </div>
+    <div class="form-group">
+      <label>Observação</label>
+      <textarea id="prodObservacao" rows="3" placeholder="Detalhes do trabalho realizado..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Foto (opcional)</label>
+      <input type="file" id="prodFoto" accept="image/*">
+      <div id="prodFotoPreview" style="margin-top:8px;"></div>
+    </div>
+    <button class="btn-success" id="btnSalvarProducao" style="width:100%;">Registrar Produção</button>
+  </div>
+</div>
+
+<!-- 🔥 MODAL SENHA DE LIBERAÇÃO -->
+<div id="modalSenhaLiberacao" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeSenhaLiberacaoModal">&times;</span>
+    <h3><i class="fas fa-lock"></i> Autorização de Pagamento</h3>
+    <p style="margin: 16px 0; font-size: 0.9rem; color: #5a6e8a;">
+      Para aprovar este pagamento, você precisa informar a <strong>senha de liberação</strong>.
+      <br><br>
+      <span style="background: #eef2ff; padding: 4px 12px; border-radius: 30px; font-size: 0.8rem;">
+        <i class="fas fa-info-circle"></i> A senha de liberação é a mesma senha de acesso da empresa.
+      </span>
+    </p>
+    
+    <div class="form-group">
+      <label>Senha de Liberação *</label>
+      <input type="password" id="senhaLiberacaoInput" placeholder="Digite a senha de liberação da empresa">
+      <div style="margin-top: 6px;">
+        <button type="button" id="toggleSenhaLiberacao" class="btn-sm" style="background: transparent; border: none; color: #2b4c7c; cursor: pointer;">
+          <i class="fas fa-eye"></i> Mostrar senha
+        </button>
+      </div>
+    </div>
+    
+    <div id="senhaLiberacaoError" style="color: #e74c3c; font-size: 0.85rem; margin-top: 8px; display: none;">
+      <i class="fas fa-exclamation-circle"></i> Senha incorreta. Tente novamente.
+    </div>
+    
+    <div style="display: flex; gap: 12px; margin-top: 16px;">
+      <button class="btn-primary" id="confirmarSenhaLiberacao" style="flex: 1;">
+        <i class="fas fa-check"></i> Confirmar e Aprovar
+      </button>
+      <button class="btn-danger" id="cancelarSenhaLiberacao" style="flex: 1; background: #dc3545;">
+        <i class="fas fa-times"></i> Cancelar
+      </button>
+    </div>
+    
+    <p class="small-text" style="margin-top: 12px; text-align: center;">
+      🔒 A senha de liberação garante que apenas o responsável pela empresa possa autorizar pagamentos.
+    </p>
+  </div>
+</div>
+
+<script>
+  // ========== TOAST ==========
+  function toast(msg, tipo = 'success') {
+    const el = document.getElementById('toast');
+    if (!el) { alert(msg); return; }
+    document.getElementById('toastMsg').textContent = msg;
+    el.className = `show ${tipo}`;
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.className = ''; }, 3500);
+  }
+
+  // ========== SESSÃO E DADOS ==========
+  let empresaAtual = null;
+  let linhas = [];
+  let funcionarios = [];
+  let producoes = [];
+  let profissionaisDisponiveis = [];
+
+  async function carregarEmpresaLogada() {
+    const sess = obterSessao();
+    if (!sess || sess.tipo !== 'empresa') {
+      toast('Sessão expirada. Faça login novamente.', 'error');
+      setTimeout(() => window.location.href = 'marido_aluguel.html', 1500);
+      return null;
+    }
+    try {
+      const resultado = await callBackend("buscar_empresa_por_email", { email: sess.email });
+      if (resultado && resultado.ok && resultado.id) {
+        return resultado.id;
+      }
+      return null;
+    } catch (err) {
+      console.error('Erro ao buscar empresa:', err);
+      return null;
+    }
+  }
+
+  // ========== CARREGAR DADOS ==========
+  async function carregarTodosDados() {
+    if (!empresaAtual) return;
+    
+    try {
+      // Linhas
+      const linhasResult = await callBackend("listar_linhas_por_empresa", { empresaId: empresaAtual.id });
+      linhas = (linhasResult && linhasResult.ok && linhasResult.id) ? linhasResult.id : 
+               (Array.isArray(linhasResult) ? linhasResult : []);
+      
+      // Funcionários
+      const funcResult = await callBackend("listar_funcionarios_por_empresa", { empresaId: empresaAtual.id });
+      funcionarios = (funcResult && funcResult.ok && funcResult.id) ? funcResult.id :
+                     (Array.isArray(funcResult) ? funcResult : []);
+      
+      // Produções
+      const prodResult = await callBackend("listar_producoes_por_empresa", { empresaId: empresaAtual.id });
+      producoes = (prodResult && prodResult.ok && prodResult.id) ? prodResult.id :
+                  (Array.isArray(prodResult) ? prodResult : []);
+      
+      // Profissionais disponíveis
+      const profs = await obterTodosProfissionais();
+      profissionaisDisponiveis = Array.isArray(profs) ? profs : [];
+      
+      // Saldo
+      const saldoResult = await callBackend("obter_saldo", { 
+        usuarioId: empresaAtual.id, 
+        tipo: "empresa" 
+      });
+      if (saldoResult && saldoResult.ok && saldoResult.id?.saldo !== undefined) {
+        document.getElementById('empSaldo').textContent = saldoResult.id.saldo || 0;
+      }
+      
+      renderizarTudo();
+    } catch (err) {
+      console.error('Erro ao carregar dados:', err);
+      toast('Erro ao carregar dados: ' + err.message, 'error');
+    }
+  }
+
+  // ========== RENDERIZAR ==========
+  function renderizarTudo() {
+    renderizarLinhas();
+    renderizarFuncionarios();
+    renderizarProducao();
+    renderizarServicos();
+    atualizarResumo();
+  }
+
+  function renderizarLinhas() {
+    const container = document.getElementById('linhasContainer');
+    if (!linhas.length) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-industry"></i><p>Nenhuma linha de produção cadastrada.</p></div>';
+      return;
+    }
+    container.innerHTML = linhas.map(linha => {
+      const funcs = funcionarios.filter(f => f.linhaId === linha.id);
+      const supervisor = profissionaisDisponiveis.find(p => p.id === linha.supervisorId);
+      return `
+        <div class="linha-item">
+          <div class="header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <div>
+              <strong>${escapeHtml(linha.nome)}</strong>
+              <span class="small-text">${escapeHtml(linha.descricao || '')}</span>
+              ${supervisor ? `<span class="small-text" style="color:#2b4c7c;">👤 Supervisor: ${escapeHtml(supervisor.nome)}</span>` : ''}
+            </div>
+            <div>
+              <span class="small-text">${funcs.length} funcionários</span>
+              <button class="btn-danger btn-sm" onclick="excluirLinha('${linha.id}')"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+          <div>${funcs.map(f => `<span class="funcionario-tag">${escapeHtml(f.profissionalNome || f.profissionalId)}</span>`).join('')}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderizarFuncionarios() {
+    const container = document.getElementById('funcionariosContainer');
+    if (!funcionarios.length) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><p>Nenhum funcionário vinculado.</p></div>';
+      return;
+    }
+    container.innerHTML = funcionarios.map(f => {
+      const linha = linhas.find(l => l.id === f.linhaId);
+      return `
+        <div class="linha-item" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+          <div>
+            <strong>${escapeHtml(f.profissionalNome || f.profissionalId)}</strong>
+            <span class="small-text">${linha ? `Linha: ${escapeHtml(linha.nome)}` : 'Sem linha'}</span>
+            <span class="small-text">Status: ${f.status || 'pendente'}</span>
+          </div>
+          <div>
+            <select onchange="alterarStatusFuncionario('${f.id}', this.value)" class="btn-sm" style="padding:4px 8px;">
+              <option value="pendente" ${f.status === 'pendente' ? 'selected' : ''}>Pendente</option>
+              <option value="ativo" ${f.status === 'ativo' ? 'selected' : ''}>Ativo</option>
+              <option value="inativo" ${f.status === 'inativo' ? 'selected' : ''}>Inativo</option>
+            </select>
+            <button class="btn-danger btn-sm" onclick="removerFuncionario('${f.id}')"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderizarProducao() {
+    const container = document.getElementById('producaoContainer');
+    if (!producoes.length) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-clipboard-list"></i><p>Nenhum registro de produção.</p></div>';
+      return;
+    }
+    const sorted = [...producoes].sort((a,b) => new Date(b.data) - new Date(a.data));
+    container.innerHTML = sorted.map(p => {
+      const prof = profissionaisDisponiveis.find(pr => pr.id === p.profissionalId);
+      const statusColor = p.status === 'aprovado' ? '#28a745' : 
+                          p.status === 'rejeitado' ? '#dc3545' : '#ffc107';
+      return `
+        <div class="producao-item">
+          <div>
+            <strong>${escapeHtml(prof?.nome || p.profissionalId)}</strong>
+            <span class="small-text">${p.quantidade} ${p.unidade || 'm²'}</span>
+            <span class="small-text">R$ ${(p.valorTotal || 0).toFixed(2)}</span>
+            <br>
+            <span class="small-text">${new Date(p.data).toLocaleDateString('pt-BR')}</span>
+            ${p.fotoUrl ? `<img src="${escapeHtml(p.fotoUrl)}" alt="Foto" style="width:40px;height:40px;border-radius:8px;object-fit:cover;">` : ''}
+          </div>
+          <div>
+            <span style="color:${statusColor}; font-weight:600;">${p.status || 'pendente'}</span>
+            ${p.status === 'pendente' ? `
+              <button class="btn-success btn-sm" onclick="aprovarProducao('${p.id}', 'aprovado')"><i class="fas fa-check"></i></button>
+              <button class="btn-danger btn-sm" onclick="aprovarProducao('${p.id}', 'rejeitado')"><i class="fas fa-times"></i></button>
+            ` : ''}
+            ${p.observacao ? `<span class="small-text">${escapeHtml(p.observacao)}</span>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderizarServicos() {
+    const container = document.getElementById('servicosContainer');
+    container.innerHTML = '<div class="empty-state"><i class="fas fa-box"></i><p>Nenhum serviço em andamento.</p></div>';
+  }
+
+  function atualizarResumo() {
+    document.getElementById('totalFuncionarios').textContent = funcionarios.length;
+    document.getElementById('totalLinhas').textContent = linhas.length;
+    document.getElementById('totalServicos').textContent = 0;
+    const totalM2 = producoes.reduce((acc, p) => acc + (p.quantidade || 0), 0);
+    document.getElementById('totalProducao').textContent = totalM2.toFixed(2);
+  }
+
+  // ========== AÇÕES ==========
+  window.excluirLinha = async (linhaId) => {
+    if (!confirm('Excluir esta linha de produção?')) return;
+    try {
+      const resultado = await callBackend("atualizar_linha", { id: linhaId, ativo: false });
+      if (resultado && resultado.ok) {
+        toast('Linha excluída com sucesso!', 'success');
+        await carregarTodosDados();
+      }
+    } catch (err) {
+      toast('Erro ao excluir linha: ' + err.message, 'error');
+    }
+  };
+
+  window.alterarStatusFuncionario = async (funcId, status) => {
+    try {
+      const resultado = await callBackend("atualizar_status_funcionario", { id: funcId, status });
+      if (resultado && resultado.ok) {
+        toast('Status atualizado!', 'success');
+        await carregarTodosDados();
+      }
+    } catch (err) {
+      toast('Erro ao atualizar status: ' + err.message, 'error');
+    }
+  };
+
+  window.removerFuncionario = async (funcId) => {
+    if (!confirm('Remover este funcionário da empresa?')) return;
+    try {
+      const resultado = await callBackend("remover_funcionario_empresa", { id: funcId });
+      if (resultado && resultado.ok) {
+        toast('Funcionário removido!', 'success');
+        await carregarTodosDados();
+      }
+    } catch (err) {
+      toast('Erro ao remover funcionário: ' + err.message, 'error');
+    }
+  };
+
+  // ============================================================
+  // 🔥 ========== SENHA DE LIBERAÇÃO ========== 🔥
+  // ============================================================
+
+  let producaoPendenteId = null;
+  let producaoPendenteStatus = null;
+
+  function abrirModalSenhaLiberacao(producaoId, status) {
+    producaoPendenteId = producaoId;
+    producaoPendenteStatus = status;
+    document.getElementById('senhaLiberacaoInput').value = '';
+    document.getElementById('senhaLiberacaoError').style.display = 'none';
+    document.getElementById('modalSenhaLiberacao').style.display = 'flex';
+  }
+
+  function fecharModalSenhaLiberacao() {
+    document.getElementById('modalSenhaLiberacao').style.display = 'none';
+    producaoPendenteId = null;
+    producaoPendenteStatus = null;
+  }
+
+  // Toggle mostrar senha
+  document.getElementById('toggleSenhaLiberacao').addEventListener('click', function() {
+    const input = document.getElementById('senhaLiberacaoInput');
+    if (input.type === 'password') {
+      input.type = 'text';
+      this.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar senha';
+    } else {
+      input.type = 'password';
+      this.innerHTML = '<i class="fas fa-eye"></i> Mostrar senha';
+    }
+  });
+
+  // Confirmar senha e aprovar
+  document.getElementById('confirmarSenhaLiberacao').addEventListener('click', async function() {
+    const senha = document.getElementById('senhaLiberacaoInput').value.trim();
+    
+    if (!senha) {
+      document.getElementById('senhaLiberacaoError').textContent = 'Digite a senha de liberação.';
+      document.getElementById('senhaLiberacaoError').style.display = 'block';
+      return;
+    }
+    
+    try {
+      this.disabled = true;
+      this.innerHTML = '<span class="loading-spinner"></span> Validando...';
+      
+      const resultado = await callBackend("aprovar_producao", {
+        id: producaoPendenteId,
+        status: producaoPendenteStatus,
+        aprovadoPor: empresaAtual.id,
+        senhaLiberacao: senha
+      });
+      
+      if (resultado && resultado.ok) {
+        toast(`Produção ${producaoPendenteStatus === 'aprovado' ? 'aprovada' : 'rejeitada'} com sucesso!`, 
+              producaoPendenteStatus === 'aprovado' ? 'success' : 'error');
+        fecharModalSenhaLiberacao();
+        await carregarTodosDados();
+      } else {
+        throw new Error(resultado?.erro || 'Erro ao aprovar produção');
+      }
+    } catch (err) {
+      console.error('Erro ao aprovar produção:', err);
+      
+      if (err.message.includes('Senha de liberação incorreta')) {
+        document.getElementById('senhaLiberacaoError').textContent = '❌ Senha de liberação incorreta. Tente novamente.';
+        document.getElementById('senhaLiberacaoError').style.display = 'block';
+        document.getElementById('senhaLiberacaoInput').value = '';
+        document.getElementById('senhaLiberacaoInput').focus();
+      } else {
+        toast('Erro ao aprovar produção: ' + err.message, 'error');
+        fecharModalSenhaLiberacao();
+      }
+    } finally {
+      this.disabled = false;
+      this.innerHTML = '<i class="fas fa-check"></i> Confirmar e Aprovar';
+    }
+  });
+
+  // Cancelar
+  document.getElementById('cancelarSenhaLiberacao').addEventListener('click', fecharModalSenhaLiberacao);
+  document.getElementById('closeSenhaLiberacaoModal').addEventListener('click', fecharModalSenhaLiberacao);
+  window.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('modalSenhaLiberacao')) {
+      fecharModalSenhaLiberacao();
+    }
+  });
+
+  // ============================================================
+  // 🔥 ========== APROVAR PRODUÇÃO (SUBSTITUÍDA) ========== 🔥
+  // ============================================================
+
+  // Substitui a função antiga
+  window.aprovarProducao = async (prodId, status) => {
+    abrirModalSenhaLiberacao(prodId, status);
+  };
+
+  // ============================================================
+  // ========== MODAIS ==========
+  // ============================================================
+
+  function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+  // Nova Linha
+  document.getElementById('btnNovaLinha').onclick = async () => {
+    const profs = await obterTodosProfissionais();
+    const supervisorSelect = document.getElementById('linhaSupervisor');
+    supervisorSelect.innerHTML = '<option value="">Selecione um supervisor</option>' + 
+      profs.filter(p => p.id).map(p => 
+        `<option value="${p.id}">${escapeHtml(p.nome)} (${escapeHtml(p.email)})</option>`
+      ).join('');
+    openModal('modalLinha');
+  };
+  document.getElementById('closeLinhaModal').onclick = () => closeModal('modalLinha');
+  
+  document.getElementById('btnSalvarLinha').onclick = async () => {
+    const nome = document.getElementById('linhaNome').value.trim();
+    const descricao = document.getElementById('linhaDescricao').value.trim();
+    const supervisorId = document.getElementById('linhaSupervisor').value;
+    
+    if (!nome) { toast('Informe o nome da linha.', 'error'); return; }
+    if (!supervisorId) { toast('Selecione um supervisor para a linha.', 'error'); return; }
+    
+    try {
+      const resultado = await callBackend("cadastrar_linha", {
+        empresaId: empresaAtual.id,
+        nome,
+        descricao,
+        supervisorId
+      });
+      if (resultado && resultado.ok) {
+        toast('Linha criada com sucesso!', 'success');
+        closeModal('modalLinha');
+        document.getElementById('linhaNome').value = '';
+        document.getElementById('linhaDescricao').value = '';
+        await carregarTodosDados();
+      }
+    } catch (err) {
+      toast('Erro ao criar linha: ' + err.message, 'error');
+    }
+  };
+
+  // Adicionar Funcionário
+  document.getElementById('btnAdicionarFuncionario').onclick = () => {
+    const select = document.getElementById('funcLinha');
+    select.innerHTML = '<option value="">Selecione uma linha</option>' + 
+      linhas.map(l => `<option value="${l.id}">${escapeHtml(l.nome)}</option>`).join('');
+    openModal('modalFuncionario');
+  };
+  document.getElementById('closeFuncionarioModal').onclick = () => closeModal('modalFuncionario');
+
+  document.getElementById('btnSalvarFuncionario').onclick = async () => {
+    const email = document.getElementById('funcEmail').value.trim();
+    const linhaId = document.getElementById('funcLinha').value;
+    const observacao = document.getElementById('funcObservacao').value.trim();
+    if (!email) { toast('Informe o e-mail do profissional.', 'error'); return; }
+    
+    try {
+      const profissional = await buscarProfissionalPorEmail(email);
+      if (!profissional) {
+        toast('Profissional não encontrado. Verifique o e-mail.', 'error');
+        return;
+      }
+      
+      const resultado = await callBackend("adicionar_funcionario_empresa", {
+        empresaId: empresaAtual.id,
+        profissionalId: profissional.id,
+        profissionalNome: profissional.nome,
+        observacao,
+        linhaId
+      });
+      
+      if (resultado && resultado.ok) {
+        toast('Funcionário vinculado com sucesso!', 'success');
+        closeModal('modalFuncionario');
+        document.getElementById('funcEmail').value = '';
+        document.getElementById('funcObservacao').value = '';
+        await carregarTodosDados();
+      }
+    } catch (err) {
+      toast('Erro ao vincular funcionário: ' + err.message, 'error');
+    }
+  };
+
+  // Registrar Produção
+  document.getElementById('btnRegistrarProducao').onclick = () => {
+    const profSelect = document.getElementById('prodProfissional');
+    profSelect.innerHTML = '<option value="">Selecione</option>' + 
+      funcionarios.filter(f => f.status === 'ativo').map(f => 
+        `<option value="${f.profissionalId}">${escapeHtml(f.profissionalNome || f.profissionalId)}</option>`
+      ).join('');
+    
+    const linhaSelect = document.getElementById('prodLinha');
+    linhaSelect.innerHTML = '<option value="">Selecione</option>' + 
+      linhas.map(l => `<option value="${l.id}">${escapeHtml(l.nome)}</option>`).join('');
+    
+    document.getElementById('prodFotoPreview').innerHTML = '';
+    openModal('modalProducao');
+  };
+  document.getElementById('closeProducaoModal').onclick = () => closeModal('modalProducao');
+
+  // Preview da foto
+  document.getElementById('prodFoto').onchange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        document.getElementById('prodFotoPreview').innerHTML = 
+          `<img src="${ev.target.result}" style="max-width:100%; max-height:150px; border-radius:12px;">`;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  document.getElementById('btnSalvarProducao').onclick = async () => {
+    const profissionalId = document.getElementById('prodProfissional').value;
+    const linhaId = document.getElementById('prodLinha').value;
+    const quantidade = parseFloat(document.getElementById('prodQuantidade').value);
+    const valorUnitario = parseFloat(document.getElementById('prodValorUnitario').value) || 0;
+    const observacao = document.getElementById('prodObservacao').value.trim();
+    const fotoInput = document.getElementById('prodFoto');
+    
+    if (!profissionalId) { toast('Selecione um profissional.', 'error'); return; }
+    if (!quantidade || quantidade <= 0) { toast('Informe uma quantidade válida.', 'error'); return; }
+    
+    try {
+      let fotoUrl = '';
+      if (fotoInput.files && fotoInput.files[0]) {
+        const file = fotoInput.files[0];
+        if (file.size <= 5 * 1024 * 1024) {
+          fotoUrl = await uploadImageToHost(file, 800, 0.7);
+        } else {
+          toast('Foto muito grande. Máximo 5MB.', 'error');
+          return;
+        }
+      }
+      
+      const resultado = await callBackend("registrar_producao", {
+        empresaId: empresaAtual.id,
+        linhaId,
+        profissionalId,
+        quantidade,
+        unidade: 'm²',
+        fotoUrl,
+        observacao,
+        valorUnitario,
+        valorTotal: quantidade * valorUnitario,
+        tipo: 'execucao'
+      });
+      
+      if (resultado && resultado.ok) {
+        toast('Produção registrada com sucesso!', 'success');
+        closeModal('modalProducao');
+        document.getElementById('prodQuantidade').value = '';
+        document.getElementById('prodObservacao').value = '';
+        document.getElementById('prodValorUnitario').value = '';
+        document.getElementById('prodFoto').value = '';
+        document.getElementById('prodFotoPreview').innerHTML = '';
+        await carregarTodosDados();
+      }
+    } catch (err) {
+      toast('Erro ao registrar produção: ' + err.message, 'error');
+    }
+  };
+
+  // ========== TABS ==========
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ========== UTILITY ==========
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  // ========== INICIALIZAÇÃO ==========
+  (async () => {
+    empresaAtual = await carregarEmpresaLogada();
+    if (!empresaAtual) return;
+    
+    document.getElementById('empNome').textContent = empresaAtual.nome || 'Empresa';
+    document.getElementById('empEmail').textContent = empresaAtual.email || '';
+    document.getElementById('empResponsavel').textContent = `Responsável: ${empresaAtual.responsavel || 'N/A'}`;
+    document.getElementById('empAvatar').src = empresaAtual.avatar || `https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(empresaAtual.nome || 'E')}`;
+    
+    document.getElementById('logoutBtn').onclick = () => {
+      limparSessao();
+      window.location.href = 'marido_aluguel.html';
+    };
+    
+    document.getElementById('btnRecarregar').onclick = () => {
+      window.location.href = `pagamento.html?cliente=${empresaAtual.id}&nome=${encodeURIComponent(empresaAtual.nome)}&email=${encodeURIComponent(empresaAtual.email)}&valor=100`;
+    };
+    
+    await carregarTodosDados();
+    
+    setInterval(carregarTodosDados, 30000);
+  })();
+</script>
+</body>
+</html>
