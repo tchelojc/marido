@@ -1,6 +1,6 @@
 // ========== CONFIGURAÇÃO ==========
 // 🔥 USANDO O PROXY CLOUDFLARE (MAIS SEGURO)
-const PROXY_CLOUDFLARE = "https://almafluxo.uk/proxy";
+const PROXY_CLOUDFLARE = "https://tchelojc.github.io";
 
 // 🔥 ROTA PARA O BACKEND DO MARIDO
 const BACKEND_URL = `${PROXY_CLOUDFLARE}/marido`;
