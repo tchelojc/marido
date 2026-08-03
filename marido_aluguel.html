@@ -364,6 +364,54 @@
       .filters-card { position: static; margin-bottom: 20px; }
       .services-grid { grid-template-columns: 1fr; }
     }
+    /* ========== ESTILOS PARA EMPRESAS ========== */
+    .empresa-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .cargos-container {
+      margin: 12px 0;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 16px;
+    }
+    .cargo-tag {
+      background: #eef2ff;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      display: inline-block;
+      margin: 2px;
+    }
+    .badge-empresa {
+      background: #eef2ff;
+      color: #1e3c72;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 30px;
+      display: inline-block;
+    }
+    .badge-cnpj {
+      background: #e8edf8;
+      color: #1e3c72;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 30px;
+      display: inline-block;
+    }
+    .badge-responsavel {
+      background: #d4edda;
+      color: #155724;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 30px;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
@@ -408,10 +456,12 @@
 
     <!-- CONTEÚDO PRINCIPAL -->
     <div>
+      <!-- 🔥 TABS COM EMPRESAS -->
       <div class="tabs">
         <div class="tab active" data-tab="todos">📋 Todos os serviços</div>
         <div class="tab" data-tab="rapidos">⚡ Mais rápidos (produtividade)</div>
         <div class="tab" data-tab="lucro">💰 Maior lucro/hora</div>
+        <div class="tab" data-tab="empresas">🏢 Empresas</div>
       </div>
 
       <div class="search-header">
@@ -428,11 +478,18 @@
         </select>
       </div>
 
-      <div id="servicesContainer" class="services-grid"><div class="empty-state"><div class="loading-spinner"></div><p>Carregando serviços...</p></div></div>
+      <!-- CONTAINER DE SERVIÇOS -->
+      <div id="servicesContainer" class="services-grid">
+        <div class="empty-state"><div class="loading-spinner"></div><p>Carregando serviços...</p></div>
+      </div>
+
+      <!-- 🔥 CONTAINER DE EMPRESAS -->
+      <div id="empresasContainer" class="services-grid" style="display: none;">
+        <div class="empty-state"><div class="loading-spinner"></div><p>Carregando empresas...</p></div>
+      </div>
     </div>
   </div>
   
-  <!-- FOOTER COM LINK PARA REGULAMENTO -->
   <!-- FOOTER -->
   <div class="footer">
     <div class="footer-links">
@@ -442,12 +499,9 @@
       <a href="#" id="openPrivacyPolicy" style="cursor: pointer;">
         <i class="fas fa-lock"></i> Política de Privacidade
       </a>
-      
-      <!-- 🔥 NOVO: Link para cadastro de empresa -->
       <a href="cadastro_empresa.html" style="cursor: pointer;">
         <i class="fas fa-building"></i> Cadastrar Empresa
       </a>
-      
       <a href="mailto:almafluxo@almafluxo.uk">
         <i class="fas fa-envelope"></i> Contato
       </a>
@@ -492,7 +546,6 @@
       <a href="cadastro.html" style="color: #2b4c7c; text-decoration: none;">Não tem conta? Cadastre-se</a>
     </div>
     
-    <!-- 🔥 NOVO: Link para cadastro de empresa -->
     <div style="text-align: center; margin-top: 8px;">
       <a href="cadastro_empresa.html" style="color: #2b4c7c; text-decoration: none; font-size: 0.8rem;">
         <i class="fas fa-building"></i> Sou uma empresa
@@ -643,7 +696,6 @@
                   return;
               }
           } catch (empErr) {
-              // Se erro for "Empresa não encontrada", mostra erro do cliente
               if (!empErr.message.includes('não encontrada')) {
                   throw empErr;
               }
@@ -855,20 +907,252 @@
   });
   document.getElementById('searchInput').addEventListener('input', () => aplicarFiltrosEOrdenacao());
   document.getElementById('sortSelect').addEventListener('change', () => aplicarFiltrosEOrdenacao());
+
+  // ============================================================
+  // 🔥 GERENCIAMENTO DE ABAS (COM EMPRESAS)
+  // ============================================================
   document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
+    tab.addEventListener('click', function() {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentTab = tab.dataset.tab;
-      aplicarFiltrosEOrdenacao();
+      this.classList.add('active');
+      
+      const tabName = this.dataset.tab;
+      const servicesContainer = document.getElementById('servicesContainer');
+      const empresasContainer = document.getElementById('empresasContainer');
+      
+      // Esconde todos os containers
+      servicesContainer.style.display = 'none';
+      empresasContainer.style.display = 'none';
+      
+      if (tabName === 'empresas') {
+        // Mostra empresas
+        empresasContainer.style.display = 'grid';
+        // Carrega empresas se ainda não foram carregadas
+        if (empresasData.length === 0) {
+          carregarEmpresas();
+        }
+      } else {
+        // Mostra serviços
+        servicesContainer.style.display = 'grid';
+        currentTab = tabName;
+        aplicarFiltrosEOrdenacao();
+      }
     });
   });
 
   document.getElementById('closeCalcModal')?.addEventListener('click', () => document.getElementById('calcModal').style.display = 'none');
   window.addEventListener('click', (e) => { if (e.target === document.getElementById('calcModal')) document.getElementById('calcModal').style.display = 'none'; });
 
+  // ============================================================
+  // 🔥 FUNÇÕES PARA EMPRESAS
+  // ============================================================
+
+  let empresasData = [];
+  let cargosEmpresa = {};
+
+  async function carregarEmpresas() {
+    const container = document.getElementById('empresasContainer');
+    container.innerHTML = '<div class="empty-state"><div class="loading-spinner"></div><p>Carregando empresas...</p></div>';
+    
+    try {
+        const resultado = await callBackend("listar_empresas", {}, 30);
+        
+        if (resultado && Array.isArray(resultado)) {
+            empresasData = resultado.filter(e => e.ativo !== false);
+        } else if (resultado?.ok && Array.isArray(resultado.id)) {
+            empresasData = resultado.id.filter(e => e.ativo !== false);
+        } else {
+            empresasData = [];
+        }
+        
+        // Para cada empresa, buscar seus serviços/linhas de produção
+        for (const empresa of empresasData) {
+            try {
+                const linhas = await callBackend("listar_linhas_por_empresa", { empresaId: empresa.id }, 20);
+                if (linhas && Array.isArray(linhas)) {
+                    cargosEmpresa[empresa.id] = linhas.filter(l => l.ativo !== false);
+                } else if (linhas?.ok && Array.isArray(linhas.id)) {
+                    cargosEmpresa[empresa.id] = linhas.id.filter(l => l.ativo !== false);
+                } else {
+                    cargosEmpresa[empresa.id] = [];
+                }
+            } catch (err) {
+                console.warn(`Erro ao buscar linhas da empresa ${empresa.id}:`, err);
+                cargosEmpresa[empresa.id] = [];
+            }
+        }
+        
+        renderizarEmpresas();
+    } catch (err) {
+        console.error("Erro ao carregar empresas:", err);
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Erro ao carregar empresas. Tente novamente.</p>
+            </div>
+        `;
+    }
+  }
+
+  function renderizarEmpresas() {
+    const container = document.getElementById('empresasContainer');
+    
+    if (!empresasData.length) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-building"></i>
+                <p>Nenhuma empresa cadastrada no momento.</p>
+                <p style="font-size: 0.8rem; margin-top: 8px;">
+                    <a href="cadastro_empresa.html" style="color: #2b4c7c;">Cadastre sua empresa aqui</a>
+                </p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = empresasData.map(empresa => {
+        const cargos = cargosEmpresa[empresa.id] || [];
+        
+        return `
+            <div class="service-card">
+                <div class="card-content">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <img src="${empresa.avatar || `https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(empresa.nome || 'E')}`}" 
+                             alt="${escapeHtml(empresa.nome)}" 
+                             class="empresa-avatar">
+                        <div>
+                            <div class="card-title" style="font-size: 1rem;">${escapeHtml(empresa.nome)}</div>
+                            ${empresa.nomeFantasia ? `<span class="small-text">${escapeHtml(empresa.nomeFantasia)}</span>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                        <span class="badge-empresa">🏢 Empresa</span>
+                        ${empresa.cnpj ? `<span class="badge-cnpj">CNPJ: ${escapeHtml(empresa.cnpj)}</span>` : ''}
+                        ${empresa.responsavel ? `<span class="badge-responsavel">👤 ${escapeHtml(empresa.responsavel)}</span>` : ''}
+                    </div>
+                    
+                    <div class="cargos-container">
+                        <div style="font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">
+                            <i class="fas fa-briefcase"></i> Cargos disponíveis (${cargos.length})
+                        </div>
+                        ${cargos.length > 0 ? `
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                ${cargos.map(linha => `
+                                    <span class="cargo-tag">
+                                        ${escapeHtml(linha.nome)}
+                                        ${linha.descricao ? `<span class="small-text"> - ${escapeHtml(linha.descricao)}</span>` : ''}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        ` : `
+                            <p class="small-text">Nenhum cargo disponível no momento.</p>
+                        `}
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <button class="btn-sm btn-sm-primary" onclick="verEmpresa('${empresa.id}')" style="flex: 1;">
+                            <i class="fas fa-eye"></i> Ver detalhes
+                        </button>
+                        <button class="btn-sm btn-sm-outline" onclick="contatarEmpresa('${empresa.id}')" style="flex: 1;">
+                            <i class="fas fa-envelope"></i> Contatar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+  }
+
+  function verEmpresa(empresaId) {
+    const empresa = empresasData.find(e => e.id === empresaId);
+    if (!empresa) {
+        toast('Empresa não encontrada.', 'error');
+        return;
+    }
+    
+    const cargos = cargosEmpresa[empresaId] || [];
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.id = 'modalEmpresaDetalhes';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-modal" onclick="document.getElementById('modalEmpresaDetalhes').remove()">&times;</span>
+            <h3 style="display: flex; align-items: center; gap: 12px;">
+                <img src="${empresa.avatar || `https://ui-avatars.com/api/?background=2b4c7c&color=fff&name=${encodeURIComponent(empresa.nome || 'E')}`}" 
+                     style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                ${escapeHtml(empresa.nome)}
+            </h3>
+            <div style="margin: 16px 0;">
+                ${empresa.nomeFantasia ? `<p><strong>Nome Fantasia:</strong> ${escapeHtml(empresa.nomeFantasia)}</p>` : ''}
+                ${empresa.cnpj ? `<p><strong>CNPJ:</strong> ${escapeHtml(empresa.cnpj)}</p>` : ''}
+                ${empresa.responsavel ? `<p><strong>Responsável:</strong> ${escapeHtml(empresa.responsavel)}</p>` : ''}
+                ${empresa.telefone ? `<p><strong>Telefone:</strong> ${escapeHtml(empresa.telefone)}</p>` : ''}
+                ${empresa.endereco ? `<p><strong>Endereço:</strong> ${escapeHtml(empresa.endereco)}</p>` : ''}
+                <p><strong>Email:</strong> ${escapeHtml(empresa.email)}</p>
+            </div>
+            
+            <hr style="margin: 16px 0;">
+            
+            <h4 style="margin-bottom: 12px;"><i class="fas fa-briefcase"></i> Cargos disponíveis (${cargos.length})</h4>
+            ${cargos.length > 0 ? `
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    ${cargos.map(linha => `
+                        <div style="background: #f8fafc; padding: 12px; border-radius: 12px;">
+                            <strong>${escapeHtml(linha.nome)}</strong>
+                            ${linha.descricao ? `<span class="small-text"> - ${escapeHtml(linha.descricao)}</span>` : ''}
+                            ${linha.supervisorId ? `<span class="small-text" style="color: #2b4c7c;">👤 Supervisor: ID ${escapeHtml(linha.supervisorId)}</span>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            ` : `
+                <p class="small-text">Nenhum cargo disponível no momento.</p>
+            `}
+            
+            <button class="btn-primary" onclick="contatarEmpresa('${empresa.id}')" style="width:100%; margin-top: 16px;">
+                <i class="fas fa-envelope"></i> Entrar em contato
+            </button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  function contatarEmpresa(empresaId) {
+    const empresa = empresasData.find(e => e.id === empresaId);
+    if (!empresa) {
+        toast('Empresa não encontrada.', 'error');
+        return;
+    }
+    
+    const sess = obterSessao();
+    if (!sess || !sess.autenticado) {
+        toast('Faça login para contatar a empresa.', 'error');
+        openAuthModal();
+        return;
+    }
+    
+    const subject = encodeURIComponent(`Contato sobre vagas - ${empresa.nome}`);
+    const body = encodeURIComponent(
+        `Olá ${empresa.nome},\n\n` +
+        `Gostaria de mais informações sobre as vagas disponíveis em sua empresa.\n\n` +
+        `Meu nome: \n` +
+        `Telefone: \n` +
+        `Experiência: \n\n` +
+        `Aguardo retorno.\n\n` +
+        `Atenciosamente.`
+    );
+    window.location.href = `mailto:${empresa.email}?subject=${subject}&body=${body}`;
+  }
+
   // Inicialização
   carregarServicos();
+
+  // 🔥 Pré-carregar empresas em background
+  setTimeout(() => {
+      carregarEmpresas();
+  }, 3000);
 
   (async function atualizarBotaoLogin() {
     const sess = obterSessao();
@@ -904,9 +1188,21 @@
             window.location.href = 'profissional_dashboard.html';
           };
         }
+      } else if (sess.tipo === 'empresa') {
+        const empresa = await buscarEmpresaPorId(sess.usuarioId);
+        if (empresa) {
+          loginBtn.innerHTML = `<i class="fas fa-building"></i> Minha Empresa`;
+          loginBtn.style.background = "#e8edf8";
+          loginBtn.style.border = "1px solid #2b4c7c";
+          loginBtn.style.color = "#1e3c72";
+          
+          loginBtn.onclick = (e) => {
+            e.preventDefault();
+            window.location.href = 'painel_empresa.html';
+          };
+        }
       }
     } else {
-      // Usuário não logado - comportamento padrão
       loginBtn.onclick = () => openAuthModal();
     }
   })();
