@@ -1,9 +1,13 @@
 // ========== CONFIGURAÇÃO ==========
-// URL DO APPSCRIPT - VERSÃO 13 (COM PROXY SEGURO IMGBB)
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbynK9JCuFxPRrmU9j6PivKjujzAla1Q7H_7uc2759t6OagcN43hKdO8ZIs-SwCyBYLm0Q/exec";
+// 🔥 USANDO O PROXY CLOUDFLARE (MAIS SEGURO)
+const PROXY_CLOUDFLARE = "https://almafluxo.uk/proxy";
 
-// ✅ CHAVE IMGBB PROTEGIDA NO APPS SCRIPT (NÃO EXPOSTA NO GITHUB)
-// O upload de imagens agora é feito via proxy seguro no backend
+// 🔥 ROTA PARA O BACKEND DO MARIDO
+const BACKEND_URL = `${PROXY_CLOUDFLARE}/marido`;
+
+// 🔥 A API KEY DO IMGBB AGORA É PROTEGIDA NO WORKER
+// O frontend NUNCA mais verá a API Key!
+// A rota de upload é: ${PROXY_CLOUDFLARE}/marido/upload
 
 // ========== FUNÇÃO BASE COM POLLING E TIMEOUT ==========
 async function callBackend(acao, dados = {}, timeoutSegundos = 45) {
@@ -44,7 +48,7 @@ async function callBackend(acao, dados = {}, timeoutSegundos = 45) {
   }
 }
 
-// ========== FUNÇÕES DE IMAGEM (VIA PROXY SEGURO NO APPS SCRIPT) ==========
+// ========== FUNÇÕES DE IMAGEM ==========
 
 /**
  * Compressão de imagem antes do upload
@@ -69,34 +73,22 @@ function compressImage(base64, maxWidth = 800, quality = 0.7, callback) {
 }
 
 /**
- * Faz upload de uma imagem para o ImgBB através do proxy seguro no Apps Script
+ * Função auxiliar: DataURL para Blob
  */
-async function uploadParaImgBB(base64Image) {
-    try {
-        let imageData = base64Image;
-        if (base64Image.includes(',')) {
-            imageData = base64Image.split(',')[1];
-        }
-        
-        // 🔒 Upload via proxy seguro no Apps Script (chave protegida)
-        const resultado = await callBackend("upload_imagem_imgbb", { 
-            imagem: imageData 
-        }, 45);
-        
-        if (resultado?.ok && resultado.url) {
-            console.log('✅ Upload ImgBB realizado com sucesso:', resultado.url);
-            return resultado.url;
-        } else {
-            throw new Error(resultado?.erro || 'Falha no upload para ImgBB');
-        }
-    } catch (err) {
-        console.error('❌ Erro no upload para ImgBB:', err);
-        throw err;
+function dataURLtoBlob(dataURL) {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
     }
+    return new Blob([u8arr], { type: mime });
 }
 
 /**
- * Upload de arquivo com compressão e envio via proxy seguro
+ * Upload de arquivo via Proxy (ImgBB protegido)
  */
 async function uploadImageToHost(file, maxWidth = 800, quality = 0.7) {
     return new Promise((resolve, reject) => {
@@ -109,9 +101,22 @@ async function uploadImageToHost(file, maxWidth = 800, quality = 0.7) {
         reader.onload = (ev) => {
             compressImage(ev.target.result, maxWidth, quality, async (compressedBase64) => {
                 try {
-                    // 🔒 Upload via proxy seguro no Apps Script
-                    const url = await uploadParaImgBB(compressedBase64);
-                    resolve(url);
+                    // 🔥 ENVIA PARA O PROXY (NÃO DIRETO PARA IMGBB)
+                    const formData = new FormData();
+                    formData.append('image', dataURLtoBlob(compressedBase64));
+                    
+                    const response = await fetch(`${PROXY_CLOUDFLARE}/marido/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        resolve(result.data.url);
+                    } else {
+                        throw new Error(result.error || 'Falha no upload');
+                    }
                 } catch (err) {
                     reject(err);
                 }
@@ -123,13 +128,15 @@ async function uploadImageToHost(file, maxWidth = 800, quality = 0.7) {
 }
 
 /**
- * Testa a conexão com o ImgBB via proxy seguro
+ * Testa a conexão com o ImgBB via Proxy
  */
 async function testarImgBB() {
     try {
-        // Pixel de teste minúsculo em base64
-        const testPixel = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
-        const url = await uploadParaImgBB(testPixel);
+        const testPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+        const blob = dataURLtoBlob(testPixel);
+        const file = new File([blob], 'test.png', { type: 'image/png' });
+        
+        const url = await uploadImageToHost(file);
         console.log("✅ Teste ImgBB OK! URL:", url);
         return { sucesso: true, url: url };
     } catch (err) {
@@ -138,14 +145,16 @@ async function testarImgBB() {
     }
 }
 
-// ========== FUNÇÕES DE FOTO (via proxy seguro) ==========
+// ========== FUNÇÕES DE FOTO (com Proxy) ==========
 
 /**
- * Adiciona foto do serviço - upload via proxy seguro e salva URL no backend
+ * Adiciona foto do serviço - faz upload via Proxy e salva URL no backend
  */
 async function adicionarFotoServico(profissionalId, imagemBase64, legenda) {
     try {
-        const imageUrl = await uploadParaImgBB(imagemBase64);
+        const blob = dataURLtoBlob(imagemBase64);
+        const file = new File([blob], 'foto.jpg', { type: 'image/jpeg' });
+        const imageUrl = await uploadImageToHost(file);
         
         const resultado = await callBackend("adicionar_foto_servico", { 
             profissionalId, 
@@ -183,11 +192,13 @@ async function removerFotoServico(fotoId) {
 }
 
 /**
- * Upload de foto de perfil (avatar ou capa) via proxy seguro
+ * Upload de foto de perfil (avatar ou capa) via Proxy
  */
 async function uploadFotoPerfil(imagemBase64, tipo, profissionalId) {
     try {
-        const imageUrl = await uploadParaImgBB(imagemBase64);
+        const blob = dataURLtoBlob(imagemBase64);
+        const file = new File([blob], 'perfil.jpg', { type: 'image/jpeg' });
+        const imageUrl = await uploadImageToHost(file);
         
         const resultado = await callBackend("atualizar_foto_perfil", {
             profissionalId,
@@ -199,6 +210,18 @@ async function uploadFotoPerfil(imagemBase64, tipo, profissionalId) {
     } catch (err) {
         console.error("Erro ao atualizar foto de perfil:", err);
         return { success: false, error: err.message };
+    }
+}
+
+// ========== FUNÇÃO PARA OBTER CONFIGURAÇÃO ==========
+async function getMaridoConfig() {
+    try {
+        const response = await fetch(`${PROXY_CLOUDFLARE}/marido-config`);
+        const result = await response.json();
+        return result;
+    } catch (err) {
+        console.error('Erro ao obter configuração:', err);
+        return null;
     }
 }
 
@@ -568,7 +591,7 @@ async function inicializarSistemaBackend() {
     
     const imgbbTest = await testarImgBB();
     if (imgbbTest.sucesso) {
-      console.log("✅ ImgBB configurado corretamente via proxy seguro!");
+      console.log("✅ ImgBB configurado corretamente!");
     } else {
       console.warn("⚠️ ImgBB com problemas:", imgbbTest.erro);
     }
@@ -595,8 +618,7 @@ async function salvarDisponibilidadeBackend(profissionalId, dias) {
     }
 }
 
-// ========== ADMIN ROOT (comunicação segura com AppScript) ==========
-
+// ========== ADMIN ROOT ==========
 async function loginAdminRoot() {
   try {
     const resultado = await callBackend("admin_login_root", {}, 30);
@@ -639,6 +661,20 @@ async function getAdminToken() {
   }
 }
 
+// ========== AUTENTICAÇÃO DE EMPRESA ==========
+async function autenticarEmpresa(email, senha) {
+    try {
+        const resultado = await callBackend("autenticar_empresa", { email, senha }, 30);
+        if (resultado && resultado.tipo === 'empresa' && resultado.usuario) {
+            salvarSessao(email, 'empresa', resultado.usuario.id);
+            return { success: true, tipo: 'empresa', usuario: resultado.usuario };
+        }
+        return { success: false, error: 'Falha na autenticação da empresa' };
+    } catch (err) {
+        return { success: false, error: err.message || 'Erro ao autenticar empresa' };
+    }
+}
+
 async function validarAdminToken(token) {
   try {
     const resultado = await callBackend("admin_validar_token", { token }, 15);
@@ -666,8 +702,20 @@ async function getAdminInfo() {
   }
 }
 
-console.log("✅ integracao.js — backend com proxy seguro para ImgBB");
+// ========== VERIFICAR SENHA DE LIBERAÇÃO ==========
+async function verificarSenhaLiberacao(empresaId, senha) {
+  try {
+    const resultado = await callBackend("verificar_senha_liberacao", { empresaId, senha }, 15);
+    return resultado?.ok === true && resultado?.valida === true;
+  } catch (err) {
+    console.error('Erro ao verificar senha:', err);
+    return false;
+  }
+}
+
+// ========== LOGS ==========
+console.log("✅ integracao.js — backend via Proxy Cloudflare");
 console.log("📍 Backend URL:", BACKEND_URL);
-console.log("🔒 ImgBB API Key protegida no Apps Script (não exposta no GitHub)");
+console.log("🖼️ Upload via Proxy (ImgBB protegido no Worker)");
 console.log("👑 Admin Root configurado no backend (seguro)");
 console.log("📊 Com suporte a TRANSAÇÕES e APROVAÇÃO DE RECARGAS");
